@@ -39,6 +39,21 @@
 - [ ] 定義設定備份位置。
 - [ ] 定義核准與回復報告範本。
 
+## 設定治理
+
+- [ ] 定義 configs/ 目錄結構。
+- [ ] 建立 Lab01 核准設定 Profile。
+- [ ] 建立 Lab02 eMBMS 設定 Profile。
+- [ ] 建立不含真實憑證的 user_db.csv.example。
+- [ ] 補充設定、憑證、PCAP、日誌、core dump 與 build artifact 的 .gitignore 規則。
+- [ ] 定義備份、差異檢查、核准、部署、驗證與回復流程。
+- [ ] 建立 deployment state manifest。
+- [ ] 定義 Lab01 與 Lab02 的標籤命名規則。
+- [ ] 定義 Linux1 與 Linux2 的主機角色清單，但不得包含登入密碼。
+- [ ] 確認 srsRAN_4G 上游、專案 fork 與本機 checkout 的關係。
+- [ ] 定義 Linux1 與 Linux2 必須使用的 srsRAN_4G commit 或 tag。
+- [ ] 設計核准設定同步至 /etc/srsran/ 的人工部署流程。
+
 ## 延後處理
 
 - [ ] Lab02 eMBMS 與 SIB13。
