@@ -1,105 +1,105 @@
-# Codex Remote Agent Policy
+# Codex 遠端代理規範
 
-Version: 0.1-draft
+版本：0.1-draft
 
-## Purpose
+## 目的
 
-Define safe, auditable operating boundaries for agents working on the 5G SDR environment.
+定義代理在 5G SDR 環境中作業時的安全、可稽核操作邊界。
 
-## Scope
+## 適用範圍
 
-This policy applies to local repository work and all remote-host access associated with the lab.
+本規範適用於本機儲存庫作業，以及與實驗室相關的所有遠端主機存取。
 
-## System Architecture
+## 系統架構
 
-The environment separates a Mac controller, an EPC/eNB host, and a UE host. Documentation must describe host roles without embedding credentials, subscriber records, or configuration bodies.
+此環境區分 Mac controller、EPC/eNB 主機與 UE 主機。文件應描述主機角色，但不得嵌入憑證、訂閱者記錄或設定檔內容。
 
-## Host Inventory Rules
+## 主機盤點規則
 
-Record host role, approved address reference, configuration path, metadata, and non-secret hashes where approved. Do not infer that every file present is runtime-active.
+記錄主機角色、經核准的位址參照、設定路徑、中繼資料，以及在獲准時的非敏感雜湊。不得推論每個存在的檔案均為啟用中的執行階段檔案。
 
-## Credential Handling
+## 憑證處理
 
-Passwords must be entered interactively and must never appear in prompts, commands, logs, documents, commits, or reports. Prefer passphrase-protected SSH keys for future persistent workflows. Subscriber databases and authentication secrets must never be committed.
+密碼必須以互動方式輸入，且不得出現在提示、命令、日誌、文件、提交或報告中。未來的持續性工作流程應優先使用具有通關密語保護的 SSH 金鑰。訂閱者資料庫與驗證祕密不得提交。
 
-## Permission Levels
+## 權限等級
 
-| Level | Name | Description |
+| 等級 | 名稱 | 說明 |
 | --- | --- | --- |
-| 0 | Local read-only | Inspect repository files without modification. |
-| 1 | Remote read-only audit | SSH inspection using explicitly allowed non-mutating commands. |
-| 2 | Repository documentation write | Modify documentation in an isolated Git branch. |
-| 3 | Remote configuration change | Requires explicit human approval, backup, diff, rollback plan, and validation plan. |
-| 4 | Runtime or network control | Starting services or changing routes, firewall, interfaces, kernel, SDR, or RF requires separate explicit approval. |
+| 0 | 本機唯讀 | 檢查儲存庫檔案而不作任何修改。 |
+| 1 | 遠端唯讀稽核 | 使用明確允許的非變更性命令進行 SSH 檢查。 |
+| 2 | 儲存庫文件寫入 | 在隔離的 Git 分支中修改文件。 |
+| 3 | 遠端設定變更 | 需要明確人工核准、備份、diff、回復計畫與驗證計畫。 |
+| 4 | 執行階段或網路控制 | 啟動服務，或變更路由、防火牆、介面、kernel、SDR 或 RF，均須另行明確核准。 |
 
-## Read-only Audit Mode
+## 唯讀稽核模式
 
-Use only the approved SSH commands and gather the minimum evidence needed. Do not use sudo, alter remote state, access secrets, or read subscriber database contents.
+僅使用已核准的 SSH 命令，並收集所需的最少證據。不得使用 sudo、變更遠端狀態、存取祕密，或讀取訂閱者資料庫內容。
 
-## Repository Write Mode
+## 儲存庫寫入模式
 
-Limit writes to approved documentation on an isolated branch. Review the diff for secrets and unrelated changes before committing.
+將寫入限制於已核准分支中的文件。提交前應檢閱 diff，以確認沒有祕密或無關變更。
 
-## Remote Configuration Change Mode
+## 遠端設定變更模式
 
-Level 3 requires an explicit human approval gate before any remote mutation. The request must name the intended files and expected effect.
+在任何遠端變更之前，等級 3 需要明確人工核准關卡。請求必須指出目標檔案與預期效果。
 
-## Runtime and Service Control Mode
+## 執行階段與服務控制模式
 
-Level 4 requires separate approval for every service, route, firewall, interface, kernel, SDR, or RF action. No approval may be inferred from a prior audit.
+等級 4 對每個服務、路由、防火牆、介面、kernel、SDR 或 RF 動作都需要個別核准。不得從先前稽核推論已獲核准。
 
-## Hardware and RF Control Mode
+## 硬體與 RF 控制模式
 
-Treat transmit, receive, gain, frequency, and attached SDR hardware actions as Level 4, even when configuration changes appear small.
+即使設定變更看似很小，傳送、接收、增益、頻率與連接的 SDR 硬體動作均視為等級 4。
 
-## Approval Gates
+## 核准關卡
 
-Agents stop on ambiguity rather than infer permission. Approval must cover the level, target hosts, scope, validation, and rollback path.
+代理應在權限不明確時停止，而非推論授權。核准必須涵蓋等級、目標主機、範圍、驗證與回復路徑。
 
-## Allowed Command Principles
+## 允許命令原則
 
-Remote commands must be explicitly non-mutating, narrowly scoped, and appropriate to the approved mode. Prefer metadata, targeted searches, and hashes over copying files.
+遠端命令必須明確為非變更性、範圍狹窄，且符合已核准模式。相較於複製檔案，應優先使用中繼資料、目標搜尋與雜湊。
 
-## Forbidden Actions
+## 禁止動作
 
-Never use sudo without explicit scope approval; modify remote files; upload, rename, delete, or create remote files; start or stop services; change routes, interfaces, NetworkManager, nftables, or iptables; access private material, password hashes, shell history, or subscriber records; or place secrets in Git.
+未經明確範圍核准不得使用 sudo；不得修改遠端檔案、上傳、重新命名、刪除或建立遠端檔案；不得啟動或停止服務；不得變更路由、介面、NetworkManager、nftables 或 iptables；不得存取私密資料、密碼雜湊、shell 歷程或訂閱者記錄；不得將祕密放入 Git。
 
-## SSH Policy
+## SSH 規範
 
-Use SSH only for remote access. Authenticate interactively unless an approved credential mechanism is available. Do not persist passwords or embed them in commands.
+僅使用 SSH 進行遠端存取。除非已有核准的憑證機制，否則應以互動方式驗證。不得持久化密碼或將其嵌入命令。
 
-## Backup-before-change Rule
+## 變更前備份規則
 
-Before a Level 3 change, create and verify an approved backup location that excludes secrets from the repository.
+進行等級 3 變更前，建立並驗證經核准的備份位置，且該位置不得將祕密納入儲存庫。
 
-## Diff-before-apply Rule
+## 套用前 diff 規則
 
-Produce a minimal proposed diff and obtain review before application. Do not apply an unreviewed remote configuration change.
+產出最小化的提議 diff 並於套用前取得審閱。不得套用未審閱的遠端設定變更。
 
-## Rollback Plan Requirement
+## 回復計畫要求
 
-Every Level 3/4 request needs an identified baseline, rollback steps, owner, stop conditions, and validation criteria before execution.
+每個等級 3/4 請求在執行前都需要已識別的基線、回復步驟、負責人、停止條件與驗證準則。
 
-## Git Branch and Pull Request Workflow
+## Git 分支與 Pull Request 工作流程
 
-Use a purpose-specific branch, commit only scoped files, inspect the final diff, and do not push or open a pull request unless explicitly authorized.
+使用目的明確的分支，只提交範圍內的檔案，檢查最終 diff，且除非獲明確授權，否則不得推送或建立 Pull Request。
 
-## Evidence Collection
+## 證據蒐集
 
-Capture command class, timestamp, host role, selected findings, metadata, and non-secret hashes. Evidence is not a backup and must not contain configuration bodies or secrets.
+擷取命令類別、時間戳記、主機角色、選定發現、中繼資料與非敏感雜湊。證據不是備份，且不得包含設定檔內容或祕密。
 
-## Secret and Sensitive Data Handling
+## 祕密與敏感資料處理
 
-Public repository documents must not expose credentials, subscriber data, private keys, authentication material, or complete active configuration files.
+公開儲存庫文件不得揭露憑證、訂閱者資料、私密金鑰、驗證資料或完整的啟用中設定檔。
 
-## Incident and Abort Conditions
+## 事件與中止條件
 
-Abort immediately on an unexpected write prompt, ambiguous authority, missing baseline, inaccessible target, sensitive-data exposure risk, or any result inconsistent with the approved scope. Report the condition without attempting a workaround that broadens authority.
+若出現非預期的寫入提示、授權不明確、基線缺失、目標無法存取、敏感資料暴露風險，或任何結果與已核准範圍不一致，應立即中止。回報該狀況，但不得嘗試會擴大權限的替代方案。
 
-## Required Completion Report
+## 必要完成報告
 
-Report preflight state, approved actions, audit findings, changed local files, sensitive-data checks, quality checks, commit result, remaining unknowns, and confirmation that no unapproved remote state changed.
+報告前置檢查狀態、核准動作、稽核發現、已變更的本機檔案、敏感資料檢查、品質檢查、提交結果、其餘未知項目，以及未發生未核准遠端狀態變更的確認。
 
-## Future Agent Compatibility
+## 未來代理相容性
 
-Future agents must honor these permission levels, preserve evidence boundaries, and request a new approval gate when the task crosses into a higher level.
+未來代理必須遵守這些權限等級、維持證據邊界，並在任務跨入較高等級時要求新的核准關卡。
