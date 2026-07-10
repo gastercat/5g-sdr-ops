@@ -84,6 +84,23 @@
 
 使用目的明確的分支，只提交範圍內的檔案，檢查最終 diff，且除非獲明確授權，否則不得推送或建立 Pull Request。
 
+## Repository 與執行環境邊界
+
+`srsRAN_4G/` 是由 Git 管理的原始碼 Repository，負責管理 srsRAN 原始碼、patch 與版本。`/etc/srsran/` 是主機實際使用的執行階段設定目錄，不得初始化或作為一般 Git working tree 管理。
+
+已核准且已清理的設定範本應存放於 `5g-sdr-ops` Repository；不得複製或提交啟用中的設定檔。Linux1、Linux2 等主機角色不得以永久 Git 分支表示。Lab01 與 Lab02 Profile 應以目錄、manifests 與已驗證標籤表示，而非永久分支。
+
+代理不得在 `/etc/srsran/` 內執行 `git checkout`、`git reset`、`git merge` 或其他等效的破壞性 Git 操作。任何啟用中設定變更都必須依序具備：
+
+1. 備份
+2. 差異
+3. 人工核准
+4. 部署
+5. 驗證
+6. 部署紀錄
+
+敏感資料與訂閱者驗證資料不得提交，包括 `user_db.csv`、Ki、OPC、密碼、tokens、SSH private keys、private certificates、含敏感流量的 PCAP 檔案、core dumps 與 shell history。當代理無法存取 OS credential store 時，GitHub 發布可保留為人工控制的核准關卡。
+
 ## 證據蒐集
 
 擷取命令類別、時間戳記、主機角色、選定發現、中繼資料與非敏感雜湊。證據不是備份，且不得包含設定檔內容或祕密。
