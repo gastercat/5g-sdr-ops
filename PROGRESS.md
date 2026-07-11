@@ -6,7 +6,9 @@
 
 ## Delivery Deadline
 
-2026-07-14. Owner: 七瀨 宵｜Nanase Yoi. Support: 七賴 澪｜Nanase Rei.
+2026-07-14. 
+Owner: Project Lead.
+Support: AI-assisted engineering workflow under human review.
 
 ## Repository State
 
