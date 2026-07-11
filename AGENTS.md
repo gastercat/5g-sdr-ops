@@ -1,0 +1,101 @@
+# 5G SDR Operations — Agent Instructions
+
+## Project Scope
+
+This repository manages 5G SDR project documentation, approved configuration templates, audit evidence, and handoff material. It does not directly operate the lab environment.
+
+## Current Delivery Goal
+
+Identify the authoritative Lab01 ZeroMQ baseline. This is an identification checkpoint only: no Lab01 runtime recovery, deployment, or service startup is authorized until the required evidence and human approval exist.
+
+## Source of Truth
+
+- Read [PROGRESS.md](PROGRESS.md) for the current checkpoint and open questions.
+- Read [docs/engineering/CONFIGURATION_GOVERNANCE.md](docs/engineering/CONFIGURATION_GOVERNANCE.md) and [docs/engineering/CODEX_REMOTE_AGENT_POLICY.md](docs/engineering/CODEX_REMOTE_AGENT_POLICY.md) for governance.
+- Use [docs/audits/2026-07-10-rollback-inventory.md](docs/audits/2026-07-10-rollback-inventory.md) as evidence of observed residue, not as a confirmed Lab01 baseline.
+- `srsRAN_4G/` manages source code and project patches. `/etc/srsran/` is the active runtime configuration on a lab host.
+- `configs/` holds only human-reviewed, approved configuration templates.
+
+## Required Startup Procedure
+
+For every new task:
+
+1. Read this file and [PROGRESS.md](PROGRESS.md).
+2. Run the repository preflight: working-tree status, branch, and relevant file inventory.
+3. Read the source documents relevant to the requested change.
+4. If the task concerns Lab01 baseline work, use the `lab01-baseline-recovery` skill before taking action.
+5. State whether the work is read-only, documentation-only, or requires a separately approved deployment.
+
+## Safety and Runtime Boundaries
+
+- Treat all remote inspection as read-only by default.
+- Do not modify runtime configuration or start services before the authoritative baseline is identified and approved.
+- Never use `git checkout`, `git reset`, or an equivalent operation as a runtime rollback mechanism in `/etc/srsran/`.
+- Do not copy legacy `/etc/srslte/` files directly into `/etc/srsran/`.
+- Do not infer a baseline from a single host, a single unpaired file, or an unverified history item.
+- Stop when source provenance is uncertain, Linux1/Linux2 pairing is incomplete, or ZeroMQ direction is unclear.
+
+## Baseline Recovery Workflow
+
+Follow `.agents/skills/lab01-baseline-recovery/SKILL.md`. The required order is:
+
+1. Inventory candidate sources without changing runtime state.
+2. Compare paired Linux1 and Linux2 candidates read-only, including ZeroMQ IP and TX/RX ports.
+3. Prepare a rollback plan and deployment record.
+4. Obtain explicit human approval.
+5. Perform only the approved minimum recovery, then validate ZeroMQ, attach, ICMP, TCP, and NAT.
+
+"Rollback" means a reviewed, controlled deployment—not a Git operation against active configuration.
+
+## Sensitive Data Policy
+
+Never write credentials or secrets to Git, documentation, evidence, prompts, or command output. This includes passwords, Ki, OPC, tokens, SSH private keys, and other sensitive identifiers. Redact or omit sensitive values from any proposed evidence.
+
+## Validation and Evidence Rules
+
+- Keep confirmed facts, candidates, and unknowns distinct.
+- A PASS claim requires traceable evidence; do not manufacture PASS, successful attach, or deployment records.
+- Record source path, host role, commit/version where known, observation time, and non-sensitive comparison result.
+- A configuration file's presence does not prove it is active or authoritative.
+- Conflicting evidence or incompatible srsRAN commits is a stop condition.
+
+## Progress and Handoff Rules
+
+- Update [PROGRESS.md](PROGRESS.md) only when the task explicitly authorizes repository documentation changes.
+- During read-only investigation, report proposed progress updates in the task output and wait for human approval before editing the file.
+- Record only the current checkpoint, decision-relevant evidence, and next gate; do not turn it into a full history log.
+- Preserve explicit `KNOWN`, `UNKNOWN`, `PENDING`, and `NEEDS_APPROVAL` labels.
+- Do not claim a runtime change, service start, validation, or approval unless it actually occurred.
+
+## Task Classification
+
+Classify work before acting:
+
+| Type | Examples | Default authority |
+| --- | --- | --- |
+| Documentation | instructions, evidence summaries, runbooks | repository-only edits |
+| Read-only investigation | inventory, metadata, configuration comparison | no runtime changes |
+| Recovery planning | source mapping, abort points, validation plan | no deployment |
+| Controlled deployment | approved runtime configuration recovery | explicit human approval required |
+
+If a request moves from one type to another, stop and obtain the authority
+required by the new type. A request to inspect or document does not authorize
+deployment or service operation.
+
+## Repository Navigation
+
+- `labs/lab01-small-cell/` contains the Lab01 runbook, checklist, issues, and result summary.
+- `docs/audits/` holds read-only configuration inventories and non-sensitive audit evidence.
+- `docs/engineering/` holds configuration governance, remote-agent policy, and engineering TODOs.
+- `agent-prompts/` and `checklists/` support repeatable review work, but do not supersede this file or `PROGRESS.md`.
+
+When instructions conflict, preserve the stricter safety boundary and raise the
+conflict rather than silently choosing a permissive interpretation.
+
+## Change Hygiene
+
+- Make the smallest scoped change that satisfies the task.
+- Preserve user changes in a dirty working tree; do not overwrite unrelated work.
+- For documentation changes, inspect the final diff and run `git diff --check`.
+- Do not commit or push unless the task explicitly authorizes it.
+- Report files changed, files intentionally untouched, validation results, and any remaining gate.
