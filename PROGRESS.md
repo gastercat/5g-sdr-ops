@@ -2,7 +2,7 @@
 
 ## Current Status
 
-`PENDING` — Lab01 has not been recovered or validated in this repository. The current work is documentation and baseline identification only.
+`PENDING` — Phase 2E field-level reconciliation passed human review. Evidence collection and engineering decisions are complete; Phase 3 controlled recovery planning requires separate explicit authorization.
 
 ## Delivery Deadline
 
@@ -36,29 +36,41 @@
 - `KNOWN`: Repository instruction and Lab01 recovery skill were prepared, content-reviewed, and merged through PR #4 on 2026-07-11.
 - `NOT DONE`: No Lab01 runtime recovery or validation was performed by this documentation task.
 
-## Known Lab02 Residue
+## Confirmed Lab02 Residue
 
-`KNOWN` from the read-only audit; classification against an authoritative Lab01 baseline remains pending.
+`KNOWN` from the read-only audit and Phase 2 field-level reconciliation; these settings are excluded from the clean Lab01 candidate.
 
-| Host | Observed residue or pending verification |
+| Host | Confirmed residue |
 | --- | --- |
-| Linux1 | `sib.conf.mbsfn`, eMBMS enabled, `mbms.conf`, SIB13/MBSFN configuration, scheduler or expert overrides pending verification |
-| Linux2 | `mbms_service_id`, `mbms_service_port`, MAC PCAP enabled, PHY overrides pending verification |
+| Linux1 | `sib.conf.mbsfn`, eMBMS enabled, `mbms.conf`, SIB13/MBSFN, and M1 configuration |
+| Linux2 | `mbms_service_id`, `mbms_service_port`, `snr_estim_alg = empty`, and `interpolate_subframe_enabled = true` |
 
 ## Current Checkpoint
 
-**Authoritative Lab01 Baseline Identification**
+**Authoritative Lab01 Baseline Identification — Engineering Reconciliation Complete**
 
-`KNOWN`: ZeroMQ is a Lab01 component and must not be removed.
+- `KNOWN`: Phase 2E field-level reconciliation passed human review.
+- `KNOWN`: Evidence collection is complete.
+- `KNOWN`: Engineering decisions are complete.
+- `KNOWN`: The preferred topology is a controlled migration to switched Ethernet; it is not an exact historical rollback.
+- `KNOWN`: Linux1 uses `192.168.250.11/24` for management and may receive `10.0.0.1/24` as a future sample-plane secondary address.
+- `KNOWN`: Linux2 uses `192.168.250.12/24` for management and may receive `10.0.0.2/24` as a future sample-plane secondary address.
+- `KNOWN`: The validated historical USB-adapter and Wi-Fi-hotspot topology remains the explicit fallback.
+- `KNOWN`: Linux1 scheduler candidate values are `pusch_max_mcs = 16`, `min_nof_ctrl_symbols = 1`, and `max_nof_ctrl_symbols = 3`; classification is `CLEAN_CANDIDATE_NOT_HISTORICALLY_CONFIRMED`.
+- `KNOWN`: Linux2 PHY selections are `nof_phy_threads = 1`, `snr_estim_alg = refs`, and `interpolate_subframe_enabled = false`.
+- `KNOWN`: UE PCAP defaults to `enable = none`; `enable = mac` is retained as the optional observation profile.
+- `KNOWN`: The clean Lab01 candidate excludes eMBMS, MBSFN, SIB13, M1, and UE MBMS residue.
+- `KNOWN`: ZeroMQ is a Lab01 component and must not be removed.
 
-`PENDING`: Identify a compatible, paired Linux1/Linux2 Lab01 source and verify ZeroMQ IP and TX/RX port direction without changing runtime configuration.
+- `PENDING`: Phase 3 controlled recovery planning requires separate explicit authorization.
+- `PENDING`: No repository runtime, network, or service deployment has occurred.
 
 ## Candidate Sources
 
-- `CANDIDATE`: successful Lab01 runtime evidence — none located in this repository.
-- `CANDIDATE`: approved repository snapshot or configuration — none confirmed.
-- `CANDIDATE`: traceable paired Linux1/Linux2 configuration — current audit data requires pairing and provenance review.
-- `REFERENCE`: matching `srsRAN_4G` example for the installed commit — installed commit unknown.
+- `CONFIRMED`: successful Lab01 as-built evidence supports the historical ZeroMQ design, attach, UE address assignment, ICMP/GTP-U, NAT, and packet observation.
+- `CONFIRMED`: the field-level clean Lab01 candidate is complete and has passed human engineering review.
+- `REFERENCE`: matching-commit `srsRAN_4G` examples support selected clean-candidate fields but are not whole-file authority.
+- `REFERENCE`: current Linux1/Linux2 configurations preserve some Lab01 values but contain confirmed Lab02 residue and are not complete recovery sources.
 - `REFERENCE`: historical Lab01 teaching material — lower authority only.
 - `REFERENCE`: legacy `/etc/srslte` configuration — lowest authority; never copy directly to `/etc/srsran/`.
 
@@ -71,14 +83,10 @@
 - `KNOWN`: `configs/` is reserved for manually reviewed, approved templates.
 - `KNOWN`: No runtime change or service startup is recorded at this checkpoint.
 
-## Unresolved Questions
+## Remaining Gate
 
-- `UNKNOWN`: Which candidate is the authoritative Lab01 baseline?
-- `UNKNOWN`: Are Linux1 and Linux2 candidate configurations traceably paired?
-- `UNKNOWN`: Which `srsRAN_4G` commit/version is installed on each host, and are they compatible?
-- `UNKNOWN`: Are current ZeroMQ IP addresses and TX/RX ports complementary?
-- `UNKNOWN`: Which scheduler, expert, and UE PHY overrides belong to Lab01?
-- `UNKNOWN`: Whether Linux2 MAC PCAP belongs in the approved Lab01 profile.
+- `NEEDS_APPROVAL`: Prepare a Phase 3 controlled recovery plan only after separate explicit human authorization.
+- `KNOWN`: Phase 3 has not started, and no deployment is authorized by the Phase 2E review.
 
 ## Safety Boundaries
 
@@ -90,7 +98,7 @@
 
 ## Next Action
 
-Use `.agents/skills/lab01-baseline-recovery/SKILL.md` to perform Phase 1 candidate inventory only. Stop for human review before beginning Phase 2 paired comparison.
+Prepare the Phase 3 controlled recovery plan only after explicit human authorization. Do not deploy during this documentation update.
 
 ## Parked Work
 
@@ -101,4 +109,4 @@ Use `.agents/skills/lab01-baseline-recovery/SKILL.md` to perform Phase 1 candida
 
 ## Last Updated
 
-2026-07-11 — Agent Harness merged through PR #4; repository state synchronized; no runtime actions performed.
+2026-07-11 — Phase 2E passed human review; field-level Lab01 candidate complete; no runtime actions performed.
