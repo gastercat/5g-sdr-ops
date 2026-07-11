@@ -12,7 +12,8 @@
 
 - Repository: `/Users/gastercat/Workspace/5g-sdr-ops`
 - Expected branch: `main`
-- Known latest commit at this checkpoint: `a2d4e4a`
+- Last reviewed repository commit: `a2d4e4a`
+- Checkpoint validation: The recorded commit may be an ancestor of current `HEAD` after reviewed PR merges; strict equality with `HEAD` is not required.
 - Runtime changes: `NONE`
 - Services started: `false`
 
