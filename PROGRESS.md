@@ -2,7 +2,7 @@
 
 ## Current Status
 
-`PENDING` — Phase 2E field-level reconciliation passed human review. Evidence collection and engineering decisions are complete; Phase 3 controlled recovery planning requires separate explicit authorization.
+`PENDING` — Phase 3 Controlled Recovery Plan passed human review. Planning is complete; no deployment is authorized.
 
 ## Delivery Deadline
 
@@ -47,7 +47,7 @@
 
 ## Current Checkpoint
 
-**Authoritative Lab01 Baseline Identification — Engineering Reconciliation Complete**
+**Lab01 Baseline Recovery — Phase 3 Plan Approved**
 
 - `KNOWN`: Phase 2E field-level reconciliation passed human review.
 - `KNOWN`: Evidence collection is complete.
@@ -61,9 +61,16 @@
 - `KNOWN`: UE PCAP defaults to `enable = none`; `enable = mac` is retained as the optional observation profile.
 - `KNOWN`: The clean Lab01 candidate excludes eMBMS, MBSFN, SIB13, M1, and UE MBMS residue.
 - `KNOWN`: ZeroMQ is a Lab01 component and must not be removed.
+- `KNOWN`: The backup, network migration, field-level configuration, startup, validation, abort, and rollback plans are complete.
+- `KNOWN`: Switched Ethernet remains the primary controlled migration; it is not an exact historical rollback.
+- `KNOWN`: The historical USB-adapter and Wi-Fi-hotspot topology remains a separately approved fallback.
+- `KNOWN`: No deployable configurations were created.
+- `KNOWN`: Apart from this approved documentation update, repository artifacts are unchanged; runtime, network, and service state remain unchanged.
 
-- `PENDING`: Phase 3 controlled recovery planning requires separate explicit authorization.
-- `PENDING`: No repository runtime, network, or service deployment has occurred.
+- `PENDING`: Refresh deployment-time host-state evidence before any execution request.
+- `PENDING`: Confirm the local console recovery path.
+- `PENDING`: Obtain each applicable Gate 1–5 human approval before execution.
+- `PENDING`: Phase 4 deployment remains unauthorized.
 
 ## Candidate Sources
 
@@ -85,8 +92,10 @@
 
 ## Remaining Gate
 
-- `NEEDS_APPROVAL`: Prepare a Phase 3 controlled recovery plan only after separate explicit human authorization.
-- `KNOWN`: Phase 3 has not started, and no deployment is authorized by the Phase 2E review.
+- `KNOWN`: The Phase 3 plan passed human review; planning is complete.
+- `NEEDS_APPROVAL`: Gate 1 backup execution package review is next. Gate 1 has not started and no backup execution is authorized.
+- `NEEDS_APPROVAL`: Each applicable Gate 1–5 requires separate human approval before execution.
+- `KNOWN`: Phase 4 deployment remains unauthorized.
 
 ## Safety Boundaries
 
@@ -98,7 +107,7 @@
 
 ## Next Action
 
-Prepare the Phase 3 controlled recovery plan only after explicit human authorization. Do not deploy during this documentation update.
+Prepare the Gate 1 backup execution package for human review only. Do not execute backups, network changes, configuration changes, or service startup.
 
 ## Parked Work
 
@@ -109,4 +118,4 @@ Prepare the Phase 3 controlled recovery plan only after explicit human authoriza
 
 ## Last Updated
 
-2026-07-11 — Phase 2E passed human review; field-level Lab01 candidate complete; no runtime actions performed.
+2026-07-11 — Phase 3 Controlled Recovery Plan passed human review; planning complete; no deployment performed.
