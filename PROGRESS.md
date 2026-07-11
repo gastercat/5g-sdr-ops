@@ -12,7 +12,7 @@
 
 - Repository: `/Users/gastercat/Workspace/5g-sdr-ops`
 - Expected branch: `main`
-- Known latest commit at this checkpoint: `1562c60`
+- Known latest commit at this checkpoint: `a2d4e4a`
 - Runtime changes: `NONE`
 - Services started: `false`
 
@@ -32,7 +32,7 @@
 
 - `KNOWN`: Configuration governance and remote-agent policy are documented.
 - `KNOWN`: Lab02-to-Lab01 rollback inventory is documented as read-only audit evidence.
-- `KNOWN`: Repository instruction and Lab01 recovery skill were prepared and content-reviewed on 2026-07-11.
+- `KNOWN`: Repository instruction and Lab01 recovery skill were prepared, content-reviewed, and merged through PR #4 on 2026-07-11.
 - `NOT DONE`: No Lab01 runtime recovery or validation was performed by this documentation task.
 
 ## Known Lab02 Residue
@@ -100,4 +100,4 @@ Use `.agents/skills/lab01-baseline-recovery/SKILL.md` to perform Phase 1 candida
 
 ## Last Updated
 
-2026-07-11 — Documentation harness created; no runtime actions performed.
+2026-07-11 — Agent Harness merged through PR #4; repository state synchronized; no runtime actions performed.
