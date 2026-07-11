@@ -48,6 +48,7 @@ Lower-ranked material can inform comparison but cannot override stronger, contra
 ## Phase 1 Candidate Inventory
 
 1. Confirm repository state and read the progress checkpoint.
+   Validate the repository checkpoint by Git ancestry, not strict SHA equality.
 2. Inventory candidate source, host role, timestamp, version/commit, and a non-sensitive hash or diff reference.
 3. Label each item `CANDIDATE`, `CONFIRMED`, `UNKNOWN`, or `REJECTED` with a reason.
 4. Separate Lab02 eMBMS/MBSFN residue from possible Lab01 components. ZeroMQ is a preserved Lab01 component, not residue.

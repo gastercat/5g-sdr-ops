@@ -26,6 +26,13 @@ For every new task:
 4. If the task concerns Lab01 baseline work, use the `lab01-baseline-recovery` skill before taking action.
 5. State whether the work is read-only, documentation-only, or requires a separately approved deployment.
 
+## Repository Checkpoint Validation
+
+- `PASS`: the recorded checkpoint commit equals `HEAD`.
+- `PASS`: the recorded checkpoint commit is an ancestor of `HEAD`, the working tree is clean, and the checked branch matches its remote.
+- `STOP`: the recorded checkpoint commit is absent from current history.
+- `STOP`: the branch diverged, the working tree is dirty, or provenance is unclear.
+
 ## Safety and Runtime Boundaries
 
 - Treat all remote inspection as read-only by default.
