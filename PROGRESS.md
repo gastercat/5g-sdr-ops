@@ -2,7 +2,7 @@
 
 ## Current Status
 
-`PENDING` — Phase 3 Controlled Recovery Plan passed human review. Planning is complete; no deployment is authorized.
+`PENDING` — Phase 4A Gate 1 Backup is `PASS / CLOSED` and passed human review. Phase 4B is authorized, but execution has not started.
 
 ## Delivery Deadline
 
@@ -49,7 +49,7 @@ Support: AI-assisted engineering workflow under human review.
 
 ## Current Checkpoint
 
-**Lab01 Baseline Recovery — Phase 3 Plan Approved**
+**Lab01 Baseline Recovery — Phase 4A Gate 1 Backup Closed; Phase 4B Authorized**
 
 - `KNOWN`: Phase 2E field-level reconciliation passed human review.
 - `KNOWN`: Evidence collection is complete.
@@ -68,11 +68,14 @@ Support: AI-assisted engineering workflow under human review.
 - `KNOWN`: The historical USB-adapter and Wi-Fi-hotspot topology remains a separately approved fallback.
 - `KNOWN`: No deployable configurations were created.
 - `KNOWN`: Apart from this approved documentation update, repository artifacts are unchanged; runtime, network, and service state remain unchanged.
+- `KNOWN`: Phase 4A Gate 1 Backup: `PASS / CLOSED`.
+- `KNOWN`: The backup package passed source/destination metadata, SHA-256, manifest, and paired `COMPLETE` marker validation.
+- `KNOWN`: Human Review: `PASS`.
+- `KNOWN`: Phase 4B: `AUTHORIZED`.
+- `KNOWN`: Phase 4B Execution: `NOT STARTED`.
 
-- `PENDING`: Refresh deployment-time host-state evidence before any execution request.
-- `PENDING`: Confirm the local console recovery path.
-- `PENDING`: Obtain each applicable Gate 1–5 human approval before execution.
-- `PENDING`: Phase 4 deployment remains unauthorized.
+- `PENDING`: Phase 4B Gate A management-interface evidence has not yet been collected.
+- `PENDING`: No Phase 4B runtime configuration change or service startup has occurred.
 
 ## Candidate Sources
 
@@ -95,9 +98,9 @@ Support: AI-assisted engineering workflow under human review.
 ## Remaining Gate
 
 - `KNOWN`: The Phase 3 plan passed human review; planning is complete.
-- `NEEDS_APPROVAL`: Gate 1 backup execution package review is next. Gate 1 has not started and no backup execution is authorized.
-- `NEEDS_APPROVAL`: Each applicable Gate 1–5 requires separate human approval before execution.
-- `KNOWN`: Phase 4 deployment remains unauthorized.
+- `KNOWN`: Phase 4A Gate 1 Backup is `PASS / CLOSED`; its human review passed.
+- `KNOWN`: Phase 4B is authorized, and Phase 4B execution has not started.
+- `NEEDS_APPROVAL`: Next Gate: Phase 4B Gate A — Management Interface Verification.
 
 ## Safety Boundaries
 
@@ -109,7 +112,7 @@ Support: AI-assisted engineering workflow under human review.
 
 ## Next Action
 
-Prepare the Gate 1 backup execution package for human review only. Do not execute backups, network changes, configuration changes, or service startup.
+Perform Phase 4B Gate A — Management Interface Verification. Do not start services or change runtime configuration at this gate.
 
 ## Parked Work
 
@@ -120,4 +123,4 @@ Prepare the Gate 1 backup execution package for human review only. Do not execut
 
 ## Last Updated
 
-2026-07-11 — Phase 3 Controlled Recovery Plan passed human review; planning complete; no deployment performed.
+2026-07-13 — Phase 4A Gate 1 Backup passed validation and human review; Phase 4B authorized but not started.
