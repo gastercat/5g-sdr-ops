@@ -2,7 +2,7 @@
 
 ## Current Status
 
-`PENDING` — Phase 4A Gate 1 Backup is `PASS / CLOSED` and passed human review. Phase 4B is authorized, but execution has not started.
+`PENDING` — Phase 4B Gate B completed successfully. The controlled topology migration established the approved dual-plane network without persistent network configuration changes; service startup and ZeroMQ runtime validation remain pending.
 
 ## Delivery Deadline
 
@@ -16,20 +16,23 @@ Support: AI-assisted engineering workflow under human review.
 - Expected branch: `main`
 - Last reviewed repository commit: `a2d4e4a`
 - Checkpoint validation: The recorded commit may be an ancestor of current `HEAD` after reviewed PR merges; strict equality with `HEAD` is not required.
-- Runtime changes: `NONE`
+- Runtime configuration changes: `NONE`
+- Temporary network changes: Linux1 `10.0.0.1/24`; Linux2 `10.0.0.2/24`
 - Services started: `false`
 
 ## Host and Network Topology
 
-| Node | Role | Management IP |
-| --- | --- | --- |
-| Mac | Control / Git / approval | 192.168.250.10/24 |
-| Linux1 | EPC / eNB | 192.168.250.11/24 |
-| Linux2 | UE | 192.168.250.12/24 |
+| Node | Role | Management IP | Sample-plane IP |
+| --- | --- | --- | --- |
+| Mac | Control / Git / approval | 192.168.250.10/24 | — |
+| Linux1 | EPC / eNB | 192.168.250.11/24 | 10.0.0.1/24 |
+| Linux2 | UE | 192.168.250.12/24 | 10.0.0.2/24 |
 
-- Subnet: `192.168.250.0/24`
-- Gateway: none
-- DNS: none
+- Management subnet: `192.168.250.0/24`
+- Sample-plane subnet: `10.0.0.0/24`
+- Sample-plane persistence: temporary runtime only
+- Sample-plane gateway: none
+- Sample-plane DNS: none
 
 ## Completed Governance
 
@@ -49,14 +52,14 @@ Support: AI-assisted engineering workflow under human review.
 
 ## Current Checkpoint
 
-**Lab01 Baseline Recovery — Phase 4A Gate 1 Backup Closed; Phase 4B Authorized**
+**Lab01 Baseline Recovery — Phase 4B Gate B Controlled Topology Migration Complete**
 
 - `KNOWN`: Phase 2E field-level reconciliation passed human review.
 - `KNOWN`: Evidence collection is complete.
 - `KNOWN`: Engineering decisions are complete.
 - `KNOWN`: The preferred topology is a controlled migration to switched Ethernet; it is not an exact historical rollback.
-- `KNOWN`: Linux1 uses `192.168.250.11/24` for management and may receive `10.0.0.1/24` as a future sample-plane secondary address.
-- `KNOWN`: Linux2 uses `192.168.250.12/24` for management and may receive `10.0.0.2/24` as a future sample-plane secondary address.
+- `KNOWN`: Linux1 uses `192.168.250.11/24` for management and `10.0.0.1/24` as a temporary sample-plane secondary address.
+- `KNOWN`: Linux2 uses `192.168.250.12/24` for management and `10.0.0.2/24` as a temporary sample-plane secondary address.
 - `KNOWN`: The validated historical USB-adapter and Wi-Fi-hotspot topology remains the explicit fallback.
 - `KNOWN`: Linux1 scheduler candidate values are `pusch_max_mcs = 16`, `min_nof_ctrl_symbols = 1`, and `max_nof_ctrl_symbols = 3`; classification is `CLEAN_CANDIDATE_NOT_HISTORICALLY_CONFIRMED`.
 - `KNOWN`: Linux2 PHY selections are `nof_phy_threads = 1`, `snr_estim_alg = refs`, and `interpolate_subframe_enabled = false`.
@@ -72,10 +75,15 @@ Support: AI-assisted engineering workflow under human review.
 - `KNOWN`: The backup package passed source/destination metadata, SHA-256, manifest, and paired `COMPLETE` marker validation.
 - `KNOWN`: Human Review: `PASS`.
 - `KNOWN`: Phase 4B: `AUTHORIZED`.
-- `KNOWN`: Phase 4B Execution: `NOT STARTED`.
+- `KNOWN`: Phase 4B Gate B controlled topology migration completed successfully.
+- `KNOWN`: Cross-host bidirectional sample-plane ping passed.
+- `KNOWN`: New management SSH sessions to Linux1 and Linux2 were verified after the migration.
+- `KNOWN`: The repository remained clean during Gate B execution.
+- `KNOWN`: No persistent network configuration was changed.
+- `KNOWN`: No services were started, and `/etc/srsran/` remained unchanged.
+- `KNOWN`: ZeroMQ runtime was not tested.
 
-- `PENDING`: Phase 4B Gate A management-interface evidence has not yet been collected.
-- `PENDING`: No Phase 4B runtime configuration change or service startup has occurred.
+- `PENDING`: Gate B completion evidence requires human review before any service startup or ZeroMQ runtime test.
 
 ## Candidate Sources
 
@@ -99,8 +107,9 @@ Support: AI-assisted engineering workflow under human review.
 
 - `KNOWN`: The Phase 3 plan passed human review; planning is complete.
 - `KNOWN`: Phase 4A Gate 1 Backup is `PASS / CLOSED`; its human review passed.
-- `KNOWN`: Phase 4B is authorized, and Phase 4B execution has not started.
-- `NEEDS_APPROVAL`: Next Gate: Phase 4B Gate A — Management Interface Verification.
+- `KNOWN`: Phase 4B Gate A management-interface verification passed.
+- `KNOWN`: Phase 4B Gate B controlled topology migration completed successfully.
+- `NEEDS_APPROVAL`: Human review of Gate B evidence is required before any subsequent runtime or service action.
 
 ## Safety Boundaries
 
@@ -112,7 +121,7 @@ Support: AI-assisted engineering workflow under human review.
 
 ## Next Action
 
-Perform Phase 4B Gate A — Management Interface Verification. Do not start services or change runtime configuration at this gate.
+Review the Phase 4B Gate B evidence. Do not start services, modify `/etc/srsran/`, or test ZeroMQ runtime without separate authorization.
 
 ## Parked Work
 
@@ -123,4 +132,4 @@ Perform Phase 4B Gate A — Management Interface Verification. Do not start serv
 
 ## Last Updated
 
-2026-07-13 — Phase 4A Gate 1 Backup passed validation and human review; Phase 4B authorized but not started.
+2026-07-13 — Phase 4B Gate B controlled topology migration completed; dual-plane connectivity passed without persistent network, runtime configuration, or service changes.
