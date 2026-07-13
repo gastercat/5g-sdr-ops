@@ -2,7 +2,7 @@
 
 ## Current Status
 
-`PENDING` — Phase 4B Gate B completed successfully. The controlled topology migration established the approved dual-plane network without persistent network configuration changes; service startup and ZeroMQ runtime validation remain pending.
+`PASS / CLOSED` — Phase 4C Runtime Bring-up completed successfully, including staged EPC, eNB, and UE initialization, runtime connectivity verification, and controlled shutdown.
 
 ## Delivery Deadline
 
@@ -18,21 +18,23 @@ Support: AI-assisted engineering workflow under human review.
 - Checkpoint validation: The recorded commit may be an ancestor of current `HEAD` after reviewed PR merges; strict equality with `HEAD` is not required.
 - Runtime configuration changes: `NONE`
 - Temporary network changes: Linux1 `10.0.0.1/24`; Linux2 `10.0.0.2/24`
-- Services started: `false`
+- Services started during Phase 4C: `true`
+- Services running after controlled shutdown: `false`
 
 ## Host and Network Topology
 
-| Node | Role | Management IP | Sample-plane IP |
-| --- | --- | --- | --- |
-| Mac | Control / Git / approval | 192.168.250.10/24 | — |
-| Linux1 | EPC / eNB | 192.168.250.11/24 | 10.0.0.1/24 |
-| Linux2 | UE | 192.168.250.12/24 | 10.0.0.2/24 |
+| Node | Role | Management IP | Sample-plane IP | User-plane IP |
+| --- | --- | --- | --- | --- |
+| Mac | Control / Git / approval | 192.168.250.10/24 | — | — |
+| Linux1 | EPC / eNB | 192.168.250.11/24 | 10.0.0.1/24 | 172.16.0.1 (EPC SGi) |
+| Linux2 | UE | 192.168.250.12/24 | 10.0.0.2/24 | 172.16.0.2 (UE) |
 
 - Management subnet: `192.168.250.0/24`
 - Sample-plane subnet: `10.0.0.0/24`
 - Sample-plane persistence: temporary runtime only
 - Sample-plane gateway: none
 - Sample-plane DNS: none
+- User-plane subnet: `172.16.0.0/24`
 
 ## Completed Governance
 
@@ -52,7 +54,7 @@ Support: AI-assisted engineering workflow under human review.
 
 ## Current Checkpoint
 
-**Lab01 Baseline Recovery — Phase 4B Gate B Controlled Topology Migration Complete**
+**Lab01 Baseline Recovery — Phase 4C Runtime Bring-up Complete**
 
 - `KNOWN`: Phase 2E field-level reconciliation passed human review.
 - `KNOWN`: Evidence collection is complete.
@@ -80,10 +82,23 @@ Support: AI-assisted engineering workflow under human review.
 - `KNOWN`: New management SSH sessions to Linux1 and Linux2 were verified after the migration.
 - `KNOWN`: The repository remained clean during Gate B execution.
 - `KNOWN`: No persistent network configuration was changed.
-- `KNOWN`: No services were started, and `/etc/srsran/` remained unchanged.
-- `KNOWN`: ZeroMQ runtime was not tested.
+- `KNOWN`: No services were started during Gate B, and `/etc/srsran/` remained unchanged.
+- `KNOWN`: ZeroMQ runtime was not tested during Gate B.
+- `KNOWN`: Phase 4C: `PASS / CLOSED`.
+- `KNOWN`: Runtime Preflight (Gate C0), EPC Bring-up (Gate C1), eNB Bring-up (Gate C2), UE Bring-up (Gate C3), and Runtime Connectivity Verification (Gate C4) completed successfully.
+- `KNOWN`: The verified runtime startup sequence was EPC → eNB → UE.
+- `KNOWN`: `srsepc`, `srsenb`, and `srsue` initialized successfully.
+- `KNOWN`: ZeroMQ transport and cell search were verified.
+- `KNOWN`: Random Access completed, the UE reached RRC Connected, and Network Attach succeeded.
+- `KNOWN`: The UE was assigned `172.16.0.2` and the EPC SGi address was `172.16.0.1`.
+- `KNOWN`: Bidirectional user-plane ICMP passed with 0% packet loss in both directions.
+- `KNOWN`: Controlled Runtime Shutdown completed in the sequence UE → eNB → EPC.
+- `KNOWN`: Controlled shutdown returned the runtime to a clean baseline while preserving the management and sample planes.
+- `KNOWN`: Phase 4C executed without modifying `/etc/srsran/` or persistent network configuration.
+- `KNOWN`: An internal EPC logging issue was resolved by replacing the pre-existing `/tmp/epc.log` before restart.
+- `KNOWN`: Runtime evidence was archived under `~/5g-sdr-runtime-logs/`.
 
-- `PENDING`: Gate B completion evidence requires human review before any service startup or ZeroMQ runtime test.
+**Milestone Summary:** Lab01 Baseline Recovery Phase 4A through Phase 4C has been successfully completed using a controlled, gate-by-gate recovery workflow with full verification and clean shutdown.
 
 ## Candidate Sources
 
@@ -101,7 +116,7 @@ Support: AI-assisted engineering workflow under human review.
 - `KNOWN`: Active runtime configurations live in `/etc/srsran/` and are not a Git working tree.
 - `KNOWN`: `srsRAN_4G/` is the source and patch repository.
 - `KNOWN`: `configs/` is reserved for manually reviewed, approved templates.
-- `KNOWN`: No runtime change or service startup is recorded at this checkpoint.
+- `KNOWN`: Phase 4C services were stopped through the controlled shutdown sequence; `/etc/srsran/` remained unchanged.
 
 ## Remaining Gate
 
@@ -109,7 +124,8 @@ Support: AI-assisted engineering workflow under human review.
 - `KNOWN`: Phase 4A Gate 1 Backup is `PASS / CLOSED`; its human review passed.
 - `KNOWN`: Phase 4B Gate A management-interface verification passed.
 - `KNOWN`: Phase 4B Gate B controlled topology migration completed successfully.
-- `NEEDS_APPROVAL`: Human review of Gate B evidence is required before any subsequent runtime or service action.
+- `KNOWN`: Phase 4C Runtime Bring-up and Controlled Runtime Shutdown are `PASS / CLOSED`.
+- `NEEDS_APPROVAL`: Any subsequent runtime start, persistent network change, configuration deployment, or extended validation requires separate human authorization.
 
 ## Safety Boundaries
 
@@ -121,7 +137,7 @@ Support: AI-assisted engineering workflow under human review.
 
 ## Next Action
 
-Review the Phase 4B Gate B evidence. Do not start services, modify `/etc/srsran/`, or test ZeroMQ runtime without separate authorization.
+Review and hand off the Phase 4C runtime evidence. Do not restart services, persist network changes, or modify `/etc/srsran/` without separate authorization.
 
 ## Parked Work
 
@@ -132,4 +148,4 @@ Review the Phase 4B Gate B evidence. Do not start services, modify `/etc/srsran/
 
 ## Last Updated
 
-2026-07-13 — Phase 4B Gate B controlled topology migration completed; dual-plane connectivity passed without persistent network, runtime configuration, or service changes.
+2026-07-13 — Phase 4C Runtime Bring-up and Controlled Runtime Shutdown completed with verified ZeroMQ transport, attach, bidirectional user-plane ICMP, and clean shutdown.
