@@ -58,6 +58,8 @@ Follow `.agents/skills/lab01-baseline-recovery/SKILL.md`. The required order is:
 
 Never write credentials or secrets to Git, documentation, evidence, prompts, or command output. This includes passwords, Ki, OPC, tokens, SSH private keys, and other sensitive identifiers. Redact or omit sensitive values from any proposed evidence.
 
+Do not write personal aliases, private role names, or relationship terms into public or team-shared repository documents. Use neutral engineering roles such as Owner, Operator, Reviewer, Maintainer, Human Reviewer, or Project Lead. This rule applies to progress reports, handoffs, review records, commit-facing documentation, and all other shared project artifacts. Private conversational names must remain outside the repository.
+
 ## Validation and Evidence Rules
 
 - Keep confirmed facts, candidates, and unknowns distinct.
