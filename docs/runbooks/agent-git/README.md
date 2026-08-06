@@ -6,7 +6,7 @@
 - Status: `DRAFT / PARTIAL AUTHORING`
 - Audience: Windows Git beginners
 - Document roles: `Owner`、`Maintainer`、`Instructor`、`Reviewer`
-- Current authored scope: Sections 0、4、7 and minimum prompt / Evidence templates
+- Current authored scope: Sections 0、2、3、4、5、7 and minimum Prompt / Evidence templates
 
 ## Claim Boundary
 
@@ -117,19 +117,125 @@ It does not promote any `UNVERIFIED` workflow to an operational procedure.
 
 ## 2. Git 與 GitHub 最小概念
 
-- Purpose：建立 Repository、working tree、branch、commit、remote 與 Pull Request 的最低共同語言。
-- Learning outcome：讀者能區分本機 Git 狀態、GitHub 協作狀態與 Human Review Gate。
-- Source candidates：`CONTRIBUTING.md`、presentation outline、professor Q&A。
-- Verification status：`PARTIAL`；概念有來源，但尚未形成經 Windows 驗證的新手說明。
-- TODO：補齊名詞、狀態關係與非破壞性的理解範例，不加入未驗證命令流程。
+- 目的（Purpose）：建立 Git 與 GitHub 的最低共同語言，讓初學者能判讀變更目前位於哪個階段。
+- 學習成果（Learning outcome）：讀者能區分本機版本控制狀態、GitHub 協作狀態與人工審查關卡（Human Review Gate）。
+- 候選來源（Source candidates）：`CONTRIBUTING.md`、presentation outline、speaker notes、professor Q&A。
+- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / NOT_LEARNER_VALIDATED`。
+- 待辦（TODO）：等 Windows happy path 完成實機驗證後，再加入命令與成功畫面。
+
+### Git 與 GitHub 的角色不同
+
+Git 是在本機保存版本與比較差異的版本控制工具；GitHub 是保存遠端 Repository、
+進行協作與 Review 的平台。使用 Git 不代表內容已上傳 GitHub；擁有 GitHub 帳號，
+也不代表本機 Git 已完成設定或連線。
+
+### 最小概念模型
+
+| 概念 | 初學者應理解的角色 |
+| --- | --- |
+| 儲存庫（Repository） | 由 Git 管理的檔案、版本與歷史範圍。 |
+| 本機儲存庫（Local Repository） | 位於目前電腦上的 Repository 與本機歷史。 |
+| 遠端儲存庫（Remote Repository） | 位於協作平台上的 Repository；不會因本機修改而自動更新。 |
+| 工作樹（Working Tree） | 目前實際看到與編輯的檔案狀態。 |
+| 暫存區（Staging Area） | 已選定、準備納入下一個 Commit 的變更集合。 |
+| 分支（Branch） | 指向一條工作歷史的名稱，用來隔離特定工作。 |
+| 提交（Commit） | 保存於本機 Git 歷史中的一組已選定變更與說明。 |
+| 遠端（Remote） | 本機用來識別遠端 Repository 的名稱與位置參照。 |
+| 推送（Push） | 將本機 Commit 傳送到遠端 Branch。 |
+| 拉取／擷取（Pull / Fetch） | Fetch 取得遠端狀態而不自動整合；Pull 取得後會嘗試整合到目前 Branch。實際使用方式待後續驗證章節說明。 |
+| 拉取請求（Pull Request，PR） | 提出將某個 Branch 的差異交給他人 Review 與決定的協作項目。 |
+| 審查（Review） | 人工檢查 Scope、Diff、Evidence、風險與宣稱邊界。 |
+| 合併（Merge） | 經核准後把 PR 的變更納入目標 Branch。 |
+
+下圖只表示概念上的狀態關係，不是可直接執行的命令流程：
+
+```text
+遠端儲存庫（Remote Repository）
+        ↓ 取得／同步
+本機儲存庫（Local Repository）
+        ↓ checkout
+工作樹（Working Tree）
+        ↓ 選擇變更
+暫存區（Staging Area）
+        ↓ commit
+本機歷史（Local History）
+        ↓ push
+遠端分支（Remote Branch）
+        ↓ Pull Request / Review
+main
+```
+
+### 狀態不可跳級
+
+- 修改檔案不等於已建立 Commit。
+- Commit 不等於已 Push。
+- Push 不等於已建立 PR。
+- PR 為 Open 不等於已通過 Review。
+- PR Merge 後，本機 `main` 不會自動同步。
+- Git 能保存與審查差異，但不是作業系統沙盒（OS Sandbox），無法自行阻止
+  Agent 讀取 Secret、修改 Repository 外檔案或操作 Runtime。
+
+### 無命令的最小例子
+
+一個文件工作可以先在獨立 Branch 修改一份 Markdown，由工作者與 Reviewer 檢查
+差異（Diff）後建立 Commit，再透過 PR 交由 Reviewer 審查。這只是概念順序；建立
+Branch、Commit、Push 或 PR 仍須由當次任務包明確授權。
 
 ## 3. 取得並認識 5g-sdr-ops
 
-- Purpose：說明首次取得或重新進入 Repository 時應辨識的入口與文件角色。
-- Learning outcome：讀者能區分 `README.md`、`AGENTS.md`、`PROGRESS.md`、`SKILL.md` 與 `CONTRIBUTING.md` 的用途與權威限制。
-- Source candidates：`README.md`、`AGENTS.md`、`PROGRESS.md`、`CONTRIBUTING.md`、presentation outline。
-- Verification status：`PARTIAL`；文件角色有來源，Windows clone happy path 尚未驗證。
-- TODO：建立不含敏感資料的 Repository orientation 與 freshness 檢查方式。
+- 目的（Purpose）：說明首次取得或重新進入 Repository 時，應辨識的用途、入口文件與來源權威（Source Authority）。
+- 學習成果（Learning outcome）：讀者能區分主要文件的用途、時效與授權限制，並在狀態不明時停止。
+- 候選來源（Source candidates）：`README.md`、`AGENTS.md`、`PROGRESS.md`、`CONTRIBUTING.md`、presentation outline、speaker notes、professor Q&A。
+- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / WINDOWS_CLONE_PATH_UNVERIFIED`。
+- 待辦（TODO）：Windows Clone、首次開啟與 Authentication 待實機驗證後補入。
+
+### Repository 用途與邊界
+
+`5g-sdr-ops` 是保存文件、治理規則、實驗紀錄與受控工作流程的 Repository。
+它不是 Lab Runtime 本身，也不直接操作實驗環境。取得或 Clone 這個 Repository，
+只代表取得一份 Git 工作副本，不代表取得 Runtime、設備或遠端主機的操作權限。
+
+### 主要入口文件
+
+| 入口 | 用途與權威限制 |
+| --- | --- |
+| `README.md` | 提供 Repository 定位與入口；其中歷史狀態可能過期，不能單獨作為最新進度來源。 |
+| `AGENTS.md` | 定義 Agent 行為、安全、範圍與 Evidence 邊界；其中 Current Delivery Goal 可能落後，必須與 `PROGRESS.md` 核對。 |
+| `PROGRESS.md` | 提供目前工程 checkpoint 與已記錄狀態；它不代表 Runtime 此刻仍在運行。 |
+| `CONTRIBUTING.md` | 提供 Branch、Commit、PR 與 Review 的協作規則；不能取代當次 Task Package。 |
+| `SKILL.md` | 描述特定受控程序與 Gate；程序存在不等於目前已獲執行授權。 |
+| `docs/` | 保存工程文件、簡報、報告、Runbook 與稽核材料；每份文件仍須判斷日期、Lifecycle 與 Source Authority。 |
+
+### 判斷 Source Authority 的問題
+
+讀取文件時，依序問：
+
+- 這份文件的用途是什麼？
+- 它是規則、程序、專案狀態、歷史證據，還是教材？
+- 最後相關日期、Lifecycle 或狀態為何？
+- 是否有更新且可直接追溯的證據？
+- 是否與 `PROGRESS.md` 或當次 Task Package 衝突？
+- 它是否真的授權目前操作，或只是在描述可能使用的程序？
+
+### Freshness 原則
+
+- 新 Commit 日期不代表文件中的每一段內容都是最新狀態。
+- 舊文件仍可能保有目前有效的安全規則。
+- 新文件也可能只是保存歷史資料或教學摘要。
+- 判斷時以文件角色、內容證據與當次問題的適用性為主，不只看檔案時間戳。
+- 發現來源互相衝突時，保留較嚴格的安全邊界並標記 `STOP`，不得自行選擇方便的版本。
+
+### 初次進入 Repository 的概念性檢查順序
+
+以下只描述每一步的目的，不提供命令：
+
+1. 確認目前所在的 Repository，避免在錯誤工作區判斷或操作。
+2. 確認 Branch 與 Working Tree 狀態已知，先保護既有變更。
+3. 閱讀 `AGENTS.md`，理解安全、行為與停止邊界。
+4. 閱讀 `PROGRESS.md`，辨識目前記錄的工程 checkpoint 與未決事項。
+5. 閱讀 `CONTRIBUTING.md`，理解本 Repository 的協作規則。
+6. 找到當次 Task Package，確認實際授權範圍與必要 Evidence。
+7. 狀態、來源或權限不清楚時標記 `STOP`，交回人工判斷。
 
 ## 4. 建立安全的 Agent 任務
 
@@ -185,11 +291,83 @@ Required Output（必要輸出）: 提交唯讀盤點報告，停在人工審查
 
 ## 5. 第一次 Read-only Agent 任務
 
-- Purpose：讓讀者在不修改 Repository 的前提下練習 preflight、來源判讀、證據回報與停止。
-- Learning outcome：讀者能完成一次範圍明確的唯讀盤點，並確認沒有未預期變更。
-- Source candidates：`AGENTS.md`、`codex-task-template.md`、speaker notes、professor Q&A。
-- Verification status：`UNVERIFIED`；尚未定義或實測正式練習包。
-- TODO：決定單一 Markdown 盤點題目、預期輸出、禁止範圍與驗收證據。
+- 目的（Purpose）：以工具中立的唯讀練習，讓學員學會限制範圍、辨識 Evidence 與保留未知事項。
+- 學習成果（Learning outcome）：讀者能建立一份只讀取指定 Markdown 的 Task Package，核對回報並停在 Human Review。
+- 候選來源（Source candidates）：`AGENTS.md`、`codex-task-template.md`、presentation outline、speaker notes、professor Q&A。
+- 驗證狀態（Verification status）：`DRAFT_AUTHORED / EXERCISE_DEFINED / NOT_LEARNER_EXECUTED`。
+- 待辦（TODO）：等 Member A / C 實際 Dry Run 後，記錄可讀性、工具差異與修正需求。
+
+### 練習目標與範圍
+
+正式練習目標檔案是：
+
+`docs/runbooks/agent-git/README.md`
+
+練習讓學員寫出唯讀 Task Package，要求 Agent 只讀取這一份 Markdown，並由學員
+判斷 Evidence、`UNKNOWN` 與 `UNVERIFIED` 是否被正確使用。Agent 不得修改
+Repository，結果停在 Human Review。這是工具中立的 `DRAFT`；不代表 Windows、
+Codex、Gemini CLI 或其他 Agent 工具已完成實機驗證。
+
+### 練習前提
+
+- 學員已能進入由 `Instructor` 指定的 Repository 工作區。
+- Repository、Branch 與 Working Tree 狀態必須已知。
+- 練習不要求 Runtime、設備、SSH、Token 或 Private Key。
+- Working Tree 狀態不明時標記 `STOP`，不開始練習。
+
+### 學員任務
+
+只盤點目標 README 中的：
+
+- Lifecycle
+- Safety Boundary
+- Verification Status
+- 已撰寫章節
+- Known Gaps
+- Authoring Gate
+
+### 正式 Task Package 範例
+
+```text
+Task（任務）: 盤點 Agent + Git Runbook 的文件狀態
+Objective（目標）: 從指定 README 回報 Lifecycle、安全邊界、驗證狀態、章節狀態與已知缺口
+Context（背景）: 這是由 Instructor 帶領的第一次工具中立唯讀練習
+Allowed Scope（允許範圍）: 只讀取 docs/runbooks/agent-git/README.md
+Forbidden Scope（禁止範圍）: 不修改任何檔案；不讀取其他 Repository 路徑；不存取 Runtime、網路服務或 Secret；不執行 Git 狀態變更
+Required Evidence（必要證據）: 實際讀取路徑、Lifecycle、Safety Boundary、Verification Status、已撰寫與未撰寫章節、Known Gaps、Authoring Gate、Files Changed: NONE、未驗證項目
+Claim Boundary（宣稱邊界）: 只回報指定 README 可直接觀察的內容；不得推論 5G SDR Runtime 現況，Files Changed: NONE 只表示本練習未執行寫入
+Stop Point（停止點）: 目標不存在、必要段落缺失、內容可能敏感或實際狀態與任務假設不符時 STOP；正常完成時停在 Human Review
+Required Output（必要輸出）: 使用 Appendix 的 Evidence Report Template 回報並等待人工判斷
+```
+
+### 預期 Evidence
+
+- 實際讀取路徑。
+- 文件 Lifecycle。
+- Safety Boundary 條目。
+- Verification Status 表格中的狀態。
+- 已撰寫與未撰寫章節。
+- Known Gaps。
+- `Files Changed: NONE`。
+- 所有仍為 `UNKNOWN` 或 `UNVERIFIED` 的項目。
+
+`Files Changed: NONE` 必須由 Agent 明確回報；`Instructor` 或 `Reviewer` 仍應依已知的
+Repository 起始與最終狀態確認練習沒有產生未預期變更。
+
+### Instructor／Reviewer 驗收問題
+
+- Agent 是否只讀取指定檔案？
+- 回報是否能追溯到文件內容？
+- 是否把 `UNVERIFIED` 誤寫成已完成？
+- 是否產生未授權推論？
+- 是否明確回報 `Files Changed: NONE`？
+- 是否停在 Human Review？
+
+### 結果分類
+
+- `ACCEPT_FOR_NEXT_GATE`：Evidence 完整且沒有越界，可交由人工決定下一關。
+- `REQUEST_CHANGES`：回報需要在相同唯讀邊界內修正後重新 Review。
+- `STOP_AND_ESCALATE`：出現範圍、安全、來源或狀態問題，停止並交回人工判斷。
 
 ## 6. Git 文件修改最小閉環
 
@@ -346,10 +524,10 @@ Human Decision Required（需要人工決定）:
 | --- | --- | --- | --- | --- | --- |
 | 0 | `AGENTS.md` | Outline、speaker notes | `MEDIUM`：專案目標段落可能落後於 `PROGRESS.md` | 部分完成：`DRAFT` 閱讀入口已撰寫，Member A / C Review 前仍未完成 | 學員可用性仍為 `UNVERIFIED` |
 | 1 | `NONE — verified Windows source absent` | Outline、speaker notes、revision report | `HIGH` | Yes：未來須依實測證據撰寫 | Windows environment 未驗證 |
-| 2 | `CONTRIBUTING.md` | Outline、professor Q&A | `MEDIUM`：文件較早且缺少新手定義 | Yes | Windows Git／GitHub 理解流程未驗證 |
-| 3 | `README.md`、`AGENTS.md`、`PROGRESS.md` | `CONTRIBUTING.md`、outline | `HIGH`：歷史狀態段落可能互相衝突 | Yes：依文件角色拆分 | Clone happy path 未驗證 |
+| 2 | `CONTRIBUTING.md` | Outline、speaker notes、professor Q&A | `MEDIUM`：文件較早且缺少新手定義 | 部分完成：概念 `DRAFT` 已撰寫，Member A / C Review 前仍未完成 | Windows 命令與學員可用性仍為 `UNVERIFIED` |
+| 3 | `README.md`、`AGENTS.md`、`PROGRESS.md` | `CONTRIBUTING.md`、outline、speaker notes、professor Q&A | `HIGH`：歷史狀態段落可能互相衝突 | 部分完成：Repository orientation `DRAFT` 已撰寫 | Windows Clone 與 Authentication 仍為 `UNVERIFIED` |
 | 4 | `AGENTS.md`、Agent Policy | Task template、outline | `MEDIUM`：來源偏治理語言 | 部分完成：新手 `DRAFT` 已撰寫，Member A / C Review 前仍未完成 | Prompt 可用性為 `NOT_LEARNER_VALIDATED` |
-| 5 | `AGENTS.md`、task template | Speaker notes、professor Q&A | `MEDIUM` | Yes：建立單一練習 | First read-only exercise 缺失 |
+| 5 | `AGENTS.md`、task template | Outline、speaker notes、professor Q&A | `MEDIUM`：練習尚未由學員執行 | 部分完成：First read-only exercise 已定義 | Member A / C 執行與可用性仍為 `UNVERIFIED` |
 | 6 | `CONTRIBUTING.md`、`AGENTS.md` | Outline、professor Q&A | `MEDIUM` | Yes：補目的、證據與 Stop | Windows Git happy path 未驗證 |
 | 7 | `AGENTS.md`、Agent Policy | Review checklist、rehearsal checklist | `MEDIUM`：現有 checklist 偏 Runtime | 部分完成：docs-only Gate 已撰寫，Member A / C Review 前仍未完成 | Learner／Reviewer 可用性為 `UNVERIFIED` |
 | 8 | `AGENTS.md`、Agent Policy | Professor Q&A、revision report | `MEDIUM/HIGH`：supporting cases 為歷史例外 | Yes：建立 novice-safe decision tree | 常見停止情境未驗收 |
@@ -362,7 +540,7 @@ Human Decision Required（需要人工決定）:
 - Windows environment validation
 - GitHub authentication choice
 - Clone happy path
-- First read-only exercise
+- First read-only exercise learner execution and validation
 - Instructor session script
 - Learner acceptance checklist
 - Member C tool decision
@@ -370,5 +548,6 @@ Human Decision Required（需要人工決定）:
 ## Authoring Gate
 
 下一個 Authoring Work Unit 必須重新確認 working tree、授權範圍、目標章節與
-所需驗證。這份 scaffold 不會自行授權補寫 Windows 命令、選擇 Agent 工具、
-建立 Adapter，或操作 Repository 以外的環境。
+所需驗證。這份 `DRAFT` 已定義第一份唯讀練習，但不代表 Member A / C 已執行或
+驗證；它不會自行授權補寫 Windows 命令、選擇 Agent 工具、建立 Adapter，或操作
+Repository 以外的環境。
