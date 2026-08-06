@@ -5,7 +5,7 @@
 - Version: `v0.1`
 - Status: `DRAFT / SCAFFOLD`
 - Audience: Windows Git beginners
-- Owner roles: `Owner`、`Maintainer`、`Instructor`、`Reviewer`
+- Document roles: `Owner`、`Maintainer`、`Instructor`、`Reviewer`
 - Current scope: chapter scaffold and source map only
 
 ## Claim Boundary
@@ -15,6 +15,9 @@ outcomes, candidate sources, verification gaps, and future writing work. It
 does not provide a verified Windows command sequence, grant Repository or
 Runtime authority, select a tool for every learner, or replace the current
 Repository rules and project-state evidence.
+
+Merging this scaffold records the approved information architecture only.
+It does not promote any `UNVERIFIED` workflow to an operational procedure.
 
 ## Safety Boundary
 
@@ -46,7 +49,8 @@ Repository rules and project-state evidence.
   作為教學語言、概念與 Claim Boundary 的 supporting source。
 - Historical documents：舊 README、TODO、Lab 文件、簡報與案例不得覆蓋目前
   Repository 狀態、直接證據或當次人工授權。
-- A procedure source describes how work may be controlled；它本身不授予執行權限。
+- A procedure source describes how work may be controlled; it does not grant
+  execution authority.
 
 ## 0. 如何使用這份 Runbook
 
@@ -127,6 +131,8 @@ Repository rules and project-state evidence.
 - Source candidates：speaker notes、rehearsal checklist、Authoritative IA。
 - Verification status：`NOT_AUTHORED`；目前沒有 Instructor session script。
 - TODO：定義教學節點、示範範圍、學員回述與停止條件，不在本輪撰寫逐步操作。
+  The first supervised mutation exercise must be docs-only, branch-based,
+  and limited to a designated non-sensitive Markdown file.
 
 ## 10. 學員獨立重跑與驗收
 
