@@ -110,8 +110,13 @@
 
 ## 12. 當前狀態
 
-- Lab02 至 Lab01 的回復盤點已完成。
-- 已確認 Lab02 殘留。
-- 尚未識別權威 Lab01 基線。
-- 本文件未授權任何啟用中的回復或部署。
-- scheduler、expert、PHY 與 ZeroMQ 位址仍待確認。
+本節不保存會快速過期的 project checkpoint。目前狀態一律以
+[`PROGRESS.md`](../../PROGRESS.md) 為入口，已知未驗證範圍見
+[`docs/known-limitations.md`](../known-limitations.md)。
+
+- `KNOWN`：Lab01 Phase 4C recovered baseline 已在當時核准範圍內完成並受控停止。
+- `KNOWN`：歷史 Lab02 residue inventory 保留為 observation evidence，不是 current active config authority。
+- `NOT AUTHORIZED`：本文件不授權新的 recovery、deployment、service start、persistent
+  network change 或 extended validation。
+- `NEEDS_APPROVAL`：任何 active configuration 工作必須重新進入 backup → diff → Human
+  approval → deployment → validation 的受控流程。

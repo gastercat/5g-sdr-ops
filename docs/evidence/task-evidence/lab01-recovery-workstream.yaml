@@ -1,0 +1,223 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "UNKNOWN"
+  record_slug: "lab01-recovery-workstream"
+  source_thread: "UNKNOWN"
+  date_or_range: "UNKNOWN"
+  executor: "Codex"
+  historical_or_current: "HISTORICAL"
+  recovery_note: >-
+    This is one deduplicated record derived from two overlapping Task Evidence
+    Records supplied during Part 6. The recovered records did not preserve a
+    verifiable thread title or date, so neither is invented here.
+
+authorization:
+  scope:
+    - >-
+      Recovered scope: Lab01 ZeroMQ baseline identification, Phase 3 recovery
+      planning, Phase 4A backup, Phase 4B management/sample-plane verification,
+      and later human-reported Phase 4C milestones.
+  allowed_mutations:
+    - "UNKNOWN (the exact per-phase authorization envelope was not fully recovered)"
+  forbidden:
+    - "This historical TER grants no new Repository or Runtime authorization."
+    - "Do not reconstruct a broader historical authorization envelope from this record."
+
+repo_context:
+  root: "UNKNOWN"
+  branch: >-
+    Primarily observed on main; the recovered record also named
+    docs/record-phase3-recovery-plan, docs/shared-document-privacy-rule, and
+    docs/phase4b-gateb-progress.
+  start_head: "783576d07ff829f882304463612b3364adf06ac0"
+  end_head: "65f846d1aba9fb7add5ddf4290dc1c20fcb48edc"
+  limitations:
+    - "These are the earliest and latest Git HEAD values directly preserved in the recovered record, not current Repo state."
+    - "Intermediate observed checkpoints included 55d9b10, 4d6c8e6, edbab02, and f46a2a4."
+
+evidence:
+  - evidence_id: "E01"
+    claim: "Mac switch-side management IPv4 historically existed on en5."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Gate A ifconfig output showed en5 with inet 192.168.250.10,
+      netmask 0xffffff00, and broadcast 192.168.250.255.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Recovered Codex records supplied during Part 6"
+    limitations:
+      - "Proves the address existed at the historical observation time only."
+      - "Configuration method, Network Service name, and reconnect/reboot persistence were not found."
+
+  - evidence_id: "E02"
+    claim: "Linux1 and Linux2 management addresses and restricted SSH reachability were observed."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Restricted SSH audit commands succeeded from Mac. Linux1 showed
+      192.168.250.11/24 with a directly connected 192.168.250.0/24 route;
+      Linux2 showed 192.168.250.12/24 with the corresponding directly
+      connected route.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Recovered Codex records supplied during Part 6"
+    limitations:
+      - "These observations describe the historical query time, not current host state."
+      - "Ping and password-SSH results were separately reported, not preserved as raw command output."
+
+  - evidence_id: "E03"
+    claim: "Historical active ZeroMQ endpoints used the dedicated sample-plane addresses and complementary ports."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Linux1 listened on tcp://*:2000 and received from tcp://10.0.0.2:2001.
+      Linux2 listened on tcp://*:2001 and received from tcp://10.0.0.1:2000.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Recovered Codex records supplied during Part 6"
+    limitations:
+      - "Endpoint observation does not prove current configuration or a current ZeroMQ run."
+
+  - evidence_id: "E04"
+    claim: "A clean Lab01 engineering candidate was historically reported as reviewed."
+    evidence_type: "CODEX_REPORT"
+    exact_observation: >-
+      Linux1 candidate: device_name = zmq; tx_port = tcp://*:2000;
+      rx_port = tcp://10.0.0.2:2001; base_srate = 23.04e6;
+      nof_phy_threads = 1; sib_config = sib.conf. Scheduler candidate:
+      pusch_max_mcs = 16; min_nof_ctrl_symbols = 1;
+      max_nof_ctrl_symbols = 3. UE PCAP candidate: enable = none, with
+      enable = mac retained only as an optional observation profile. The clean
+      SIB source was matching-commit srsenb/sib.conf.example with SHA-256
+      b781724b1c199e610e7f4d12b7963120c02d85da4389bccb9c5f8124ee0b57e9.
+    directness: "REPORTED"
+    confidence: "MEDIUM_HIGH"
+    source_location: "Recovered Codex records supplied during Part 6"
+    limitations:
+      - "Clean candidate does not mean historically deployed baseline."
+      - "Clean candidate is distinct from the historical active residue configuration."
+
+  - evidence_id: "E05"
+    claim: "Historical Lab01 recovery inspection observed Lab02/eMBMS configuration residue."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Linux1 enb.conf selected sib_config = /etc/srsran/sib.conf.mbsfn.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Recovered Codex records and docs/audits/2026-07-10-rollback-inventory.md"
+    limitations:
+      - "Configuration residue is not Lab02 or eMBMS functional validation."
+      - "File or field presence does not prove current active use."
+
+  - evidence_id: "E06"
+    claim: "The paired backup package and non-sensitive verification artifacts were observed."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Paired backup evidence under
+      /var/backups/5g-sdr/lab01-recovery/20260711-180201/ included COMPLETE
+      markers. SHA-256 verification reported seven Linux1 non-sensitive config
+      files and one Linux2 ue.conf file as OK, with source/destination metadata
+      checks. Sensitive subscriber content was excluded.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Recovered Codex records supplied during Part 6"
+    limitations:
+      - "This TER does not copy configuration contents, credentials, or sensitive hashes."
+      - "The backup path is historical and was not revalidated during R1."
+
+  - evidence_id: "E07"
+    claim: "Historical srsRAN_4G commit identity and dirty-tree state were observed on both hosts."
+    evidence_type: "GIT"
+    exact_observation: >-
+      Linux1 and Linux2 ~/srsRAN_4G reported commit
+      6bcbd9e5bf8686aa7085202cd847c5ddd64a9c16. Linux1 showed
+      M srsenb/enb.conf.example and ?? build/. Linux2 showed
+      M srsue/ue.conf.example and ?? build/.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Recovered Codex records supplied during Part 6"
+    limitations:
+      - "No diff contents were read."
+      - "Commit identity does not mean pristine checkout or current source version."
+
+  - evidence_id: "E08"
+    claim: "Repository audit artifact paths and non-sensitive configuration hashes were inventoried."
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: >-
+      The recovered inventory named docs/audits/2026-07-10-rollback-inventory.md,
+      docs/audits/2026-07-10-config-tree.md, and
+      docs/audits/2026-07-10-config-sha256.md. The rollback inventory preserves
+      Linux1 eMBMS, MBSFN, SIB13, M1, and scheduler residue plus Linux2 MBMS
+      service fields and selected PHY residue. The SHA-256 document preserves
+      seven Linux1 and one Linux2 non-sensitive configuration hashes.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Recovered Codex records and current Repo audit artifacts"
+    limitations:
+      - "Repository file inventory is not current Runtime artifact validation."
+
+  - evidence_id: "E09"
+    claim: "Phase 4C bring-up, connectivity, shutdown, and evidence locator were reported later in the historical workstream."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      Reported milestones included EPC to eNB to UE startup; srsepc, srsenb,
+      and srsue initialization; ZeroMQ transport; cell search; Random Access;
+      RRC Connected; Network Attach; UE 172.16.0.2 and EPC SGi 172.16.0.1;
+      bounded bidirectional ICMP with 0% loss; UE to eNB to EPC shutdown; no
+      /etc/srsran or persistent-network modification; and a historical locator
+      at ~/5g-sdr-runtime-logs/.
+    directness: "REPORTED"
+    confidence: "MEDIUM"
+    source_location: "Recovered Codex records supplied during Part 6"
+    limitations:
+      - "The recovered Codex thread did not contain Phase 4C process logs, raw ICMP output, service command output, or archive inventory."
+      - "The current existence and contents of ~/5g-sdr-runtime-logs/ were not verified during R1."
+
+mutations:
+  - "PRIMARY observation: paired non-sensitive backup artifacts and COMPLETE markers existed in the historical Phase 4A evidence."
+  - "REPORTED_ONLY: temporary sample-plane changes and Phase 4C Runtime milestones were reported later; raw execution was absent from the recovered Codex thread."
+
+recovered_or_observed_claims:
+  - claim: "Mac en5 historically had 192.168.250.10/24."
+    status: "OBSERVED"
+    supporting_evidence: ["E01"]
+  - claim: "Mac could reach Linux1 192.168.250.11 and Linux2 192.168.250.12 through restricted SSH."
+    status: "OBSERVED"
+    supporting_evidence: ["E02"]
+  - claim: "Historical active ZeroMQ endpoints used 10.0.0.1/10.0.0.2 with complementary ports 2000/2001."
+    status: "OBSERVED"
+    supporting_evidence: ["E03"]
+  - claim: "The exact clean candidate field set had passed historical engineering review."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["E04"]
+  - claim: "Lab02/eMBMS configuration residue was present during Lab01 recovery inspection."
+    status: "OBSERVED"
+    supporting_evidence: ["E05", "E08"]
+  - claim: "The paired non-sensitive backup package had COMPLETE and hash-validation evidence."
+    status: "OBSERVED"
+    supporting_evidence: ["E06"]
+  - claim: "Both historical source trees shared commit 6bcbd9e5 but were not pristine checkouts."
+    status: "OBSERVED"
+    supporting_evidence: ["E07"]
+  - claim: "Phase 4C core-path milestones and controlled shutdown succeeded."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["E09"]
+  - claim: "Mac address configuration method, Network Service name, and persistence were preserved in the recovered thread."
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+  - claim: "The current existence or contents of ~/5g-sdr-runtime-logs/ were verified during R1."
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+
+provenance_gaps:
+  - "Historical thread title and date were not verifiably preserved in the two recovered records."
+  - "The exact per-phase authorization envelope was not fully reconstructed."
+  - "Phase 4C raw Runtime output was absent from the recovered Codex thread."
+  - "Current host, source-tree, backup-path, and Runtime-log state were not inspected during R1."
+
+stop_point:
+  result: "UNKNOWN"
+  next_authority_required: >-
+    The historical stop result was not recovered. Human authority adjudication
+    is required before evidence changes canonical claims; any new Runtime
+    operation requires a separately authorized task.

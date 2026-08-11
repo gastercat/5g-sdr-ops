@@ -2,7 +2,7 @@
 
 本文件是 lifecycle（生命週期）與導覽看板，不取代
 [`PROGRESS.md`](PROGRESS.md) 所記錄的目前專案 checkpoint，也不取代
-[`docs/engineering/TODO.md`](docs/engineering/TODO.md) 的詳細工程 backlog。
+[`docs/engineering/TODO.md`](docs/engineering/TODO.md) 所保存的歷史 recovery backlog provenance。
 未勾選項目只代表規劃中的工作，不是已完成、已驗證或已授權的證據。
 
 ## 當前／近期規劃（Active / Near-term）

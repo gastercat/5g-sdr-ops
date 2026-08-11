@@ -24,11 +24,18 @@ Do not collect or record passwords, Ki, OPC, tokens, or private keys.
 
 ## Host Roles and Network
 
-| Host | Role | Management IP |
+| Host | Role | Historical Phase 4B interface / IPv4 |
 | --- | --- | --- |
-| Mac | Control, Git, approval | 192.168.250.10/24 |
-| Linux1 | EPC / eNB | 192.168.250.11/24 |
-| Linux2 | UE | 192.168.250.12/24 |
+| Mac | Control, Git, approval | `en5` / `192.168.250.10/24` |
+| Linux1 | EPC / eNB | `enxec9a0c14d482` / `192.168.250.11/24` |
+| Linux2 | UE | `enxec9a0c14d470` / `192.168.250.12/24` |
+
+三列共用 lifecycle status：`HISTORICAL_PRIMARY_OBSERVED`。以上只描述 historical recovered
+topology，不表示 future recovery 可假定這些 interface／IPv4／route 仍存在。任何 future
+execution 都必須重新觀察 current interface、address 與 route；historical observation 不建立
+persistent configuration claim。Mac 的設定方式、Network Service 名稱與 reconnect／reboot
+persistence 維持 `UNRESOLVED`。本 Skill 與 TEH evidence 都不會自行建立 Current State 或
+execution authorization。
 
 The management subnet is `192.168.250.0/24`; it has no gateway and no DNS. Remote checks are read-only unless an approved deployment phase explicitly says otherwise.
 

@@ -1,5 +1,14 @@
 # Project Direction
 
+狀態：`HISTORICAL / CANDIDATE DIRECTION INVENTORY`
+
+本文件保存 bootstrap 階段的方向候選，不是 current roadmap 或 execution authority。
+目前 lifecycle 以 [`TODO.md`](../TODO.md) 與 [`PROGRESS.md`](../PROGRESS.md) 為準；
+6G／NTN 入口是
+[`docs/research/6g-ntn-handover/README.md`](research/6g-ntn-handover/README.md)。
+下列 O-RAN 與其他中期項目均未因出現在本清單而獲採納；任何 bridge 必須另行完成
+research intake、Owner decision 與 Human Review。
+
 本文件整理 5G SDR 平台可延伸方向。未經排程或實機驗證的項目不視為 v0.1 承諾。
 
 ## 近期方向
