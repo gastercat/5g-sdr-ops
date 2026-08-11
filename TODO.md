@@ -1,63 +1,56 @@
-# 5G SDR Operations TODO
+# 5G SDR Operations 待辦導覽
 
-This file is a lifecycle and navigation board. It does not replace the current
-project checkpoint in [`PROGRESS.md`](PROGRESS.md) or the detailed engineering
-backlog in [`docs/engineering/TODO.md`](docs/engineering/TODO.md). An unchecked
-item is planned work, not evidence of completion, validation, or authorization.
+本文件是 lifecycle（生命週期）與導覽看板，不取代
+[`PROGRESS.md`](PROGRESS.md) 所記錄的目前專案 checkpoint，也不取代
+[`docs/engineering/TODO.md`](docs/engineering/TODO.md) 的詳細工程 backlog。
+未勾選項目只代表規劃中的工作，不是已完成、已驗證或已授權的證據。
 
-## Active / Near-term
+## 當前／近期規劃（Active / Near-term）
 
-Status: `PLANNED / NOT YET COMPLETE`
+狀態：`PLANNED / NOT YET COMPLETE`（已規劃／尚未完成）
 
-- [ ] **Agent + Git Runbook targeted learner-feedback revision.** Revise the
-  current operational Runbook in a separately authorized work unit, focusing on
-  the Section 3 Windows Clone comprehension gap, clearer Claim Boundary
-  explanations, and minimum Prompt Context / Required Output examples.
-- [ ] **Instructor-led Read-only Agent dry run.** Conduct the first supervised,
-  scope-bounded exercise and record aggregate learner feedback without granting
-  Repository mutation or Runtime authority.
+- [ ] **Agent + Git Runbook 定向學習者回饋修訂。** 另以經授權的 Work Unit
+  修訂目前的 operational Runbook，重點包含 Section 3 Windows Clone 的理解斷點、
+  更清楚的 Claim Boundary 說明，以及最小的 Prompt Context / Required Output 範例。
+- [ ] **Instructor-led Read-only Agent dry run。** 執行第一次由 Instructor 帶領、
+  範圍受限的練習並記錄整體學習者回饋；此練習不授予 Repository mutation 或
+  Runtime authority。
 
-Neither item is recorded as completed by this skeleton.
+本骨架不將上述任一項目記錄為已完成。
 
-## Future Teaching
+## 未來教學（Future Teaching）
 
-Status: `SKELETON / NOT ACTIVE COURSE`
+狀態：`SKELETON / NOT ACTIVE COURSE`（骨架／尚非正式課程）
 
-- Reuse the operational
-  [Agent + Git Runbook](docs/runbooks/agent-git/README.md); do not create a
-  second authoritative Runbook.
-- Separate future learner materials from future instructor materials while
-  keeping both dependent on the operational Runbook.
-- Retain an instructor-led Read-only Agent exercise as the first teaching
-  bridge.
-- Consider a future docs-only Git collaboration exercise with an isolated
-  branch and Human Review Gate.
+- 重用現行 [Agent + Git Runbook](docs/runbooks/agent-git/README.md)，不得建立第二份
+  具獨立權威的 Runbook。
+- 未來可分開整理學習者教材與 Instructor 教材，但兩者都必須依循現行 Runbook。
+- 保留 Instructor-led Read-only Agent exercise，作為第一個教學橋接。
+- 評估未來的 docs-only Git 協作練習；練習必須使用隔離分支並設置 Human Review Gate。
 
-Entry point: [Agent + Git Future Teaching Skeleton](docs/teaching/agent-git/README.md).
-This skeleton excludes a full Git curriculum, full Agent curriculum, course
-website, and assessment system.
+入口：[Agent + Git 未來教學骨架](docs/teaching/agent-git/README.md)。
+本骨架不包含完整 Git 課程、完整 Agent 課程、課程網站或評量系統。
 
-## Research Parking — 6G LEO / NTN
+## Research Parking — 6G LEO / NTN（研究停放）
 
-Status: `RESEARCH PARKING / NOT CURRENT LAB01 OR LAB02 MAINLINE`
+狀態：`RESEARCH PARKING / NOT CURRENT LAB01 OR LAB02 MAINLINE`
+（研究停放／不是目前 Lab01 或 Lab02 主線）
 
-- Preserve the Neuro-Symbolic RRM / Handover Supervisor as a documented
-  research concept, not as implemented or validated Runtime functionality.
-- [ ] Evaluate Phase A pure-simulator feasibility.
-- [ ] Map current 5G SDR telemetry into candidate research observation
-  structures without claiming integration.
-- [ ] Evaluate future RRM / mobility adapters under a separate research and
-  implementation authorization.
+- 將 Neuro-Symbolic RRM / Handover Supervisor 保存為文件化研究概念；不得將它描述為
+  已實作或已驗證的 Runtime 功能。
+- [ ] 評估 Phase A 純模擬器的可行性。
+- [ ] 將目前 5G SDR telemetry 對應至候選研究 observation structures，但不得宣稱
+  已完成整合。
+- [ ] 另經研究與實作授權後，再評估未來的 RRM / mobility adapters。
 
-Entry point: [6G LEO / NTN Handover Research Parking](docs/research/6g-ntn-handover/README.md).
+入口：[6G LEO / NTN Handover Research Parking](docs/research/6g-ntn-handover/README.md)。
 
-## Explicitly Not Active
+## 明確未啟動（Explicitly Not Active）
 
-- Real LEO handover implementation.
-- NTN scheduler modification.
-- Complete course platform.
-- Runtime automation.
+- 真實 LEO handover 實作。
+- NTN scheduler 修改。
+- 完整課程平台。
+- Runtime automation。
 
-The pre-existing v0.1 bootstrap checklist remains available in Git history. It
-is not promoted into this current lifecycle board or treated as current project
-authority.
+既有的 v0.1 bootstrap checklist 仍保留在 Git history 中，但不會被升格為目前的
+lifecycle 看板或目前專案 authority。
