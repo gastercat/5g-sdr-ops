@@ -1,245 +1,185 @@
-# Architecture Overview
+# 5G SDR Canonical Architecture Overview
 
-本文件整理 5G 垂直應用系統總體架構。這套資料的核心不是單一 5G 基站或單一核心網，而是一個面向垂直應用的 `5G System, 5GS`。
+狀態：`CANONICAL KNOWLEDGE / DOCUMENTATION-ONLY`
+適用範圍：Lab01 recovered baseline、Repository／Runtime boundary 與相鄰 lifecycle boundary
 
-## 架構定位
+## 目的與時間邊界
 
-```text
-UE / 垂直應用終端
-        |
-        | Uu / NR / E-UTRA / Wi-Fi / Non-3GPP Access
-        v
-5G Access Network
-NG-RAN / gNB / ng-eNB / 小基站 / SDR
-        |
-        | NG-C / NG-U / Xn / X2 / F1
-        v
-5G Core Network
-AMF / SMF / UPF / UDM / AUSF / PCF / NRF / NSSF / NEF / SEPP
-        |
-        | N6 / API / CAPIF / Edge / DN
-        v
-Data Network / 垂直應用服務
-eMBB / URLLC / mMTC / 5GMS / MBMS / 工業控制 / 車聯網 / 安全監控
-```
+本文件保存已由 Repository evidence 與 Human-reviewed SoE consolidation 對齊的最小架構。
+它描述的是 **Lab01 Phase 4C historical execution baseline**，不是目前服務正在運作的證據，
+也不是 5G SA、gNB、5GC、Lab02 或 6G Runtime implementation。
 
-5GS 由 `5G Access Network`、`5G Core Network` 與 `UE` 組成。`NG-RAN` 可以包含 `gNB` 與 `ng-eNB`，並透過 `NG-C` 接 `AMF`、`NG-U` 接 `UPF`，RAN 節點之間則透過 `Xn` 互連。
+原本的 5GS／NR 一般理論 overview 保留於 Git history；它沒有被用作 Lab01 Runtime PASS
+evidence，避免把理論能力誤寫成本專案已實作能力。
 
-## Layer 0：實驗平台與基礎設施層
+## Source Authority
 
-```text
-硬體平台：
-PC / Raspberry Pi / Jetson / USRP B210 / LimeSDR / HackRF
+本架構的主要 Repo evidence：
 
-軟體平台：
-srsLTE / srsRAN / srsUE / srsENB / srsEPC
-nukxDC / nukxGC
-5GMS / MBMS Gateway
+1. [`PROGRESS.md`](../PROGRESS.md) 的 Phase 4C checkpoint 與 current boundary。
+2. [`docs/reports/2026-07-14-lab01-claim-evidence-audit.md`](reports/2026-07-14-lab01-claim-evidence-audit.md)
+   的 claim-to-evidence mapping。
+3. [`docs/engineering/CONFIGURATION_GOVERNANCE.md`](engineering/CONFIGURATION_GOVERNANCE.md)
+   的 Repository／active configuration boundary。
+4. [`docs/audits/2026-07-10-rollback-inventory.md`](audits/2026-07-10-rollback-inventory.md)
+   僅作 residue observation，不是 whole-file baseline authority。
+5. [`Task Evidence Record`](evidence/task-evidence/lab01-recovery-workstream.yaml)
+   保存歷史 Agent task 的 direct／reported execution provenance；不自行裁定 authority。
 
-網路連接：
-Ethernet / Wi-Fi / SDR RF / Internet
-```
+Conversation SoE 提供 decision provenance 與歷史 incident boundary；摘要重複不算第二份
+execution evidence。任何後續 Runtime 狀態仍須新的直接 evidence 與明確 authorization。
 
-此層功能：
+## Repository 與 Runtime 邊界
 
-- 提供可重現的 SDR 基站與 UE 測試環境。
-- 支援 LTE、NR、EPC、5GC 的混合部署。
-- 讓 eMBB、URLLC、安全實驗可以在同一平台上進行。
-- 作為後續 RAN、Core、QoS、Security、Application 的共同測試基座。
+| Surface | 責任 | 不代表 |
+| --- | --- | --- |
+| `5g-sdr-ops` | 文件、已清理的核准範本、稽核 evidence、Runbook、decision 與 lifecycle navigation | Lab host、active configuration 或 service controller |
+| `srsRAN_4G/` | 原始碼、patch 與版本 | `/etc/srsran/` 已部署狀態 |
+| `/etc/srsran/` | Lab host active runtime configuration | Git working tree 或可用 `git reset` 回復的目標 |
+| `configs/` | 僅容納 Human-reviewed、無 Secret 的核准範本 | 自動 deployment authority |
 
-## Layer 1：接取網路層
+## Lab01 三平面架構
 
 ```text
-UE
- |
- | NR Uu
- v
-gNB / ng-eNB
- |
- |-- Xn：gNB <-> gNB / gNB <-> ng-eNB
- |-- NG-C：gNB/ng-eNB <-> AMF
- `-- NG-U：gNB/ng-eNB <-> UPF
+                         Management Plane
+                192.168.250.0/24 over Ethernet
+
+   historical Mac en5 192.168.250.10 / control / Git / approval
+                     |              |
+                     v              v
+       Linux1 192.168.250.11   Linux2 192.168.250.12
+       EPC + eNB host          UE host
+
+                         Sample Plane
+              temporary 10.0.0.0/24 over Ethernet
+
+       Linux1 10.0.0.1  <---- ZeroMQ ---->  10.0.0.2 Linux2
+                         RF sample transport
+
+                        UE User Plane
+
+       EPC SGi 172.16.0.1  <---- ICMP ---->  172.16.0.2 UE
+                                                   |
+                                                   `-- tun_srsue
 ```
 
-NG-RAN 節點可以是：
+### Management Plane
 
-- `gNB`：提供 NR user plane 與 control plane protocol termination。
-- `ng-eNB`：提供 E-UTRA user plane 與 control plane protocol termination。
-- 節點間透過 `Xn interface` 互連。
-- RAN 到核心網透過 `NG interface` 連接 5GC。
+- Linux1：`192.168.250.11/24`，EPC／eNB host。
+- Linux2：`192.168.250.12/24`，UE host。
+- Mac：歷史 Phase 4B Gate A 的 `ifconfig` 直接觀察到 `en5 = 192.168.250.10/24`；
+  同一 workstream 亦直接觀察到從 Mac 對 Linux1、Linux2 執行 restricted SSH 成功。
+- Management subnet 沒有由本 baseline 定義 gateway 或 DNS。
 
-NR 接取層能力包含：
+Mac exact address 的狀態是 `HISTORICAL_PRIMARY_OBSERVED`，只證明歷史查詢當下存在且可用；
+設定方法、Network Service 名稱、reconnect／reboot 後 persistence 仍為 `UNRESOLVED`，也不得
+推論目前 Runtime 仍配置為 `.10`。
 
-- FR1：sub-6 GHz。
-- FR2：24 GHz 以上毫米波。
-- 可擴展 numerology：15、30、60、120、240 kHz SCS。
-- 10 ms radio frame、1 ms subframe。
-- sub-6 頻寬可到 100 MHz，毫米波可到 400 MHz。
-- 初始接入透過 PSS、SSS、PBCH、SSB、SS Burst Set。
-- 支援 HARQ、Scheduling、Channel Coding、Modulation、MIMO。
+### Sample Plane
 
-## Layer 2：核心網控制層
+- Linux1：`10.0.0.1/24`。
+- Linux2：`10.0.0.2/24`。
+- 用途：承載 eNB 與 UE 之間的 ZeroMQ baseband RF samples。
+- Phase 4B／4C 使用 temporary secondary addresses；不是 persistent network configuration。
+- Sample Plane 不等於 Management、S1、Internet、UE tunnel 或實體 RF OTA。
 
-5GC 的核心特徵是 `Service-Based Architecture, SBA`。控制面功能以 `Network Function` 提供與消費服務。
+### UE User Plane
 
-| 功能 | 角色 |
-| --- | --- |
-| AMF | UE 註冊、連線、移動性管理、NAS-MM 終止 |
-| SMF | PDU Session 建立、修改、釋放、UPF 控制 |
-| UPF | 使用者面轉送、N3/N6/N9、PDU Session Anchor |
-| UDM | 訂閱資料、使用者資料管理 |
-| AUSF | 認證伺服功能 |
-| PCF | 政策控制、QoS policy |
-| NRF | NF 註冊與服務發現 |
-| NSSF | Network Slice 選擇 |
-| NEF | 對第三方或應用暴露網路能力 |
-| SEPP | Roaming / Inter-PLMN 控制面安全邊界 |
+- EPC SGi：`172.16.0.1`。
+- UE：`172.16.0.2`，並觀察到 `tun_srsue`。
+- Phase 4C 只證明 bounded bidirectional ICMP connectivity；沒有證明 NAT、Internet、TCP、
+  throughput、low latency 或 URLLC。
 
-## Layer 3：使用者面與資料路徑層
+## Runtime Component Pipeline
 
 ```text
-UE
- |
- v
-gNB / ng-eNB
- |
- | N3
- v
-UPF
- |
- | N6
- v
-Data Network / Edge / Application Server
+Linux1                                      Linux2
+
+srsepc
+  |
+  v
+srsenb  -- ZeroMQ RF sample transport -->  srsue
+  ^                                         |
+  `-----------------------------------------'
+                                            v
+                                         tun_srsue
 ```
 
-一般 5G SA 架構中，UE 經由 NG-RAN 接入，控制面走 AMF / SMF，使用者面從 RAN 經 N3 到 UPF，再由 N6 到 Data Network。UPF 可以放在核心網中心，也可以下沉到邊緣以降低 latency。
+- Verified bring-up sequence：EPC → eNB → UE。
+- Observed protocol path：cell search → Random Access → RRC Connected → Network Attach。
+- Controlled shutdown sequence：UE → eNB → EPC。
+- Phase 4C 結束時服務已停止；以上不是目前 live-state claim。
 
-URLLC 或高可靠場景可以延伸成冗餘路徑：
+## Historical Bearer Evolution
 
 ```text
-              |-- gNB / Path A -- UPF1 -- DN
-UE -- Dual Connectivity
-              `-- gNB / Path B -- UPF2 -- DN
+historical owner-reported Lab01
+USB Wi-Fi adapter / Linux1 hotspot bearer
+                  |
+                  v
+recovered Phase 4B/4C baseline
+switched Ethernet management + dedicated temporary sample plane
 ```
 
-## 垂直應用服務層
+- Wi-Fi／USB topology 保留為 historical architecture provenance 與當時文件中的 fallback。
+- Switched Ethernet sample plane 有後續 direct validation，並 supersede「Wi-Fi 是 current
+  Lab01 bearer」的成熟度。
+- 這是 controlled migration，不是把舊 `/etc/srslte/` whole-file configuration 複製回去。
 
-```text
-5G Vertical Applications
-|-- eMBB：高頻寬、大容量、影音、XR、5GMS、MBMS
-|-- URLLC：低延遲、高可靠、工業控制、車聯網、遠端控制
-`-- mMTC：大規模感測器、IoT、低功耗、大連線數
-```
+## Source Authority、Authentication 與 Authorization
 
-### eMBB 子架構
+| 概念 | 回答的問題 | 邊界 |
+| --- | --- | --- |
+| `Authentication` | 你是誰？ | 身分驗證不決定可執行範圍 |
+| `Authorization` | 你可以做什麼？ | 權限不證明資料正確或最新 |
+| `Source Authority` | 哪份證據／決策可裁定這個 claim？ | Procedure source 不自行授予執行權 |
 
-eMBB 的目標是高資料率、高容量、熱點覆蓋、影音內容與行動寬頻體驗。
+Source Authority 依 claim domain、適用性、時間與 directness 判斷。Repo Owner decision 可裁定
+project decision；execution evidence 可裁定當時 observation；Instructor input 可裁定 course
+requirement，但不自動裁定 implementation。
 
-```text
-eMBB Application
-4K/8K Video / XR / Cloud Service / FWA / WLL / 5GMS / MBMS
-        |
-        v
-QoS Flow / 5QI / Network Slice
-        |
-        v
-NR High Bandwidth / Massive MIMO / mmWave / Carrier Aggregation
-        |
-        v
-UPF / Edge Cache / Content Delivery / Data Network
-```
+## Agent 與 Git Security Boundaries
 
-### URLLC 子架構
+- AI／Agent 可以提出、讀取或修改其 Task Package 明確授權的內容；tool capability 不等於 authorization。
+- Dedicated SSH key 提供 credential separation 與 revocation boundary，不提供 Linux permission
+  isolation、Runtime authorization 或 OS sandbox。
+- Git 提供 change tracking、review 與 change-control surface，不是 OS sandbox，也不能讓
+  destructive Runtime action 自動變安全。
+- `Agent task completed` ≠ `Human accepted` ≠ `Ready for PR` ≠ `Merged`。
+- Secret、Ki、OPC、token、private key 與敏感 subscriber data 不得進入 Git 或 evidence output。
 
-URLLC 的目標是低延遲、高可靠、高可用性，應用於工業控制、智慧電網、車聯網、遠端駕駛、遠端醫療、任務關鍵通訊。
+## Lab02 Historical Compatibility Boundary
 
-```text
-URLLC Application
-Factory Automation / Remote Driving / Smart Grid / Mission Critical
-        |
-        v
-URLLC QoS Flow / Priority / Policy / QoS Monitoring
-        |
-        v
-NR URLLC Mechanisms
-Configured Grant / Short PUSCH / LCP Restriction / Packet Duplication
-        |
-        v
-Redundant User Plane
-Dual Connectivity / Two PDU Sessions / Two N3 Tunnels / TSN FRER
-        |
-        v
-Edge UPF / Local Processing / Deterministic Network
-```
+`HISTORICAL_CONFIGURATION_RESIDUE_OBSERVED`：Lab01 recovery 的唯讀 configuration
+inspection 直接觀察到 Linux1 `enb.conf` 指向
+`sib_config = /etc/srsran/sib.conf.mbsfn`；配套 audit 亦保存 Linux1 eMBMS／MBSFN／SIB13／M1
+references，以及 Linux2 MBMS service fields 與 selected PHY residue。這是歷史 configuration
+residue，不是 current active-config claim，也不證明 Lab02／eMBMS 功能曾通過驗證。它可以與
+Phase 4C 的 Lab01 core-path PASS 同時成立。
 
-### mMTC / IoT 支援架構
+舊 srsLTE course material 是 lower-authority historical reference，不能直接取代 current
+srsRAN_4G source、example 或 Runtime evidence。Human-reviewed Part 6 SoE consolidation
+保存的歷史 Lab02 incident 只支持下列邊界；目前 Repo 並無足以重驗 incident 細節的 raw evidence：
 
-```text
-Massive IoT / Sensors / Smart Devices
-        |
-        v
-Direct Connection 或 Relay UE
-        |
-        v
-低功耗接取 / 小封包 / 大連線密度
-        |
-        v
-5GC Subscription / Policy / Efficient Control Plane
-        |
-        v
-IoT Application / Data Platform
-```
+- SIB13 configuration mapping ≠ SIB13 Runtime observation。
+- eNB／service starts ≠ MBMS functional validation。
+- MAC-LTE visible ≠ SIB13／MCCH／MTCH validated。
+- DLT、FIFO startup／recovery 與 eMBMS Control Plane terminology 均可能 version-sensitive。
 
-## QoS、切片與政策控制層
+上述細節只保留為 `HISTORICAL_NEEDS_REVALIDATION`；Lab02 不是目前 active mainline，
+也沒有新的 execution authorization。見 [`docs/known-limitations.md`](known-limitations.md)。
 
-```text
-Application Requirement
-        |
-        v
-Service Profile
-Bandwidth / Latency / Reliability / Mobility / Security
-        |
-        v
-Network Slice Selection
-NSSF / S-NSSAI / DNN
-        |
-        v
-QoS and Policy Control
-PCF / SMF / AMF / 5QI / QoS Flow
-        |
-        v
-RAN Resource Control
-Scheduler / LCP / Numerology / DRB / SRB
-```
+## 6G LEO / NTN Boundary
 
-`QoS Flow` 是 5GS 中 QoS forwarding treatment 的最小粒度；`5QI` 則作為 QoS forwarding behavior 的參考指標。
+6G LEO / NTN 只存在於
+[`docs/research/6g-ntn-handover/`](research/6g-ntn-handover/README.md) 的
+`RESEARCH_PARKING / CONCEPT_PROTOTYPE / NOT_INTEGRATED` 文件線。它不是 Lab01／Lab02
+architecture extension，也不代表 real LEO handover、3GPP NTN compliance、scheduler、
+MAC／RRC mobility control 或 Doppler compensation 已實作或驗證。
 
-## 多接取與遷移架構
+## Claim Boundary Summary
 
-```text
-Legacy / Migration Architecture
-|-- Option 1：LTE + EPC
-|-- Option 2：NR gNB + 5GC，5G SA
-|-- Option 3：EN-DC，LTE eNB + NR en-gNB + EPC，5G NSA
-|-- Option 4：NR as Master + ng-eNB as Secondary + 5GC
-|-- Option 5：LTE ng-eNB + 5GC
-`-- Option 7：E-UTRA as Master + NR as Secondary + 5GC
-```
-
-此層決定實驗平台是 LTE/EPC 為主的 NSA、NR/5GC 為主的 SA、LTE 與 NR 混合的 MR-DC，或支援 Wi-Fi、non-3GPP、NPN 的多接取架構。
-
-## 安全架構層
-
-```text
-Security Architecture
-|-- Access Security：UE <-> gNB <-> AMF
-|-- Authentication：UE / USIM <-> SEAF <-> AUSF <-> UDM/ARPF
-|-- Subscriber Privacy：SUPI / SUCI / 5G-GUTI
-|-- NAS / AS Security：Ciphering / Integrity
-|-- SBA Security：NF-to-NF secure communication
-|-- Inter-PLMN Security：SEPP / N32 / IPUPS
-|-- Product Assurance：SECAM / SCAS
-`-- Lawful Interception：ADMF / POI / MDF / LEMF
-```
-
-5G 安全橫跨 UE、RAN、Core、SBA、Roaming、LI、OAM，包含 network access security、network domain security、user domain security、application domain security、SBA domain security 等安全域。
+已確認與未驗證項目的 canonical register 見
+[`docs/known-limitations.md`](known-limitations.md)。任何新 evidence 若要改變本文件，必須
+記錄來源、時間、適用 scope、claim-level diff 與 Human Review；不得用 Handoff 重述或
+Assistant proposal 直接覆蓋。

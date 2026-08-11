@@ -3,21 +3,23 @@
 ## Lifecycle
 
 - Version: `v0.1`
-- Status: `DRAFT / PARTIAL AUTHORING`
+- Status: `DRAFT / PARTIAL AUTHORING / REVISION_REQUIRED BEFORE GATE 4B`
 - Audience: Windows Git beginners
 - Document roles: `Owner`、`Maintainer`、`Instructor`、`Reviewer`
 - Current authored scope: Sections 0、2、3、4、5、7 and minimum Prompt / Evidence templates
 
 ## Claim Boundary
 
-This document is an authoring scaffold. It identifies intended learning
-outcomes, candidate sources, verification gaps, and future writing work. It
+This document is a partially authored operational Runbook draft. It records
+reviewed guidance, intended learning outcomes, source mappings, verification
+gaps, and future writing work. It
 does not provide a verified Windows command sequence, grant Repository or
 Runtime authority, select a tool for every learner, or replace the current
 Repository rules and project-state evidence.
 
-Merging this scaffold records the approved information architecture only.
-It does not promote any `UNVERIFIED` workflow to an operational procedure.
+Merging a documentation revision records only the reviewed content and its
+lifecycle status. It does not promote any `UNVERIFIED` workflow to a validated
+operational procedure.
 
 ## Safety Boundary
 
@@ -37,6 +39,8 @@ It does not promote any `UNVERIFIED` workflow to an operational procedure.
 | Gemini CLI | `CANDIDATE / UNVERIFIED` | 尚未決定為學員工具，也沒有本專案實機證據。 |
 | Local LLM + Ollama + Codex | `CANDIDATE / UNVERIFIED` | 架構說明不等於 Windows 整合、效能或安全驗證。 |
 | ACP | `PARKING / OBSERVATION` | 不是正式 Protocol、Repository Policy 或已採用的驗收制度。 |
+| Gate 4A targeted learner review | `COMPLETED_WITH_REVISION_NEEDS` | 只代表定向閱讀與回饋；不是完整 usability、course 或 operational validation。 |
+| Gate 4B | `NOT_AUTHORIZED` | 必須先以另行授權的 Work Unit 納入 Gate 4A feedback。 |
 
 ## Source Authority
 
@@ -57,12 +61,12 @@ It does not promote any `UNVERIFIED` workflow to an operational procedure.
 - 目的（Purpose）：說明閱讀順序、角色、狀態標記與停止原則。
 - 學習成果（Learning outcome）：讀者能辨識目前可用內容、選擇閱讀路徑，並知道何時必須交回 `Instructor` 或 `Reviewer`。
 - 候選來源（Source candidates）：`AGENTS.md`、presentation outline、speaker notes。
-- 驗證狀態（Verification status）：`DRAFT_AUTHORED / NOT_LEARNER_VALIDATED`。
-- 待辦（TODO）：由 Member A / C 檢視閱讀路徑、術語與停止條件是否適合初學者。
+- 驗證狀態（Verification status）：`DRAFT_AUTHORED / TARGETED_LEARNER_REVIEWED / REVISION_REQUIRED`。
+- 待辦（TODO）：依 Gate 4A feedback 修訂閱讀路徑、術語與停止條件；此狀態不等於完整 learner validation。
 
 ### 文件目前狀態
 
-目前只有 Section 0、4、7 與 Appendix 中選定的 Prompt／Evidence 模板已有
+目前 Section 0、2、3、4、5、7 與 Appendix 中選定的 Prompt／Evidence 模板已有
 `DRAFT` 正文。其他章節仍是 `SCAFFOLD`、`PARTIAL` 或 `UNVERIFIED`，只代表預定的
 學習路徑與待辦工作；這份文件目前不得作為端到端 Windows 操作程序。
 
@@ -120,7 +124,7 @@ It does not promote any `UNVERIFIED` workflow to an operational procedure.
 - 目的（Purpose）：建立 Git 與 GitHub 的最低共同語言，讓初學者能判讀變更目前位於哪個階段。
 - 學習成果（Learning outcome）：讀者能區分本機版本控制狀態、GitHub 協作狀態與人工審查關卡（Human Review Gate）。
 - 候選來源（Source candidates）：`CONTRIBUTING.md`、presentation outline、speaker notes、professor Q&A。
-- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / NOT_LEARNER_VALIDATED`。
+- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / TARGETED_LEARNER_REVIEWED / REVISION_REQUIRED`。
 - 待辦（TODO）：等 Windows happy path 完成實機驗證後，再加入命令與成功畫面。
 
 ### Git 與 GitHub 的角色不同
@@ -242,8 +246,8 @@ Branch、Commit、Push 或 PR 仍須由當次任務包明確授權。
 - 目的（Purpose）：把目標、允許／禁止範圍、證據（Evidence）、宣稱邊界（Claim Boundary）與停止點（Stop Point）寫成可審查（Review）的任務包。
 - 學習成果（Learning outcome）：讀者能辨識一個安全任務是否具備足夠範圍與授權資訊。
 - 候選來源（Source candidates）：`AGENTS.md`、Agent Policy、`codex-task-template.md`、presentation outline。
-- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / NOT_LEARNER_VALIDATED`。
-- 待辦（TODO）：由 Member A / C 以唯讀文件任務檢視模板可讀性；不在本輪執行該任務。
+- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / TARGETED_LEARNER_REVIEWED / REVISION_REQUIRED`。
+- 待辦（TODO）：依 Gate 4A feedback 增加最小 Prompt Context／Required Output 例子；不在本輪執行 Agent 任務。
 
 ### 核心原則
 
@@ -295,7 +299,7 @@ Required Output（必要輸出）: 提交唯讀盤點報告，停在人工審查
 - 學習成果（Learning outcome）：讀者能建立一份只讀取指定 Markdown 的 Task Package，核對回報並停在 Human Review。
 - 候選來源（Source candidates）：`AGENTS.md`、`codex-task-template.md`、presentation outline、speaker notes、professor Q&A。
 - 驗證狀態（Verification status）：`DRAFT_AUTHORED / EXERCISE_DEFINED / NOT_LEARNER_EXECUTED`。
-- 待辦（TODO）：等 Member A / C 實際 Dry Run 後，記錄可讀性、工具差異與修正需求。
+- 待辦（TODO）：在另行授權的 Instructor-led dry run 後，記錄整體可讀性、工具差異與修正需求。
 
 ### 練習目標與範圍
 
@@ -382,8 +386,8 @@ Repository 起始與最終狀態確認練習沒有產生未預期變更。
 - 目的（Purpose）：定義送交 Review 前的最小證據與 Reviewer 的決策邊界。
 - 學習成果（Learning outcome）：讀者能區分 Agent 執行完成、可送 Review、Human approval 與 Merge。
 - 候選來源（Source candidates）：`AGENTS.md`、Agent Policy、`agent-review-checklist.md`、rehearsal checklist。
-- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / NOT_LEARNER_VALIDATED`。
-- 待辦（TODO）：由 Member A / C 與 `Reviewer` 檢視判斷問題是否清楚；不在本輪升格為正式 checklist。
+- 驗證狀態（Verification status）：`DRAFT_AUTHORED / SOURCE_GROUNDED / TARGETED_LEARNER_REVIEWED / REVISION_REQUIRED`。
+- 待辦（TODO）：依 Gate 4A feedback 由目標學習者與 `Reviewer` 重新檢視判斷問題；不在本輪升格為正式 checklist。
 
 人工審查關卡（Human Review Gate）是文件任務的人工決策點。Reviewer 依下列問題
 判斷，不以 Agent 語氣自信或「已完成」字樣代替證據：
@@ -450,7 +454,7 @@ Repository 起始與最終狀態確認練習沒有產生未預期變更。
 - 學習成果（Learning outcome）：讀者能查找名詞、非破壞性命令提示、任務模板與 Evidence 欄位，並辨識 Adapter 的驗證狀態。
 - 候選來源（Source candidates）：`CONTRIBUTING.md`、`codex-task-template.md`、`agent-review-checklist.md`、Lab01 recovery skill、archived presentation reports。
 - 驗證狀態（Verification status）：`PARTIAL_AUTHORING`；Prompt template：`DRAFT`；Evidence template：`DRAFT`；Tool adapters：`CANDIDATE / UNVERIFIED`。
-- 待辦（TODO）：名詞表、命令速查與 Tool Adapter 仍待後續工作單；模板可讀性仍需 Member A / C Review。
+- 待辦（TODO）：名詞表、命令速查與 Tool Adapter 仍待後續工作單；Prompt／Evidence 模板需依 Gate 4A feedback 修訂。
 
 ### 最小提示詞模板（Prompt Template）
 
@@ -522,32 +526,36 @@ Human Decision Required（需要人工決定）:
 
 | Runbook section | Primary source | Supporting source | Freshness risk | Rewrite required | Verification gap |
 | --- | --- | --- | --- | --- | --- |
-| 0 | `AGENTS.md` | Outline、speaker notes | `MEDIUM`：專案目標段落可能落後於 `PROGRESS.md` | 部分完成：`DRAFT` 閱讀入口已撰寫，Member A / C Review 前仍未完成 | 學員可用性仍為 `UNVERIFIED` |
+| 0 | `AGENTS.md` | Outline、speaker notes | `MEDIUM`：專案目標必須持續與 `PROGRESS.md` 對齊 | 部分完成：`DRAFT` 閱讀入口已撰寫；Gate 4A targeted review 已完成 | `REVISION_REQUIRED`；不是完整 usability validation |
 | 1 | `NONE — verified Windows source absent` | Outline、speaker notes、revision report | `HIGH` | Yes：未來須依實測證據撰寫 | Windows environment 未驗證 |
-| 2 | `CONTRIBUTING.md` | Outline、speaker notes、professor Q&A | `MEDIUM`：文件較早且缺少新手定義 | 部分完成：概念 `DRAFT` 已撰寫，Member A / C Review 前仍未完成 | Windows 命令與學員可用性仍為 `UNVERIFIED` |
+| 2 | `CONTRIBUTING.md` | Outline、speaker notes、professor Q&A | `MEDIUM`：文件較早且缺少新手定義 | 部分完成：概念 `DRAFT` 已撰寫；Gate 4A targeted review 已完成 | Windows 命令仍為 `UNVERIFIED`；理解缺口待修訂 |
 | 3 | `README.md`、`AGENTS.md`、`PROGRESS.md` | `CONTRIBUTING.md`、outline、speaker notes、professor Q&A | `HIGH`：歷史狀態段落可能互相衝突 | 部分完成：Repository orientation `DRAFT` 已撰寫 | Windows Clone 與 Authentication 仍為 `UNVERIFIED` |
-| 4 | `AGENTS.md`、Agent Policy | Task template、outline | `MEDIUM`：來源偏治理語言 | 部分完成：新手 `DRAFT` 已撰寫，Member A / C Review 前仍未完成 | Prompt 可用性為 `NOT_LEARNER_VALIDATED` |
-| 5 | `AGENTS.md`、task template | Outline、speaker notes、professor Q&A | `MEDIUM`：練習尚未由學員執行 | 部分完成：First read-only exercise 已定義 | Member A / C 執行與可用性仍為 `UNVERIFIED` |
+| 4 | `AGENTS.md`、Agent Policy | Task template、outline | `MEDIUM`：來源偏治理語言 | 部分完成：新手 `DRAFT` 已撰寫；Gate 4A targeted review 已完成 | Claim Boundary 與 Prompt example 為 `REVISION_REQUIRED` |
+| 5 | `AGENTS.md`、task template | Outline、speaker notes、professor Q&A | `MEDIUM`：練習尚未由學員執行 | 部分完成：First read-only exercise 已定義 | Instructor-led execution 為 `NOT EXECUTED` |
 | 6 | `CONTRIBUTING.md`、`AGENTS.md` | Outline、professor Q&A | `MEDIUM` | Yes：補目的、證據與 Stop | Windows Git happy path 未驗證 |
-| 7 | `AGENTS.md`、Agent Policy | Review checklist、rehearsal checklist | `MEDIUM`：現有 checklist 偏 Runtime | 部分完成：docs-only Gate 已撰寫，Member A / C Review 前仍未完成 | Learner／Reviewer 可用性為 `UNVERIFIED` |
+| 7 | `AGENTS.md`、Agent Policy | Review checklist、rehearsal checklist | `MEDIUM`：現有 checklist 偏 Runtime | 部分完成：docs-only Gate 已撰寫；Gate 4A targeted review 已完成 | 判斷問題為 `REVISION_REQUIRED` |
 | 8 | `AGENTS.md`、Agent Policy | Professor Q&A、revision report | `MEDIUM/HIGH`：supporting cases 為歷史例外 | Yes：建立 novice-safe decision tree | 常見停止情境未驗收 |
 | 9 | `NONE — session script absent` | Speaker notes、rehearsal checklist | `MEDIUM`：來源為簡報交付材料 | Yes | Instructor session script 缺失 |
 | 10 | `NONE — learner checklist absent` | Review checklist、rehearsal checklist | `MEDIUM` | Yes | Learner acceptance checklist 缺失 |
-| Appendix | Task template、Review checklist | Professor Q&A、recovery skill、revision report | `MEDIUM/HIGH`：多份來源具情境限制 | 部分完成：Prompt／Evidence `DRAFT` 已撰寫，Member A / C Review 前仍未完成 | Windows 缺口仍存在；Tool Adapters 為 `CANDIDATE / UNVERIFIED` |
+| Appendix | Task template、Review checklist | Professor Q&A、recovery skill、revision report | `MEDIUM/HIGH`：多份來源具情境限制 | 部分完成：Prompt／Evidence `DRAFT` 已撰寫；Gate 4A targeted review 已完成 | 最小例子需修訂；Tool Adapters 為 `CANDIDATE / UNVERIFIED` |
 
 ## Known Gaps
 
 - Windows environment validation
 - GitHub authentication choice
 - Clone happy path
+- Section 3 Windows Clone comprehension revision
+- Claim Boundary minimum example
+- Prompt Context／Required Output minimum example
 - First read-only exercise learner execution and validation
 - Instructor session script
 - Learner acceptance checklist
-- Member C tool decision
+- Learner tool selection
 
 ## Authoring Gate
 
 下一個 Authoring Work Unit 必須重新確認 working tree、授權範圍、目標章節與
-所需驗證。這份 `DRAFT` 已定義第一份唯讀練習，但不代表 Member A / C 已執行或
-驗證；它不會自行授權補寫 Windows 命令、選擇 Agent 工具、建立 Adapter，或操作
+所需驗證。Gate 4A targeted learner review 已完成且要求修訂；Gate 4B 仍為
+`NOT_AUTHORIZED`。這份 `DRAFT` 已定義第一份唯讀練習，但不代表學習者已執行或
+完成驗收；它不會自行授權補寫 Windows 命令、選擇 Agent 工具、建立 Adapter，或操作
 Repository 以外的環境。

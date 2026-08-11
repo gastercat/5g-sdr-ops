@@ -1,0 +1,43 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: ""
+  source_thread: ""
+  date_or_range: ""
+  executor: ""
+  historical_or_current: ""
+
+authorization:
+  scope: []
+  allowed_mutations: []
+  forbidden: []
+
+repo_context:
+  root: ""
+  branch: ""
+  start_head: ""
+  end_head: ""
+
+evidence:
+  - evidence_id: ""
+    claim: ""
+    evidence_type: ""
+    exact_observation: ""
+    directness: ""
+    confidence: ""
+    source_location: ""
+    limitations: []
+
+mutations: []
+
+recovered_or_observed_claims:
+  - claim: ""
+    status: ""
+    supporting_evidence: []
+
+provenance_gaps: []
+
+stop_point:
+  result: ""
+  next_authority_required: ""

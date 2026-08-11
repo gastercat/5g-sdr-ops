@@ -1,23 +1,24 @@
-# Project Status
+# Project Status（Historical Bootstrap Pointer）
 
-本文件彙整四個 Lab 的狀態。所有來源筆記中的完成度尚未由本 repo 實機驗證，因此狀態一律保守標記。
+狀態：`SUPERSEDED FOR CURRENT STATE / HISTORICAL BOOTSTRAP`
 
-| Lab | 主題 | 目前整理狀態 | 下一步 |
-| --- | --- | --- | --- |
-| Lab01 | 小基站平台建置與量測 | 來源筆記記載已有基礎平台與除錯流程；本 repo 尚未實機確認，NEEDS_CONFIRMATION | 整理 ICMP/TCP/iperf 與 Wireshark 結果，補 evidence |
-| Lab02 | eMBB / eMBMS | 待確認；不可視為已完成 | 確認 SIB13、MCCH、MTCH、MCH、IPTV multicast evidence |
-| Lab03 | uRLLC / PRP | 待執行 / future work | 先確認 USRP、nukxURLLC、Split/Duplication 基礎驗證 |
-| Lab04 | Access Security | 待執行 / future work | 先確認合法授權、隔離 RF 環境，再建置 UHD、srsGUI、UE Scanner |
+本路徑原本保存 2026-06-24 bootstrap 階段的四個 Lab 狀態表。該表中的 Lab01
+`NEEDS_CONFIRMATION` 已被後續 Phase 4C evidence 部分 supersede；若在此重建另一份
+current-status 表，會與 `PROGRESS.md` 形成第二個權威來源，因此不再於本檔更新狀態。
 
-## NEEDS_CONFIRMATION 狀態
+目前請使用：
 
-- Lab01 EPC / eNB / UE 是否可穩定啟動：NEEDS_CONFIRMATION
-- Lab01 UE 是否取得 `tun_srsue` 與 `172.16.0.x`：NEEDS_CONFIRMATION
-- Lab01 ICMP / TCP / iperf 結果：NEEDS_CONFIRMATION
-- Lab01 Wireshark S1-MME / S1-U / SGi 封包觀測結果：NEEDS_CONFIRMATION
-- Lab02 `sib.conf.mbsfn` 是否正確 mapping 至 SIB13：NEEDS_CONFIRMATION
-- Lab02 UE MAC-LTE pcap 是否可觀測 System Information / SIB13：NEEDS_CONFIRMATION
-- Lab02 MCCH / MTCH / MCH 是否穩定出現：NEEDS_CONFIRMATION
-- Lab02 IPTV multicast 驗證結果：NEEDS_CONFIRMATION
-- Lab03 Split Mode / Duplication Mode / PRP 量測：NEEDS_CONFIRMATION
-- Lab04 UE Scanner / false base station 實驗環境與合法性：NEEDS_CONFIRMATION
+- [`PROGRESS.md`](../PROGRESS.md)：current checkpoint、stop point、next gate 與 workstream lifecycle。
+- [`docs/architecture-overview.md`](architecture-overview.md)：Lab01 recovered architecture。
+- [`docs/known-limitations.md`](known-limitations.md)：Lab01 未測項目、Lab02 歷史待重驗與教學缺口。
+- [`TODO.md`](../TODO.md)：Active／Near-term、Future Teaching 與 Research Parking 導覽。
+- [`Lab03 URLLC / PRP`](../labs/lab03-urllc/README.md) 與
+  [`Lab04 Security`](../labs/lab04-security/README.md)：`HISTORICAL REFERENCE /
+  NEEDS_CONFIRMATION / NOT ACTIVE / NOT_AUTHORIZED`；不構成 current workstream。
+
+## Preserved Historical Boundary
+
+- Lab01 bootstrap 目標曾包含 EPC／eNB／UE、Attach、ICMP／TCP、NAT 與 Wireshark；
+  後續 evidence 只讓其中明確驗證的子集升格。
+- Lab02、Lab03、Lab04 沒有因 Lab01 Phase 4C 完成而自動變成 active 或 authorized。
+- Git history 保留原始 bootstrap table 與其 provenance；本檔不將舊狀態重寫成新事實。

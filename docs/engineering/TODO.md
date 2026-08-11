@@ -1,5 +1,15 @@
 # 5G SDR 工程待辦事項
 
+狀態：`SUPERSEDED / HISTORICAL RECOVERY BACKLOG`
+
+本清單保存 Lab01 recovery 前期的 backlog provenance。未勾選項目不代表目前仍未完成，
+也不構成新的 execution authorization；其中 baseline、ZeroMQ、Attach 與 ICMP 等狀態已由
+後續 Phase 4C evidence 部分 supersede。Current checkpoint 請見
+[`PROGRESS.md`](../../PROGRESS.md)，目前 lifecycle 導覽請見 [`TODO.md`](../../TODO.md)，
+未驗證範圍請見 [`docs/known-limitations.md`](../known-limitations.md)。
+
+以下原始 checkbox 為避免改寫歷史而保留，不再作 current backlog authority。
+
 ## 稽核
 
 - [ ] 待所有文件產出並完成審閱後，將回復盤點文件標記為完成。
