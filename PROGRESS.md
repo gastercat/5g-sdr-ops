@@ -1,28 +1,39 @@
 # 5G SDR Operations Progress
 
-更新日期：2026-08-11
+更新日期：2026-08-20
 文件角色：`CURRENT STATE / DELTA-ONLY NAVIGATION`
 
 ## Current Status
 
 目前 project checkpoint：
 
-- `KNOWN`：Lab01 Baseline Recovery Phase 4C 已在當時核准範圍內 `PASS / CLOSED`。
+- `KNOWN / NOT_REVALIDATED`：Lab01 Baseline Recovery Phase 4C 已在當時核准範圍內
+  `PASS / CLOSED`；2026-08-18 decisions 沒有重新驗證 Runtime。
 - `KNOWN`：Phase 4C 結束時已完成 controlled shutdown；服務未持續執行，
   `/etc/srsran/` 與 persistent network configuration 未被該階段修改。
-- `KNOWN`：Agent + Git Runbook 是目前 active documentation／teaching workstream。
-- `REVISION_REQUIRED`：Gate 4A 定向學習者檢閱已完成，回饋尚待另行授權的修訂 Work Unit 納入。
-- `NOT_AUTHORIZED`：Gate 4B、任何新的 Runtime、Lab02 execution、persistent network change
-  或 configuration deployment。
+- `ACCEPTED / CURRENT PRIORITY`：依 2026-08-18 professor meeting PD-01，暑假階段的
+  current project priority 是完成 Lab01 與實驗手冊；兩者是必須分別保留的 deliverable
+  dimensions。本 priority 不等於 Runtime authorization，兩者的 completion scope／criteria
+  仍待另行 recovery／definition。
+- `ACCEPTED / CURRENT CURRICULUM BOUNDARY`：學生課程不教 Agent；Git 僅保留安全完成實驗
+  所需內容。既有 Agent learner draft 保留為 historical material。
+- `ACCEPTED / PENDING MAPPING`：Security 改為未來穿插 Lab01～03 的 cross-cutting direction；
+  本次未設計 topic mapping 或 exercise。
+- `NOT_AUTHORIZED`：任何新的 Runtime、Lab01 recovery、Lab02 execution、persistent network
+  change、configuration deployment 或 extended validation。
 
 ## Workstream Status
 
 | Workstream | Lifecycle | Current boundary |
 | --- | --- | --- |
+| Lab01 completion | `CURRENT SUMMER PROJECT PRIORITY / SCOPE NOT YET RECOVERED OR DEFINED` | Completion scope／criteria 尚未確立；本 priority 不授權 Runtime execution |
+| Lab01 experiment manual | `CURRENT SUMMER PROJECT PRIORITY / NOT YET COMPLETE` | Canonical path、章節與 completion criteria 待另行 docs-only Work Unit |
 | Lab01 recovered baseline | `HISTORICAL EXECUTION BASELINE / PASS / CLOSED` | 只支持當時 evidence 範圍；Runtime 已停止 |
 | Lab02 eMBMS | `NOT ACTIVE / NOT AUTHORIZED` | prerequisite 完成不等於自動授權 |
-| Agent + Git Runbook | `DRAFT / PARTIAL AUTHORING / REVISION_REQUIRED` | Gate 4A feedback 尚未納入；Gate 4B 未授權 |
-| Future Teaching | `SKELETON / NOT ACTIVE COURSE` | 重用 Runbook，不建立第二份 operational authority |
+| Agent + Git Runbook | `INTERNAL ENGINEERING REFERENCE / STUDENT CURRICULUM SUPERSEDED` | 可保留 Maintainer safety／governance reference；不是 current teaching mainline |
+| Future Teaching | `REPLAN_REQUIRED / NOT ACTIVE COURSE` | student Agent assumptions 已由 PD-03 supersede；Git scope 受 PD-04 限制 |
+| Security curriculum mapping | `CROSS-CUTTING DIRECTION / NOT YET DESIGNED` | 未來對應 Lab01～03；不授權 security exercise 或 Runtime |
+| Workflow vocabulary | `EXTERNALIZATION REQUIRED / NOT YET DEFINED` | 先定義 internal terms，再另行轉換 external language |
 | 6G LEO / NTN | `RESEARCH_PARKING / CONCEPT_PROTOTYPE / NOT_INTEGRATED` | 不是 Lab01／Lab02 validated mainline |
 | ACP | `PARKING / OBSERVATION` | 不是正式 Protocol、Policy 或 automated gate |
 
@@ -80,24 +91,31 @@ configuration、historical deployment 或 current Runtime evidence。
   Claim Boundary 與 lifecycle Review。
 - `NEEDS_APPROVAL`：任何新的 Runtime start、persistent network change、configuration
   deployment、extended validation 或 Lab02 execution。
-- `UNRESOLVED`：Mainline non-blocking 與 collaboration authority 的分界尚未由 Owner
-  正式定義；Agent 不得自行補成 governance rule。
+- `ACCEPTED`：Project Lead 可先完成 Lab01、Lab02，再於 stable implementation 後進行
+  collaborator knowledge transfer；此 sequencing decision 不提供 Runtime 或 Lab02 authority。
+- `UNRESOLVED_IMPLEMENTATION_DETAIL`：Lab01 completion scope／criteria、實驗手冊 completion
+  criteria、Security mapping、student minimum Git scope、workflow vocabulary mapping 與
+  knowledge-transfer acceptance criteria。
 
 ## Next Authorized Gate
 
-本文件本身不授權下一個 mutation。候選下一步是另行建立範圍明確的 docs-only Work Unit，
-將 Gate 4A feedback 納入 Agent + Git Runbook，或執行 Instructor-led Read-only Agent dry run。
-兩者都必須在各自任務包內重新確認 authority、scope、evidence 與 stop point。
+本文件本身不授權下一個 mutation。本次 2026-08-18 decision canonicalization 完成後停在
+`HUMAN_REVIEW`。後續候選工作只能以彼此分離、範圍明確的 docs-only Work Unit，依序定義
+Lab01 completion scope、Lab01 experiment manual target、Security
+cross-cutting mapping、student-safe minimum Git scope
+或 workflow vocabulary externalization；任何一項都必須重新確認 authority、scope、evidence
+與 stop point。
 
 ## Canonical Pointers
 
 - Repository navigation：[`README.md`](README.md)
 - Architecture：[`docs/architecture-overview.md`](docs/architecture-overview.md)
 - Decisions：[`docs/decision-register.md`](docs/decision-register.md)
+- 2026-08-18 professor decisions：[`docs/decisions/2026-08-18-professor-meeting.md`](docs/decisions/2026-08-18-professor-meeting.md)
 - Known limitations：[`docs/known-limitations.md`](docs/known-limitations.md)
 - Task execution evidence：[`docs/evidence/task-evidence/README.md`](docs/evidence/task-evidence/README.md)
-- Agent + Git operational source：[`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md)
-- Future Teaching：[`docs/teaching/agent-git/README.md`](docs/teaching/agent-git/README.md)
+- Internal Agent + Git reference：[`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md)
+- Historical Future Teaching skeleton：[`docs/teaching/agent-git/README.md`](docs/teaching/agent-git/README.md)
 - 6G NTN Research Parking：[`docs/research/6g-ntn-handover/README.md`](docs/research/6g-ntn-handover/README.md)
 
 ## Handoff Contract

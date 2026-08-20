@@ -2,7 +2,7 @@
 
 狀態：`CANONICAL DECISION SURFACE / HUMAN-REVIEWED INPUT`
 
-更新日期：2026-08-11
+更新日期：2026-08-20
 
 ## 目的
 
@@ -61,23 +61,27 @@ Repository、Runtime 或 Lab authority。
 - Provenance：Human-reviewed Part 6 SoE consolidation；本文件不保存私人對話內容或識別資訊。
 - Boundary：此 decision 不定義 external collaboration channel，也不授權對外傳送訊息。
 
-### DR-005｜Agent + Git Runbook 成為現行 operational source
+### DR-005｜Agent + Git Runbook 作為 internal engineering reference
 
-- Status：`ACCEPTED / MATERIALIZED`
-- Decision：[`docs/runbooks/agent-git/README.md`](runbooks/agent-git/README.md) 是目前
-  Agent + Git operational source；Future Teaching 必須重用並指向它，不得 fork 第二份權威。
+- Status：`ACCEPTED / MATERIALIZED / RECLASSIFIED 2026-08-18`
+- Decision：[`docs/runbooks/agent-git/README.md`](runbooks/agent-git/README.md) 保留為
+  Maintainer／internal engineering 的 Agent safety 與 Git governance reference；不再是 student
+  curriculum authority。
 - Repo provenance：PR #17 建立 scaffold；PR #18、#19 增補主要章節；PR #20 建立
   non-authoritative teaching-reuse skeleton。
-- Boundary：materialized Runbook 仍是 `DRAFT / PARTIAL AUTHORING`；Windows 與 Tool Adapter
-  claims 依其 verification status 保持未驗證。
+- Superseded effect：2026-08-18 PD-03 排除 student Agent curriculum；PD-04 將 student Git
+  scope 限定為安全完成實驗所需內容。
+- Boundary：既有 learner draft 保留 historical provenance；Windows 與 Tool Adapter claims 依其
+  verification status 保持未驗證，也不得重新升格為 student course authority。
 
-### DR-006｜Workflow-first，Tool-Adapter-second
+### DR-006｜Workflow-first，Tool-Adapter-second（historical teaching strategy）
 
-- Status：`ACCEPTED / TEACHING STRATEGY`
-- Decision：先教 scope、evidence、branch、Claim Boundary、STOP 與 Human Review 的共同
-  workflow，再評估 Codex、Gemini CLI、Ollama 或 Local Model adapter。
+- Status：`HISTORICAL TEACHING STRATEGY / SUPERSEDED FOR STUDENT CURRICULUM`
+- Historical decision：原方向是先教 scope、evidence、branch、Claim Boundary、STOP 與 Human
+  Review 的共同 workflow，再評估 Codex、Gemini CLI、Ollama 或 Local Model adapter。
+- Superseded by：2026-08-18 PD-03；學生課程不教 Agent。
 - Boundary：Adapter 出現在簡報或文件不代表已選定、已安裝或已驗證；目前替代 adapter
-  仍為 `CANDIDATE / UNVERIFIED`。
+  仍為 `CANDIDATE / UNVERIFIED / INTERNAL ONLY`。
 - Evidence：[`Agent + Git Runbook`](runbooks/agent-git/README.md)、
   [`Future Teaching Skeleton`](teaching/agent-git/README.md)。
 
@@ -98,13 +102,66 @@ Repository、Runtime 或 Lab authority。
 
 ### DR-009｜Mainline non-blocking／collaboration authority boundary
 
-- Status：`UNRESOLVED`
-- Question：哪些工作可由 Mainline 在不等待協作者的情況下前進，哪些 checkpoint 必須等待
-  collaborator、Instructor 或其他 external authority？
-- Current evidence：Owner decision 保留持續協調；Assistant 提出的 operating model 不具
-  normative authority。
-- Required decision：Owner 必須另行定義角色、可獨立決策範圍、共同 gate 與 escalation path。
-- Guard：本 Repository、Agent 或 Handoff 不得自行把此項目改成已接受 policy。
+- Status：`ACCEPTED / RESOLVED BY PD-06`
+- Decision：採 `LEAD_FIRST → KNOWLEDGE_TRANSFER_LATER`。Project Lead 可先完成 Lab01、
+  Lab02，再於 stable implementation 後進行 collaborator knowledge transfer；不要求
+  collaborators 與 Project Lead 同步完成 Lab01／Lab02。
+- Authority：2026-08-18 professor meeting PD-06。
+- Boundary：本 sequencing decision 不表示 permanent solo ownership、不自動授權 Runtime 或
+  Lab02 execution、不免除 collaborators 的 future responsibilities，也不定義 stable
+  implementation 或 knowledge-transfer acceptance criteria。
+- Remaining detail：共同 Review、external authority、escalation 與 knowledge-transfer exact
+  checkpoints 仍為 `UNRESOLVED_IMPLEMENTATION_DETAIL`。
+
+### DR-010｜暑假優先完成 Lab01 與實驗手冊
+
+- Status：`ACCEPTED / CURRENT PRIORITY`
+- Decision：暑假階段優先完成 Lab01 與實驗手冊；Agent + Git learner revision 不再是 current
+  mainline。
+- Authority：2026-08-18 professor meeting PD-01。
+- Boundary：Phase 4C 保持 historical execution baseline；本決策不建立新的 Lab01 Runtime
+  authorization，也不表示 Runtime 已 revalidate。
+- Evidence：[`2026-08-18 Professor Meeting Decision Record`](decisions/2026-08-18-professor-meeting.md)。
+
+### DR-011｜Security 改為 Lab01～03 cross-cutting curriculum direction
+
+- Status：`ACCEPTED / CURRICULUM DIRECTION`
+- Decision：原獨立、後置 Lab04 Security teaching model 被 supersede；Security 改為未來穿插
+  Lab01、Lab02、Lab03 的 cross-cutting direction。
+- Authority：2026-08-18 professor meeting PD-02。
+- Boundary：原 Lab04 material 保留 historical provenance；topic mapping、exercise 與 Runtime
+  work 均未在本決策中設計或授權。
+- Evidence：[`2026-08-18 Professor Meeting Decision Record`](decisions/2026-08-18-professor-meeting.md)。
+
+### DR-012｜Student curriculum excludes Agent
+
+- Status：`ACCEPTED / CURRENT CURRICULUM BOUNDARY`
+- Decision：學生課程不教 Agent；既有 student-facing Agent exercise 與 learner-authoring
+  assumptions 被 supersede。
+- Authority：2026-08-18 professor meeting PD-03。
+- Boundary：Agent 可保留為 Maintainer／internal engineering tool，但 tool capability 不等於
+  authorization，仍須遵守 Repository policy 與 Human Review。
+- Evidence：[`2026-08-18 Professor Meeting Decision Record`](decisions/2026-08-18-professor-meeting.md)。
+
+### DR-013｜Student Git scope 限於安全完成實驗所需內容
+
+- Status：`ACCEPTED / CURRENT CURRICULUM BOUNDARY`
+- Decision：student curriculum 中的 Git 只保留安全完成實驗所需內容；通用 Git collaboration
+  curriculum 不再是 current direction。
+- Authority：2026-08-18 professor meeting PD-04。
+- Boundary：Maintainer Git governance 不受撤銷；minimum concept／command set 仍須另行定義，
+  本決策不授權 course redesign。
+- Evidence：[`2026-08-18 Professor Meeting Decision Record`](decisions/2026-08-18-professor-meeting.md)。
+
+### DR-014｜Workflow vocabulary 先定義再 externalize
+
+- Status：`ACCEPTED / DOCUMENTATION REQUIREMENT`
+- Decision：`Main`、`Part`、`Phase`、`Gate`、`Work Unit` 等 internal engineering vocabulary
+  必須先定義，再轉換成 external audience 可理解的語言。
+- Authority：2026-08-18 professor meeting PD-05。
+- Boundary：final ontology 與 external-language mapping 仍須另行 Work Unit；historical artifacts
+  不因本決策而 mass-rewrite，Git branch `main` 亦須與 internal `Main／Mainline` 區分。
+- Evidence：[`2026-08-18 Professor Meeting Decision Record`](decisions/2026-08-18-professor-meeting.md)。
 
 ## Historical but Still Relevant
 

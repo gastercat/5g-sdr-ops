@@ -7,11 +7,15 @@ This repository manages 5G SDR project documentation, approved configuration tem
 ## Current Delivery Goal
 
 Preserve the completed Lab01 Phase 4C recovered baseline as a bounded historical
-execution baseline. The Agent + Git Runbook is the current documentation workstream,
-but any new Runbook revision or learner-validation execution requires a separately
-authorized Work Unit. Lab02 is not an active execution mainline. No runtime restart,
-deployment, persistent network change, or extended validation is authorized without
-a separately scoped task and explicit human approval.
+execution baseline. The current summer project priority has two distinct deliverable
+dimensions: completing Lab01 and completing its experiment manual. Their completion
+scope and criteria remain to be recovered or defined in separately authorized Work
+Units. The Agent + Git Runbook is an internal engineering reference, not
+student curriculum authority. Future Security mapping across Lab01–03, student-safe
+minimum Git scope, and workflow-vocabulary externalization each require a separately
+authorized documentation Work Unit. Lab02 is not an active execution mainline. No
+runtime restart, deployment, persistent network change, Lab02 execution, or extended
+validation is authorized without a separately scoped task and explicit human approval.
 
 ## Source of Truth
 

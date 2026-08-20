@@ -3,19 +3,35 @@
 ## Lifecycle
 
 - Version: `v0.1`
-- Status: `DRAFT / PARTIAL AUTHORING / REVISION_REQUIRED BEFORE GATE 4B`
-- Audience: Windows Git beginners
+- Status: `INTERNAL ENGINEERING REFERENCE / STUDENT CURRICULUM SUPERSEDED`
+- Audience: Maintainers、internal engineering users、Reviewers
 - Document roles: `Owner`、`Maintainer`、`Instructor`、`Reviewer`
-- Current authored scope: Sections 0、2、3、4、5、7 and minimum Prompt / Evidence templates
+- Historical authored scope: Sections 0、2、3、4、5、7 and minimum Prompt / Evidence templates
+
+## 2026-08-18 Supersession Boundary
+
+- PD-03：學生課程不教 Agent；本文件不再是 student curriculum authority。
+- PD-04：student Git scope 僅保留安全完成實驗所需內容；本文件中的通用 Git collaboration
+  draft 不得直接轉成 student syllabus。
+- 既有 learner sections、Gate 4A feedback 與未完成 authoring plan 保留 historical provenance，
+  不得被解讀為 current learner roadmap 或待執行 exercise。
+- Agent safety、scope、evidence、authorization 與 Human Review guidance 可繼續作為
+  Maintainer／internal engineering reference。
+- 本 reclassification 不驗證 Windows、Codex、Gemini CLI、Ollama、Local Model 或任何
+  historical learner workflow。
+
+Canonical decision source：
+[`2026-08-18 Professor Meeting Decision Record`](../../decisions/2026-08-18-professor-meeting.md)。
 
 ## Claim Boundary
 
-This document is a partially authored operational Runbook draft. It records
-reviewed guidance, intended learning outcomes, source mappings, verification
-gaps, and future writing work. It
-does not provide a verified Windows command sequence, grant Repository or
-Runtime authority, select a tool for every learner, or replace the current
-Repository rules and project-state evidence.
+This document preserves a partially authored operational Runbook draft and may
+serve as an internal engineering reference. Historical learning outcomes,
+source mappings, verification gaps, and future writing notes remain visible for
+provenance; they do not establish current student curriculum. This document does
+not provide a verified Windows command sequence, grant Repository or Runtime
+authority, select a learner tool, or replace current Repository rules and
+project-state evidence.
 
 Merging a documentation revision records only the reviewed content and its
 lifecycle status. It does not promote any `UNVERIFIED` workflow to a validated
@@ -39,8 +55,8 @@ operational procedure.
 | Gemini CLI | `CANDIDATE / UNVERIFIED` | 尚未決定為學員工具，也沒有本專案實機證據。 |
 | Local LLM + Ollama + Codex | `CANDIDATE / UNVERIFIED` | 架構說明不等於 Windows 整合、效能或安全驗證。 |
 | ACP | `PARKING / OBSERVATION` | 不是正式 Protocol、Repository Policy 或已採用的驗收制度。 |
-| Gate 4A targeted learner review | `COMPLETED_WITH_REVISION_NEEDS` | 只代表定向閱讀與回饋；不是完整 usability、course 或 operational validation。 |
-| Gate 4B | `NOT_AUTHORIZED` | 必須先以另行授權的 Work Unit 納入 Gate 4A feedback。 |
+| Gate 4A targeted learner review | `HISTORICAL_COMPLETED_WITH_REVISION_NEEDS` | 只代表當時定向閱讀與回饋；不是 current course authority。 |
+| Gate 4B learner authoring | `HISTORICAL_NOT_AUTHORIZED / SUPERSEDED` | 原 plan 未獲授權，PD-03 後也不再是 current student teaching gate。 |
 
 ## Source Authority
 
@@ -554,8 +570,8 @@ Human Decision Required（需要人工決定）:
 
 ## Authoring Gate
 
-下一個 Authoring Work Unit 必須重新確認 working tree、授權範圍、目標章節與
-所需驗證。Gate 4A targeted learner review 已完成且要求修訂；Gate 4B 仍為
-`NOT_AUTHORIZED`。這份 `DRAFT` 已定義第一份唯讀練習，但不代表學習者已執行或
-完成驗收；它不會自行授權補寫 Windows 命令、選擇 Agent 工具、建立 Adapter，或操作
+Gate 4A targeted learner review 與原 Gate 4B authoring plan 均保留 historical provenance；
+PD-03 後，Gate 4B 不再是 current student teaching gate。任何後續變更必須另行確認 working
+tree、internal engineering purpose、授權範圍、目標章節與所需驗證。本文件不會自行授權
+恢復 learner Agent authoring、補寫 Windows 命令、選擇 Agent 工具、建立 Adapter，或操作
 Repository 以外的環境。
