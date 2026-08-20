@@ -9,27 +9,37 @@
 
 狀態：`PLANNED / NOT YET COMPLETE`（已規劃／尚未完成）
 
-- [ ] **Agent + Git Runbook 定向學習者回饋修訂。** 另以經授權的 Work Unit
-  修訂目前的 operational Runbook，重點包含 Section 3 Windows Clone 的理解斷點、
-  更清楚的 Claim Boundary 說明，以及最小的 Prompt Context / Required Output 範例。
-- [ ] **Instructor-led Read-only Agent dry run。** 執行第一次由 Instructor 帶領、
-  範圍受限的練習並記錄整體學習者回饋；此練習不授予 Repository mutation 或
-  Runtime authority。
+- [ ] **Lab01 completion scope recovery／definition。** 以另行授權的 read-only／
+  documentation-only Work Unit 盤點 existing canonical／historical sources，提出待
+  Human Review 的 scope 與 unresolved gaps；proposal 不等於 accepted completion
+  criteria，也不授權 recovery、restart 或 Runtime execution。
+- [ ] **Lab01 experiment manual target。** 以另行授權的 docs-only Work Unit 定義 canonical
+  path、章節範圍、現有材料來源與 completion criteria；不得把 historical Phase 4C 改寫成
+  current Runtime validation。
+- [ ] **Lab01 manual bounded authoring。** 只在 target、source authority、claim boundary 與
+  Human Review criteria 核准後開始；本項目不授權 Lab01 recovery、restart 或 extended validation。
+- [ ] **Security cross-cutting mapping。** 另行盤點 Lab01～03 可承載的 Security topics、來源與
+  safety boundary；只建立 mapping，不在未授權情況下設計或執行 security exercises。
+- [ ] **Student-safe minimum Git scope。** 另行定義安全完成實驗所需的 minimum Git concepts
+  與 evidence workflow；不把 internal Maintainer governance 自動轉成 student curriculum。
+- [ ] **Workflow vocabulary externalization。** 先定義 `Main／Part／Phase／Gate／Work Unit`
+  等 internal terms，再提出 external-language mapping；不 mass-rewrite historical artifacts。
 
 本骨架不將上述任一項目記錄為已完成。
 
 ## 未來教學（Future Teaching）
 
-狀態：`SKELETON / NOT ACTIVE COURSE`（骨架／尚非正式課程）
+狀態：`REPLAN_REQUIRED / NOT ACTIVE COURSE`（需重新規劃／尚非正式課程）
 
-- 重用現行 [Agent + Git Runbook](docs/runbooks/agent-git/README.md)，不得建立第二份
-  具獨立權威的 Runbook。
-- 未來可分開整理學習者教材與 Instructor 教材，但兩者都必須依循現行 Runbook。
-- 保留 Instructor-led Read-only Agent exercise，作為第一個教學橋接。
-- 評估未來的 docs-only Git 協作練習；練習必須使用隔離分支並設置 Human Review Gate。
+- 依 PD-03，學生課程不教 Agent；既有 learner Agent exercise assumptions 只保留 historical
+  provenance，不得繼續作為 current course roadmap。
+- 依 PD-04，學生 Git scope 僅保留安全完成實驗所需內容；具體 minimum 尚待另行定義。
+- Agent + Git Runbook 保留為 Maintainer／internal engineering reference，不作 student
+  curriculum authority。
+- Future course architecture 尚未重新設計，本文件不建立新的 learner exercise 或 syllabus。
 
 入口：[Agent + Git 未來教學骨架](docs/teaching/agent-git/README.md)。
-本骨架不包含完整 Git 課程、完整 Agent 課程、課程網站或評量系統。
+本骨架不授權完整 Git 課程、Agent 課程、課程網站或評量系統。
 
 ## Research Parking — 6G LEO / NTN（研究停放）
 

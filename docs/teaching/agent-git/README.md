@@ -1,10 +1,22 @@
-# Agent + Git 未來教學骨架（Future Teaching Skeleton）
+# Agent + Git 未來教學骨架（Preserved Historical Skeleton）
 
-狀態：`SKELETON / NOT ACTIVE COURSE`（骨架／尚非正式課程）
+狀態：`REPLAN_REQUIRED / STUDENT AGENT ASSUMPTIONS SUPERSEDED / NOT ACTIVE COURSE`
+
+## 2026-08-18 Supersession Boundary
+
+- PD-03：學生課程不教 Agent；本文件中的 learner Agent materials、exercise 與 tool-selection
+  assumptions 已被 supersede。
+- PD-04：student Git scope 僅保留安全完成實驗所需內容；minimum scope 尚待另行定義。
+- 本文件保留 2026-08-04 後形成的 teaching skeleton 與 Gate 4A feedback 作 historical
+  provenance，不是 current course roadmap、syllabus 或 exercise authority。
+- 本 Work Unit 不重新設計課程；未來任何 curriculum 變更均須另行 Human Review。
+
+Canonical decision source：
+[`2026-08-18 Professor Meeting Decision Record`](../../decisions/2026-08-18-professor-meeting.md)。
 
 ## 目的（Purpose）
 
-本文件是未來教學與重用骨架，不是另一份具獨立權威的 Runbook。最初的使用情境是在既有
+本文件保存原未來教學與重用骨架，不是另一份具獨立權威的 Runbook。最初的使用情境是在既有
 5G SDR 專案中建立安全使用 Agent 與 Git 進行協作所需的最低共同能力。
 
 依 [2026-08-04 專案會議歸檔](../../presentations/2026-08-04-agent-git-security/README.md)
@@ -12,14 +24,14 @@
 使用，並提出未來可將其轉化為課堂教材。此需求只建立未來方向，不代表課程已啟動、課綱已
 核准，也不授予 Repository 或 Runtime authority。
 
-## 現行操作權威來源（Current Operational Source）
+## Internal Engineering Reference
 
-現行操作權威來源仍是
+Maintainer／internal engineering 的 Agent safety 與 Git governance reference 是
 [`docs/runbooks/agent-git/README.md`](../../runbooks/agent-git/README.md)。
 
-本目錄中的教學材料必須重用並指向該 Runbook，不得複製、fork，或自行重新定義其中的程序、
-安全規則、source authority 或 lifecycle status。任何 operational correction 都必須在另行授權
-且完成 Review 的 Work Unit 中，回到現行 Runbook 本體處理。
+該 Runbook 不是 student curriculum authority。本目錄不得再依其 historical learner sections
+恢復 Agent course；任何 internal operational correction 仍必須在另行授權且完成 Review 的
+Work Unit 中回到 Runbook 本體處理。
 
 ## 教學重用邊界（Teaching Reuse Boundary）
 
@@ -30,7 +42,7 @@
   與 Human Review 控制。
 - 本骨架不代表 Windows workflow 已驗證，也不替學習者選定工具。
 
-## 候選學習者教材（Candidate Learner Materials）
+## Preserved Historical Candidate Learner Materials
 
 - Repository、分支、working tree、evidence 與 Human Review 概念的簡短導覽，並連回
   Runbook 對應章節。
@@ -40,7 +52,7 @@
   Runbook 模板。
 - 一份精簡的學習者 handoff，協助辨識何時應停止並詢問 Instructor 或 Reviewer。
 
-## 候選 Instructor 教材（Candidate Instructor Materials）
+## Preserved Historical Candidate Instructor Materials
 
 - 第一次 supervised Read-only Agent task 的帶領筆記。
 - 用於檢查學習者能否區分已觀察 evidence、推論、`UNKNOWN` 與 `UNVERIFIED` 的 prompts。
@@ -48,16 +60,17 @@
   Human Review Gate。
 - 記錄整體理解需求的回饋格式，不對個別學習者評分或排名。
 
-## 候選練習（Candidate Exercises）
+## Preserved Historical Candidate Exercises
 
 1. **Instructor-led Read-only Agent exercise。** 使用現行 Runbook 中範圍受限的
    Read-only task 作為教學橋接，並停止於 Human Review。
 2. **未來 docs-only Git collaboration exercise。** 在另行授權的 Work Unit 中，
    於隔離分支修改一份指定且不含敏感資訊的 Markdown 檔案，檢閱 diff，並在 merge 前停止。
 
-上述內容均為 candidate exercises。本文件不執行這些練習，也不將它們升格為已驗證的教學程序。
+上述內容均為 superseded historical candidates。本文件不執行這些練習，也不得將它們升格為
+current student teaching procedure。
 
-## 目前驗證狀態（Current Validation Status）
+## Historical Validation Status
 
 依 Gate 4A learner feedback intake 紀錄，兩位目標學習者已完成對 Runbook 的定向閱讀與回饋。
 這是定向學習者檢閱／驗證（targeted learner review / validation），不是完整的可用性驗證、
@@ -68,8 +81,9 @@
 - Prompt Context 與 Required Output 需要最小範例；
 - Instructor-led Read-only Agent task 是合理的教學橋接。
 
-這些發現是現行 Runbook 的修訂輸入。本骨架不辨識、評分或排名個別學習者，
-不宣稱上述缺口已解決，也不宣稱 Runbook 已納入這些回饋。
+這些發現曾是 Runbook 的 learner revision input；PD-03 後不再是 current student-authoring
+backlog。本骨架不辨識、評分或排名個別學習者，不宣稱上述缺口已解決，也不宣稱 Runbook
+已納入這些回饋。
 
 ## 尚未納入範圍（Not Yet In Scope）
 

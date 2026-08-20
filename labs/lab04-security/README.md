@@ -1,6 +1,22 @@
 # Lab04 Security
 
-本 Lab 目標是在受控、授權、隔離 RF 環境中理解 false base station / UE Scanner 相關風險、UE 連線資訊觀測、DoS 影響與 5G / LTE access security。
+狀態：`HISTORICAL LAB04 MATERIAL / INDEPENDENT POST-LAB MODEL SUPERSEDED`
+
+## 2026-08-18 Curriculum Boundary
+
+依 2026-08-18 professor meeting PD-02，Security 不再以獨立、後置 Lab04 作為 current
+teaching model；未來方向是將 Security cross-cutting 地對應至 Lab01、Lab02、Lab03。本次
+只記錄 lifecycle 與方向，不設計 topic mapping、exercise、procedure 或 acceptance criteria。
+
+本文件以下內容保留 historical provenance 與 future mapping input，不是 current Lab04
+curriculum、execution plan 或 Runtime authority。任何 false base station、DoS、OTA、RF 或
+security exercise 都需要另行 scope、合法性／隔離審查與明確 Human authorization。
+
+Canonical decision source：
+[`2026-08-18 Professor Meeting Decision Record`](../../docs/decisions/2026-08-18-professor-meeting.md)。
+
+原 Lab04 目標是在受控、授權、隔離 RF 環境中理解 false base station / UE Scanner 相關風險、
+UE 連線資訊觀測、DoS 影響與 5G / LTE access security。
 
 本文件只整理已知資料、待確認項目與 future work，不代表實驗已完成。
 

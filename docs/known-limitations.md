@@ -2,7 +2,7 @@
 
 狀態：`CANONICAL CLAIM-BOUNDARY REGISTER`
 
-更新日期：2026-08-11
+更新日期：2026-08-20
 
 ## 使用方式
 
@@ -101,25 +101,28 @@ Lifecycle：`HISTORICAL_NEEDS_REVALIDATION / NOT ACTIVE / NOT AUTHORIZED`
 任何 Lab02 revalidation 都需要新的版本／commit、source mapping、Runtime scope、evidence plan
 與 Human authorization；本文件不授權執行。
 
-## Agent + Git Runbook and Teaching
+## Agent + Git Historical Runbook and Teaching
 
-Gate 4A 只完成 targeted learner reading／review，不是完整 usability、course 或 operational
-validation。下列項目仍未關閉：
+依 2026-08-18 PD-03，student Agent curriculum 已 supersede；依 PD-04，student Git scope
+限於安全完成實驗所需內容。Agent + Git Runbook 保留為 internal engineering reference，既有
+learner draft 與 Gate 4A feedback 只保存 historical provenance，不再構成 current teaching
+backlog。Gate 4A 當時只完成 targeted learner reading／review，不是完整 usability、course 或
+operational validation；下列未驗證狀態不因 lifecycle reclassification 而升格：
 
 | Item | Status | Boundary |
 | --- | --- | --- |
-| Section 3 Windows Clone comprehension | `REVISION_REQUIRED` | learner feedback 尚未納入 Runbook |
-| Claim Boundary comprehension | `REVISION_REQUIRED` | 需要更直觀的最小例子 |
-| Prompt Context／Required Output | `REVISION_REQUIRED` | 需要最小範例，但不得複製第二份 Runbook |
-| Instructor-led Read-only exercise execution | `NOT EXECUTED` | 定義 exercise 不等於 learner execution |
-| Gate 4B | `NOT AUTHORIZED` | Gate 4A feedback 必須先經另行授權修訂 |
-| Windows Git happy path | `UNVERIFIED` | 沒有本專案 Windows 實機 evidence |
-| Windows Codex workflow | `UNVERIFIED` | 不宣稱安裝、連線或端到端驗證 |
+| Section 3 Windows Clone comprehension | `HISTORICAL_REVISION_INPUT / SUPERSEDED` | 不再是 current learner authoring item |
+| Claim Boundary comprehension | `HISTORICAL_REVISION_INPUT / SUPERSEDED` | 不再是 student Agent curriculum item |
+| Prompt Context／Required Output | `HISTORICAL_REVISION_INPUT / SUPERSEDED` | 不再是 student Agent curriculum item |
+| Instructor-led Read-only Agent exercise | `NOT EXECUTED / SUPERSEDED` | 不得升格為 current student exercise |
+| Gate 4B learner authoring | `NOT AUTHORIZED / SUPERSEDED` | 不再是 current teaching gate |
+| Windows Git happy path | `UNVERIFIED / SCOPE_REQUIRES_REDEFINITION` | student-safe minimum Git scope 尚未定義 |
+| Windows Codex workflow | `UNVERIFIED / INTERNAL ONLY` | 不宣稱安裝、連線或端到端驗證 |
 | GitHub authentication choice | `UNRESOLVED` | 不在本次任務設定 authentication |
-| Gemini CLI | `CANDIDATE / UNVERIFIED` | 不是已選定 learner tool |
-| Ollama／Local Model adapter | `CANDIDATE / UNVERIFIED` | 架構概念不等於 Windows、安全或效能驗證 |
+| Gemini CLI | `CANDIDATE / UNVERIFIED / INTERNAL ONLY` | 不是 student curriculum tool |
+| Ollama／Local Model adapter | `CANDIDATE / UNVERIFIED / INTERNAL ONLY` | 架構概念不等於 Windows、安全或效能驗證 |
 
-Future Teaching 維持 `SKELETON / NOT ACTIVE COURSE`；詳見
+Future Teaching 現為 `REPLAN_REQUIRED / NOT ACTIVE COURSE`；詳見
 [`docs/teaching/agent-git/README.md`](teaching/agent-git/README.md)。
 
 ## 6G LEO / NTN
@@ -136,7 +139,7 @@ mobility control 或 real Doppler compensation 已實作或驗證。
 | Item | Status | Required next evidence／decision |
 | --- | --- | --- |
 | Mac `.10` configuration method／Network Service／persistence | `UNRESOLVED` | 歷史 `en5 = 192.168.250.10/24` 已直接觀察；仍需設定來源與 reconnect／reboot evidence |
-| Mainline non-blocking／collaboration authority boundary | `UNRESOLVED` | Owner 另行定義可獨立決策範圍、共同 gate 與 escalation path |
+| Lead-first implementation details | `UNRESOLVED_IMPLEMENTATION_DETAIL` | PD-06 已裁定 sequencing authority；stable implementation、共同 Review、escalation 與 knowledge-transfer acceptance criteria 尚待定義 |
 
 ## Promotion Rule
 

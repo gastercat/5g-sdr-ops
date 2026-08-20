@@ -10,12 +10,18 @@ Runbook 與研究停放入口。它不是 Lab Runtime、`srsRAN_4G` 原始碼倉
 ## 目前快照
 
 - **Lab01：**Phase 4C recovered baseline 已在當時核准範圍內完成，服務已受控停止。
-  這是歷史執行 baseline，不是目前 Runtime 正在運作的證據，也不提供後續啟動授權。
-- **Agent + Git：**現行操作來源是
-  [`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md)。Gate 4A
-  定向學習者檢閱已完成，但回饋尚待修訂；Gate 4B 未獲授權。
+  這是歷史執行 baseline，狀態為 `NOT_REVALIDATED`；目前暑假的 current project priority
+  是完成 Lab01 與實驗手冊，兩者均為獨立 deliverable dimensions。本 priority 不提供後續
+  啟動授權，且兩者的 completion criteria 尚未定義。
+- **2026-08-18 professor decisions：**已記錄於
+  [`docs/decisions/2026-08-18-professor-meeting.md`](docs/decisions/2026-08-18-professor-meeting.md)，
+  並由 [`docs/decision-register.md`](docs/decision-register.md) materialize current effect。
+- **Agent + Git：**Runbook 保留為 Maintainer／internal engineering reference；依 PD-03，
+  student Agent curriculum 已 supersede。依 PD-04，student Git 僅保留安全完成實驗所需內容。
 - **Lab02：**不是目前 active mainline，沒有因 Lab01 prerequisite 完成而自動取得執行授權。
-- **Future Teaching：**僅為 `SKELETON / NOT ACTIVE COURSE`。
+- **Security：**原獨立、後置 Lab04 teaching model 已 supersede；未來採 Lab01～03
+  cross-cutting mapping，目前尚未設計 exercises。
+- **Future Teaching：**為 `REPLAN_REQUIRED / NOT ACTIVE COURSE`。
 - **6G LEO / NTN：**僅為 `RESEARCH_PARKING / CONCEPT_PROTOTYPE`，沒有 Runtime integration。
 - **ACP：**維持 `PARKING / OBSERVATION`，不是正式 Protocol 或 Repository gate。
 
@@ -26,11 +32,12 @@ Runbook 與研究停放入口。它不是 Lab Runtime、`srsRAN_4G` 原始碼倉
 | 現在在做什麼、停在哪裡 | [`PROGRESS.md`](PROGRESS.md) | 只保存 current delta、stop point、next gate 與 blockers |
 | Lab01 recovered architecture | [`docs/architecture-overview.md`](docs/architecture-overview.md) | 區分 Management／Sample／UE User Plane 與歷史 bearer 演進 |
 | 已接受與未決決策 | [`docs/decision-register.md`](docs/decision-register.md) | `UNRESOLVED` 不得由 Agent 自行裁定 |
+| 2026-08-18 professor decisions | [`docs/decisions/2026-08-18-professor-meeting.md`](docs/decisions/2026-08-18-professor-meeting.md) | Project decisions；不是 meeting recording 或 Runtime evidence |
 | 已知限制與未驗證項目 | [`docs/known-limitations.md`](docs/known-limitations.md) | 歷史 evidence 不等於 current Runtime validation |
 | Agent 與 Repository 規則 | [`AGENTS.md`](AGENTS.md) | 規則不等於某次 Runtime authorization |
 | 設定與 Runtime 邊界 | [`docs/engineering/CONFIGURATION_GOVERNANCE.md`](docs/engineering/CONFIGURATION_GOVERNANCE.md) | `/etc/srsran/` 不是 Git working tree |
-| Agent + Git 操作 | [`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md) | Future Teaching 不得建立第二份 Runbook |
-| 未來教學重用 | [`docs/teaching/agent-git/README.md`](docs/teaching/agent-git/README.md) | `SKELETON / NOT ACTIVE COURSE` |
+| Internal Agent + Git reference | [`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md) | 不是 student curriculum authority |
+| 未來教學歷史骨架 | [`docs/teaching/agent-git/README.md`](docs/teaching/agent-git/README.md) | `REPLAN_REQUIRED / NOT ACTIVE COURSE` |
 | 6G LEO / NTN | [`docs/research/6g-ntn-handover/README.md`](docs/research/6g-ntn-handover/README.md) | `RESEARCH_PARKING / NOT_INTEGRATED` |
 | Lifecycle 待辦導覽 | [`TODO.md`](TODO.md) | 未勾選項目不是完成或授權證據 |
 
@@ -97,7 +104,10 @@ Project-facing state 由 `PROGRESS.md`、Git 與上述 canonical 文件承擔。
 stop point、next authorized gate、blocking unresolved item 與 canonical pointers；不得再複製
 完整 architecture history、decision rationale 或 transitive Handoff chain。
 
-本 Repository 不預設由單一成員永久承擔全部實驗維護責任；設備集中保管也不等於成果、
-測試與維護責任全部集中於同一成員。這只保存 responsibility boundary，不裁定仍為
-[`UNRESOLVED`](docs/decision-register.md)
-的 collaboration authority operating model。
+依 2026-08-18 PD-06，Project Lead 可先完成 Lab01、Lab02，再於 stable implementation 後
+進行 collaborator knowledge transfer；不要求 collaborators 同步完成。這是 sequencing
+authority，不表示 permanent solo ownership、不自動授權 Runtime 或 Lab02 execution，也不
+免除 collaborators 的 future responsibilities。Knowledge-transfer acceptance criteria 與共同
+Review checkpoints 仍是 unresolved implementation details；見
+[`DR-009`](docs/decision-register.md) 與
+[`Professor Meeting Decision Record`](docs/decisions/2026-08-18-professor-meeting.md)。
