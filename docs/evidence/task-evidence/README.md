@@ -76,3 +76,6 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
   通用最小 template。
 - [`lab01-recovery-workstream.yaml`](lab01-recovery-workstream.yaml)：兩份重疊 historical
   recovery records 去重後的初始 TER；不代表 current Runtime state。
+- [`2026-08-24-lab01-current-truth-runtime-recovery.yaml`](2026-08-24-lab01-current-truth-runtime-recovery.yaml)：
+  2026-08-24 fresh Host／Network observation、bounded attach recovery、post-attach error boundary、
+  final process stop 與 temporary sample-plane cleanup evidence；不授權下一次 Runtime。
