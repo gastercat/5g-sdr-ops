@@ -9,10 +9,13 @@ Runbook 與研究停放入口。它不是 Lab Runtime、`srsRAN_4G` 原始碼倉
 
 ## 目前快照
 
-- **Lab01：**Phase 4C recovered baseline 已在當時核准範圍內完成，服務已受控停止。
-  這是歷史執行 baseline，狀態為 `NOT_REVALIDATED`；目前暑假的 current project priority
-  是完成 Lab01 與實驗手冊，兩者均為獨立 deliverable dimensions。本 priority 不提供後續
-  啟動授權，且兩者的 completion criteria 尚未定義。
+- **Lab01：**Phase 4C 保留為 historical execution baseline；2026-08-24 另以 selected
+  historical execution profile 進行 bounded recovery。EPC Stage 1 啟動由 Human-reported terminal
+  evidence 支持；eNB／UE startup 與後續 Cell Search、Random Access、RRC Connected、
+  Network Attach 及 UE `172.16.0.2` 等 UE attach milestones 則有 fresh observed evidence。Attach 後
+  一次 sample receive error 的 recovery／root cause 仍為 `UNKNOWN`，user plane 未驗證。
+  Runtime 現已停止，temporary sample plane 已移除，management plane 保留；本狀態不提供
+  下一次 Runtime 授權，也不等於 Full Lab01 PASS。
 - **2026-08-18 professor decisions：**已記錄於
   [`docs/decisions/2026-08-18-professor-meeting.md`](docs/decisions/2026-08-18-professor-meeting.md)，
   並由 [`docs/decision-register.md`](docs/decision-register.md) materialize current effect。

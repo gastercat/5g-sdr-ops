@@ -1,0 +1,244 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "2026-08-24-lab01-current-truth-runtime-recovery"
+  record_slug: "2026-08-24-lab01-current-truth-runtime-recovery"
+  source_thread: "Codex task thread；外部 thread identifier 不可取得"
+  date_or_range: "2026-08-24"
+  executor: "Codex；privileged 與 Runtime actions 由 Human Operator 控制"
+  historical_or_current: "2026-08-24 目前觀察（CURRENT OBSERVATION）/ CLOSED"
+
+authorization:
+  scope:
+    - "恢復 control-side 與成對 Host 的 Current Truth。"
+    - "選定並檢視 historical execution profile，不部署 clean candidate。"
+    - "依分階段授權執行 temporary sample-plane restoration 與 bounded EPC/eNB/UE recovery。"
+    - "觀察 attach milestones、停止 Runtime、移除 temporary sample-plane state，並驗證 clean stop。"
+  allowed_mutations:
+    - "Human Operator 曾暫時在 Linux1 加入 10.0.0.1/24、在 Linux2 加入 10.0.0.2/24，之後再予以移除。"
+    - "Human Operator 依分階段授權啟動並停止 srsepc、srsenb 與 srsue。"
+    - "本次 consolidation task 僅可寫入已授權的 Repository 文件與 evidence record。"
+  forbidden:
+    - "不得執行 user-plane ping、iperf、NAT、Internet、throughput、latency 或 performance validation。"
+    - "不得部署 clean candidate、變更 source/build、變更 persistent network，或執行 Lab02。"
+    - "不得讀取 subscriber credentials、private keys、受保護的 configuration content 或含 credential 的 URLs。"
+    - "本 TER 不授予未來 Runtime、network、configuration、Git publication 或 Lab02 authorization。"
+
+repo_context:
+  root: "5g-sdr-ops Repository"
+  branch: "main"
+  start_head: "b770f79536facf35c97f66a690ce2ca5f1aaacf5"
+  end_head: "b770f79536facf35c97f66a690ce2ca5f1aaacf5"
+  limitations:
+    - "建立本 TER 的文件變更在記錄的 stop point 尚未 commit。"
+    - "未執行 fetch；觀察到 local main 與其 configured upstream 的 ahead/behind 為 0/0。"
+
+evidence:
+  - evidence_id: "E01"
+    claim: "Mac control-side management path 已 fresh-observed。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Mac en5 已觀察到 192.168.250.10/24、link active，以及 directly connected
+      192.168.250.0/24 route。對 192.168.250.11 與
+      192.168.250.12 的 local route selection 使用 en5。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，control-side network 觀察"
+    limitations:
+      - "Control-side address 與 route 存在，不足以證明 Host reachability 或 Runtime health。"
+      - "Configuration method 與 reconnect/reboot persistence 尚未建立。"
+
+  - evidence_id: "E02"
+    claim: "Linux1 與 Linux2 的 management identity 及 network state 已 fresh-observed。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      兩個 target 的 user 均以 explicit-key SSH authentication 成功。
+      Linux1 顯示 enxec9a0c14d482 與 192.168.250.11/24；Linux2 顯示
+      enxec9a0c14d470 與 192.168.250.12/24。兩個 management interfaces
+      均顯示 UP,LOWER_UP 與 connected management routes。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，成對 Host 觀察"
+    limitations:
+      - "SSH authentication 不授權更廣泛的 inspection，也不足以證明 Runtime health。"
+
+  - evidence_id: "E03"
+    claim: "兩端 source trees 使用相同 historical commit 且維持 dirty；installed Lab binaries 存在。"
+    evidence_type: "GIT"
+    exact_observation: >-
+      Linux1 與 Linux2 的 ~/srsRAN_4G 均回報
+      master 上的 6bcbd9e5bf8686aa7085202cd847c5ddd64a9c16。Linux1 顯示
+      M srsenb/enb.conf.example 與 ?? build/；Linux2 顯示
+      M srsue/ue.conf.example 與 ?? build/。/usr/local/bin/srsepc、
+      /usr/local/bin/srsenb 與 /usr/local/bin/srsue 均存在。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，Host/Network Current Truth 觀察"
+    limitations:
+      - "未讀取 source diff contents。"
+      - "HEAD 相符且 binary 存在，不足以證明 pristine checkout 或 installed-binary provenance。"
+
+  - evidence_id: "E04"
+    claim: "已觀察 selected historical execution profile 與成對的 ZeroMQ endpoints。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Human 選定 HISTORICAL_EXECUTION_PROFILE。Linux1 使用
+      /etc/srsran/epc.conf 與 /etc/srsran/enb.conf，其中 eNB TX 為
+      tcp://*:2000、RX 為 tcp://10.0.0.2:2001。Linux2 使用
+      /etc/srsran/ue.conf，其中 UE TX 為 tcp://*:2001、RX 為
+      tcp://10.0.0.1:2000。clean candidate 未部署。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，config authority 與 preflight observations"
+    limitations:
+      - "觀察到 config selection，不足以在 execution 前證明 ZeroMQ functionality。"
+      - "historical profile 保留未經 functional validation 的 MBMS/eMBMS-related residue。"
+
+  - evidence_id: "E05"
+    claim: "temporary sample-plane prerequisite 在 recovery 期間存在，並於 final cleanup 時不存在。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      recovery 期間，Linux1 的 enxec9a0c14d482 上有 10.0.0.1/24，Linux2
+      的 enxec9a0c14d470 上有 10.0.0.2/24，且具有 direct 10.0.0.0/24 routes
+      與正確的 peer route selection。Final cleanup verification 顯示
+      兩個 temporary addresses 與兩個 direct routes 均不存在，同時
+      192.168.250.11/24 與 192.168.250.12/24 仍保有 UP,LOWER_UP flags。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，sample-plane verification 與 cleanup checks"
+    limitations:
+      - "privileged address mutations 由 Human Operator 執行。"
+      - "Final absence observation 未檢視 persistent Netplan 或 NetworkManager configuration。"
+
+  - evidence_id: "E06A"
+    claim: "EPC Stage 1 PASS 為 Human-reported；exact process/config invocation 則經獨立觀察。"
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      Human 提供的 EPC state 為 RUNNING / STAGE_1_PASS。Codex 在 bounded process
+      checks 中獨立觀察到 srsepc 持續以 /usr/local/bin/srsepc
+      /etc/srsran/epc.conf 執行。
+    directness: "REPORTED"
+    confidence: "MEDIUM_HIGH"
+    source_location: "2026-08-24 Codex task thread，Stage 1 verification 與後續 Human-provided gate state"
+    limitations:
+      - "完整 EPC terminal transcript 未保存在 Repo。"
+      - "僅有 process presence，不足以建立所有 EPC initialization milestone。"
+
+  - evidence_id: "E06B"
+    claim: "bounded recovery 期間已直接觀察 eNB startup 與 EPC/eNB interaction。"
+    evidence_type: "SCREENSHOT"
+    exact_observation: >-
+      Human-provided eNB terminal evidence 顯示 configuration load、commit
+      6bcbd9e、expected ZeroMQ endpoints，以及 ==== eNodeB started ====。Codex
+      獨立觀察到 srsepc 與 srsenb 持續執行。Kernel SCTP
+      tables 顯示涉及 port 36412 的 reciprocal associations。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，Stage 2 terminal 與 process verification"
+    limitations:
+      - "Process 與 SCTP 存在，本身不足以驗證 UE attach 或 user-plane traffic。"
+
+  - evidence_id: "E07"
+    claim: "Fresh paired terminal evidence 支持 Cell Search、Random Access、RRC connection、attach 與 UE IP assignment。"
+    evidence_type: "SCREENSHOT"
+    exact_observation: >-
+      UE terminal output 顯示 Found Cell、Found PLMN、Random Access
+      Transmission with seq=24 and tti=341、RRC Connected、Random Access
+      Complete with c-rnti=0x46，以及 Network attach successful. IP: 172.16.0.2.
+      成對的 eNB terminal 顯示 RACH with tti=341, preamble=24,
+      temp_crnti=0x46，之後為 User 0x46 connected。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "在 2026-08-24 Codex task thread 中 review 的 Human-provided UE 與 eNB terminal screenshots"
+    limitations:
+      - "screenshots 僅在 task context 中 review，未複製至 Repository。"
+      - "Attach 與 IP assignment 不代表 user-plane connectivity 或 performance 已驗證。"
+
+  - evidence_id: "E08"
+    claim: "post-attach UE sample-receive error 觀察到一次，沒有 evidence 支持其 root cause。"
+    evidence_type: "SCREENSHOT"
+    exact_observation: >-
+      successful attach 與 IP assignment 後，UE terminal 顯示
+      ue_sync.c:772: Error receiving samples。提供的 viewport 顯示
+      一次 occurrence，之後沒有新的 UE output。成對的 eNB viewport 顯示
+      相符的 RACH 與 User 0x46 connected lines，未見 fatal
+      或 disconnect error。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "在 2026-08-24 Codex task thread 中 review 的 Human-provided terminal screenshots"
+    limitations:
+      - "一次可見 error 不足以建立 repetition、recovery、persistence 或 root cause。"
+      - "error 後未執行 user-plane validation。"
+      - "MBMS-related component output 不等於 Lab02/eMBMS functional validation。"
+
+  - evidence_id: "E09"
+    claim: "Final process state 顯示三個 Lab Runtime processes 均已停止。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Final exact-name checks 顯示 srsepc absent、srsenb absent，以及
+      srsue absent。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，controlled-shutdown 最終狀態驗證"
+    limitations:
+      - "Human reported 的 intended shutdown order 為 srsue、srsenb、srsepc，並使用 Ctrl-C。"
+      - "Codex 未獨立觀察每次 transition，因此 exact shutdown order 與 method 仍未驗證。"
+
+  - evidence_id: "E10"
+    claim: "本次 bounded recovery 未執行 user-plane 與 performance validation。"
+    evidence_type: "CODEX_REPORT"
+    exact_observation: >-
+      已授權的 task sequence 未執行 user-plane ping、iperf、
+      NAT、Internet、throughput、latency、URLLC 或 performance validation。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-24 Codex task thread，authorization 與 action record"
+    limitations:
+      - "本項 observation 僅適用於 bounded 2026-08-24 recovery scope。"
+
+mutations:
+  - "Human Operator 曾暫時在 Linux1 加入 10.0.0.1/24、在 Linux2 加入 10.0.0.2/24，並於 Runtime shutdown 後移除兩者。"
+  - "Human Operator 依 staged authorization 啟動 srsepc、srsenb 與 srsue，之後回報以 Ctrl-C shutdown 的 intent。"
+  - "Codex 執行 read-only Runtime/network verification，未傳送 process signals，也未進行 remote mutations。"
+
+recovered_or_observed_claims:
+  - claim: "2026-08-24 Mac control side 與兩台 Lab hosts 的 Host/Network Current Truth 已恢復。"
+    status: "OBSERVED"
+    supporting_evidence: ["E01", "E02", "E03"]
+  - claim: "bounded recovery 使用 selected historical execution profile 與 complementary ZeroMQ endpoints。"
+    status: "OBSERVED"
+    supporting_evidence: ["E04", "E05", "E06A", "E06B", "E07"]
+  - claim: "Fresh 2026-08-24 control-plane recovery 到達 Cell Search、Random Access、RRC Connected、Network Attach 與 UE 172.16.0.2。"
+    status: "OBSERVED"
+    supporting_evidence: ["E06A", "E06B", "E07"]
+  - claim: "post-attach sample-receive path 已恢復且 root cause 已識別。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+  - claim: "User-plane connectivity、NAT、Internet、throughput、latency、URLLC 與 performance validation 均未執行。"
+    status: "OBSERVED"
+    supporting_evidence: ["E10"]
+  - claim: "Human reported 預期的 reverse-order Ctrl-C shutdown sequence。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["E09"]
+  - claim: "exact reverse-order shutdown sequence 已由 Codex 獨立驗證。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+  - claim: "Final state 為所有 Lab Runtime processes 已停止、temporary sample-plane state 已移除，且 management addresses 保留。"
+    status: "OBSERVED"
+    supporting_evidence: ["E05", "E09"]
+
+provenance_gaps:
+  - "external task-thread identifier 未提供。"
+  - "完整 EPC/eNB/UE terminal transcripts 未保存在 Repository。"
+  - "已 review 的 terminal screenshots 未複製至 Repository。"
+  - "Exact shutdown order 與 method 為 Human-reported，未逐階段 independently observed。"
+  - "Post-error recovery 與 root cause 維持 UNKNOWN。"
+  - "User-plane 與 performance validation 均未執行。"
+
+stop_point:
+  result: "CLEAN_STOP_AFTER_BOUNDED_RUNTIME_RECOVERY"
+  next_authority_required: >-
+    任何下一個 bounded Lab01 Work Unit 均須先由 Human 選定，並取得獨立定義 scope 的
+    authorization。本 record 不預設 post-attach diagnosis 或 user-plane validation
+    必然是下一個 task。

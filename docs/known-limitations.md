@@ -2,7 +2,7 @@
 
 狀態：`CANONICAL CLAIM-BOUNDARY REGISTER`
 
-更新日期：2026-08-20
+更新日期：2026-08-24
 
 ## 使用方式
 
@@ -11,6 +11,31 @@
 都不是失敗的委婉說法，也不得被改寫成 `PASS`。
 
 ## Lab01 Recovered Baseline
+
+### 2026-08-24 fresh bounded recovery boundary
+
+Lifecycle：`FRESH OBSERVATION / CLEAN STOP / HUMAN REVIEW`
+
+2026-08-24 使用 selected historical execution profile 進行一次 separately authorized bounded
+recovery。Fresh evidence 支持 EPC／eNB startup、EPC／eNB interaction、Cell Search、Random
+Access、RRC Connected、Network Attach 與 UE `172.16.0.2`。本次 evidence 與 historical
+Phase 4C 分開保存，且不建立 Full Lab01 PASS。
+
+| Claim | Status | Boundary |
+| --- | --- | --- |
+| Control-plane recovery through attach | `PASS / FRESH OBSERVED 2026-08-24` | 不外推 user-plane connectivity |
+| UE address `172.16.0.2` | `PASS / FRESH OBSERVED 2026-08-24` | address assignment 不等於 ICMP／Internet |
+| Post-attach sample receive | `ERROR OBSERVED ONCE` | UE reported `Error receiving samples` after attach |
+| Post-error recovery／root cause | `UNKNOWN` | process／socket presence與單次 error 均不足以裁定 cause 或 recovery |
+| User-plane ICMP | `NOT VALIDATED` | 本次未執行 ping |
+| NAT／Internet／throughput／latency／URLLC | `NOT VALIDATED` | 不在本次 bounded recovery scope |
+| MBMS／eMBMS／Lab02 | `NOT VALIDATED` | historical profile residue／component output 不是 feature validation |
+| Final Runtime state | `ALL LAB RUNTIME STOPPED` | final absence observed；exact shutdown order 未逐階段獨立驗證 |
+| Temporary sample plane | `REMOVED` | final address／route absence observed；不裁定 persistence configuration |
+| Management plane | `PRESERVED` | Linux1 `.11/24`、Linux2 `.12/24` 與 link flags fresh-observed |
+
+Execution provenance 見
+[`2026-08-24 Task Evidence Record`](evidence/task-evidence/2026-08-24-lab01-current-truth-runtime-recovery.yaml)。
 
 Phase 4C 可支持 initialization、ZeroMQ、cell search、Random Access、RRC Connected、
 Network Attach、UE／EPC addressing、bounded bidirectional ICMP 與 controlled shutdown。
