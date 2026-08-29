@@ -100,7 +100,7 @@
 
 | 中文名詞 | 英文名詞 | 縮寫 | 說明 |
 | --- | --- | --- | --- |
-| 邏輯通道優先處理映射限制 | Logical Channel Prioritization Mapping Restrictions | LCP mapping restrictions | RRC 可為每個邏輯通道設定映射限制，以控制可使用的子載波間距、PUSCH 傳輸時間、服務小區及 grant 等；具體參數依 3GPP Release。`NEEDS_CONFIRMATION`：本專案適用的 Release 尚未指定。 |
+| 邏輯通道優先處理映射限制 | Logical Channel Prioritization Mapping Restrictions | LCP mapping restrictions | RRC 可為每個邏輯通道設定映射限制；限制可能涉及子載波間距、PUSCH 傳輸時間、服務小區，以及部分 grant 使用條件。具體限制項目依 3GPP Release。`NEEDS_CONFIRMATION`：本專案適用的 Release 尚未指定。 |
 | 封包複製 | Packet Duplication | — | PDCP 將同一封包複製到多條 RLC 或傳輸路徑，提高可靠度。 |
 | 雙連線 | Dual Connectivity | DC | UE 同時連接兩個 RAN 節點或兩條傳輸腿。 |
 | 配置授權 | Configured Grant | CG | 預先配置上行資源，減少排程等待時間。 |
@@ -135,4 +135,4 @@
 | srsENB | Software Radio Systems eNB | srsENB | 開源 LTE eNB。 |
 | srsEPC | Software Radio Systems EPC | srsEPC | 開源 EPC。 |
 | 封包擷取 | Packet Capture | PCAP | 擷取封包供分析，例如 Wireshark 分析。 |
-| Wireshark | Wireshark Protocol Analyzer | — | 常用封包分析工具；工具存在不代表本專案已完成 PCAP 協定觀測（protocol observation）。 |
+| Wireshark | Wireshark Protocol Analyzer | — | 工具存在或可啟動本身不構成 PCAP／協定觀測 evidence；實際驗證狀態以對應實驗的 evidence 與 claim boundary 為準。 |
