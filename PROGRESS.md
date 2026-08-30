@@ -1,12 +1,25 @@
 # 5G SDR Operations Progress
 
-更新日期：2026-08-24
+更新日期：2026-08-30
 文件角色：`CURRENT STATE / DELTA-ONLY NAVIGATION`
 
 ## Current Status
 
 目前 project checkpoint：
 
+- `KNOWN / EV-1 PASS (PREPARED UBUNTU 24.04)`：pinned srsRAN_4G source 的 clean out-of-source
+  build、ZeroMQ-enabled build、isolated install 與 upstream test suite 已完成；這不等於 pristine
+  Ubuntu dependency-install reproducibility。
+- `PARTIAL / EV-2`：R0 preflight、R1 EPC、R2 eNB／S1 Setup、R3 UE attach、R4 user-plane
+  addressing 與 R6 shutdown 均已有 Part 8 evidence；R5 UE → EPC ICMP 為 `FAIL / UNLOCALIZED`，
+  因此不宣稱 EV-2 或 Full Lab01 PASS。
+- `KNOWN / USB PHYSICAL-LINK INCIDENT`：Linux2 `enxec9a0c14d470` 曾在 USB／kernel device
+  layer 消失；same-port physical replug 已恢復 management 與 Sample Plane。exact root cause 是
+  `UNKNOWN`，與 R5 僅為 `POTENTIAL_CORRELATION_ONLY`。
+- `OBSERVED / NOT_REPRODUCED`：後續 120-second UE-active controlled reproduction 中，USB
+  device／interface 未消失；這不表示問題已修復、adapter 已證明穩定，亦不排除或解釋 R5。
+- `CLEAN_STOP / NEXT GATE NOT STARTED`：Part 8 結束時 `srsepc`、`srsenb`、`srsue` 均為 stopped；
+  `R5A Counter Localization` 尚未開始，須由 Human 另行授權。
 - `KNOWN / FRESH OBSERVED 2026-08-24`：Lab01 control-side 與 Linux1／Linux2 Host／Network
   Current Truth 已恢復；Mac management 為 `en5 = 192.168.250.10/24`，Linux1 為
   `enxec9a0c14d482 = 192.168.250.11/24`，Linux2 為
@@ -39,7 +52,7 @@
 
 | Workstream | Lifecycle | Current boundary |
 | --- | --- | --- |
-| Lab01 completion | `FRESH BOUNDED RECOVERY TO ATTACH / COMPLETION CRITERIA UNRESOLVED` | 8/24 已 fresh-observe attach 與 UE IP，但 user plane 未驗證；不宣稱 Full Lab01 PASS |
+| Lab01 completion | `EV-2 PARTIAL / R5 FAIL UNLOCALIZED / COMPLETION CRITERIA UNRESOLVED` | EV-1 PASS；EV-2 R0–R4、R6 PASS，R5 UE → EPC ICMP 未通；不宣稱 EV-2 或 Full Lab01 PASS |
 | Lab01 experiment manual | `CURRENT SUMMER PROJECT PRIORITY / NOT YET COMPLETE` | Canonical path、章節與 completion criteria 待另行 docs-only Work Unit |
 | Lab01 recovered baseline | `HISTORICAL PHASE 4C + 2026-08-24 FRESH BOUNDED RECOVERY / CLOSED` | 兩組 evidence 分開保存；目前 Runtime 已停止、temporary sample plane 已移除 |
 | Lab02 eMBMS | `NOT ACTIVE / NOT AUTHORIZED` | prerequisite 完成不等於自動授權 |
@@ -63,6 +76,27 @@
 - Execution provenance 見
   [`2026-08-24 TER`](docs/evidence/task-evidence/2026-08-24-lab01-current-truth-runtime-recovery.yaml)；
   TER 不自行建立 authority 或 future execution permission。
+
+## 2026-08-30 EV-1 / EV-2 Engineering Validation Delta
+
+- `EV-1 PASS`：在 prepared Ubuntu 24.04 Linux2 上，以 pinned source 做 fresh clean-source
+  build、ZeroMQ-enabled configure、isolated install 與 upstream tests。這不驗證 pristine Ubuntu
+  dependency installation，亦不驗證 teaching config 或 Runtime。
+- `EV-2 PARTIAL`：R0 preflight、R1 EPC startup、R2 eNB／S1 Setup、R3 UE attach、R4
+  `172.16.0.1`／`172.16.0.2` addressing 與 R6 controlled shutdown 已保存 evidence；R5 的單次
+  UE → EPC 3-packet ICMP 沒有收到 reply，結論為 `FAIL / UNLOCALIZED`。
+- `USB INCIDENT CONFIRMED`：Linux2 USB Ethernet device／`enxec9a0c14d470` 曾於 kernel-visible
+  USB／`cdc_ether` 層消失。Human same-port physical replug 後，management 與 Sample Plane
+  host transport 恢復；USB incident 的 exact root cause 仍為 `UNKNOWN`，不將它視為 R5 的已證明原因。
+- `CONTROLLED REPRODUCTION NOT_REPRODUCED`：完整 120-second UE-active window 的 local observer
+  沒有記錄 USB device／interface disappearance 或 USB disconnect／`cdc_ether` unregister；這是
+  bounded non-reproduction，不代表問題修復、adapter 穩定或 R5 已排除。
+- `NEXT GATE / NOT STARTED`：`R5A Counter Localization` 只會在另一次明確 Human authorization
+  下，以 `tun_srsue` 與 `srs_spgw_sgi` 的 pre/post counter 搭配唯一一次 3-packet UE → EPC
+  ICMP stimulus 進行。
+
+Execution provenance 見
+[`2026-08-30 EV-1/EV-2 Part 8 TER`](docs/evidence/task-evidence/2026-08-30-lab01-ev2-part8-runtime-usb-incident.yaml)。
 
 ## Lab01 Recovered Baseline
 
@@ -116,6 +150,10 @@ configuration、historical deployment 或 current Runtime evidence。
 
 ## Current Stop Point
 
+- `CLEAN_STOP_AFTER_EV2_PART8`：Part 8 Runtime 已停止；EV-2 R5 為 `FAIL / UNLOCALIZED`，USB
+  incident 與 R5 的 exact root cause 都仍為 `UNKNOWN`。
+- `NOT_STARTED / NEEDS_HUMAN_AUTHORIZATION`：`R5A Counter Localization` 不會自動開始；不得將
+  120-second USB non-reproduction 轉寫為 R5 resolution。
 - `CLEAN_STOP_AFTER_BOUNDED_RUNTIME_RECOVERY`：Runtime 已停止；temporary sample plane 已移除；
   management plane 保留。
 - `HUMAN_REVIEW`：2026-08-24 Current Truth／Runtime evidence consolidation 尚待 Review；
@@ -147,6 +185,7 @@ post-attach sample receive error 的 recovery／root cause 仍為 `UNKNOWN`。
 - Known limitations：[`docs/known-limitations.md`](docs/known-limitations.md)
 - Task execution evidence：[`docs/evidence/task-evidence/README.md`](docs/evidence/task-evidence/README.md)
 - 2026-08-24 Lab01 fresh execution evidence：[`TER`](docs/evidence/task-evidence/2026-08-24-lab01-current-truth-runtime-recovery.yaml)
+- 2026-08-30 Lab01 EV-1／EV-2 Part 8 evidence：[`TER`](docs/evidence/task-evidence/2026-08-30-lab01-ev2-part8-runtime-usb-incident.yaml)
 - Internal Agent + Git reference：[`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md)
 - Historical Future Teaching skeleton：[`docs/teaching/agent-git/README.md`](docs/teaching/agent-git/README.md)
 - 6G NTN Research Parking：[`docs/research/6g-ntn-handover/README.md`](docs/research/6g-ntn-handover/README.md)
