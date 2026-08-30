@@ -1,0 +1,214 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "2026-08-30-lab01-ev2-part8-runtime-usb-incident"
+  record_slug: "2026-08-30-lab01-ev2-part8-runtime-usb-incident"
+  source_thread: "Codex task thread；外部 thread identifier 不可取得"
+  date_or_range: "2026-08-30"
+  executor: "Codex；interactive privilege 與 Runtime terminal actions 由 Human Operator 控制"
+  historical_or_current: "2026-08-30 bounded EV-1／EV-2 execution provenance / CLOSED"
+
+authorization:
+  scope:
+    - "在 Linux2 prepared Ubuntu 24.04 上驗證 pinned srsRAN_4G clean-source build。"
+    - "以 run-specific artifacts 與已 materialized teaching/subscriber inputs 執行 bounded EV-2。"
+    - "保存 R5 ICMP failure、USB incident、recovery 與 controlled reproduction 的非敏感 evidence。"
+  allowed_mutations:
+    - "Human Operator 啟動與停止 run-specific srsepc、srsenb、srsue。"
+    - "EV-1／EV-2 user-owned workspaces、isolated install 與 bounded local observer artifacts。"
+    - "temporary sample-plane addresses 與 Human physical replug；詳細 privileged actions 不由本 TER 重現。"
+  forbidden:
+    - "不得將 runtime logs、subscriber credentials、authentication material 或 credential-bearing config 寫入 TER。"
+    - "不得宣稱 TCP/iperf、NAT/Internet、performance、URLLC、Lab02/eMBMS 或 R5 root cause。"
+    - "本 TER 不授權 R5A、任何後續 Runtime、network repair 或 USB remediation。"
+
+repo_context:
+  root: "5g-sdr-ops Repository"
+  branch: "main"
+  start_head: "fcafd5741971da8b580037fb7f1228332d49ef08"
+  end_head: "fcafd5741971da8b580037fb7f1228332d49ef08"
+  limitations:
+    - "本 closeout 的文件變更尚未 commit。"
+    - "本 record 保存 task-thread evidence directness；不自行裁定 canonical authority。"
+
+evidence:
+  - evidence_id: "E01"
+    claim: "EV-1 prepared Ubuntu 24.04 clean-source build、ZeroMQ configure、isolated install 與 upstream tests 已完成。"
+    evidence_type: "CODEX_REPORT"
+    exact_observation: >-
+      R3 workspace 使用 official upstream exact commit
+      6bcbd9e5bf8686aa7085202cd847c5ddd64a9c16 與 tree
+      9f853a2a42242ddfa1afe50106187c57872b7683；CMake ENABLE_ZEROMQ=ON、
+      srsepc/srsenb/srsue build 與 isolated install 成功，upstream tests 為 1547/1547 PASS。
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Codex EV-1 R3 task report"
+    limitations:
+      - "這是 prepared host 的 clean-source build evidence，不是 pristine Ubuntu dependency-install reproducibility。"
+      - "不驗證 teaching config parser/load 或 Runtime。"
+
+  - evidence_id: "E02"
+    claim: "EV-2 R0 preflight 的 Sample Plane addressing、direct routes 與 bidirectional host transport 已觀察。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Linux1 enxec9a0c14d482 使用 10.0.0.1/24，Linux2 enxec9a0c14d470 使用
+      10.0.0.2/24；兩端 peer route 正確，host-level Sample Plane ICMP 各為 3/3。
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Codex EV-2 R0 / sample-plane restoration task output"
+    limitations:
+      - "host-level Sample Plane transport 不足以證明 ZeroMQ application samples 或 LTE user-plane forwarding。"
+
+  - evidence_id: "E03"
+    claim: "EV-2 R1 EPC 與 R2 eNB/S1 Setup initialization 已由 Human terminal observations 報告。"
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      Human Operator reported run-specific EPC initialization including HSS, S1AP, MME,
+      SGi, S1-U and SP-GW, and reported run-specific eNB S1 Setup completion with
+      ZeroMQ RF startup. Codex bounded process checks were consistent with running
+      srsepc and srsenb at the expected run-specific paths.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Codex EV-2 controlled runtime task and Human terminal observations"
+    limitations:
+      - "Initialization milestones are Human-reported; process presence does not independently reproduce all terminal milestones."
+      - "EPC/eNB startup does not prove UE attach or user-plane forwarding."
+
+  - evidence_id: "E04"
+    claim: "EV-2 R3 UE attach 與 R4 user-plane addressing 已保存 non-sensitive evidence。"
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      Human Operator reported Attach Accept, Network attach successful, Attach Complete,
+      and UE IPv4 172.16.0.2. Bounded checks observed the expected runtime TUN addresses:
+      Linux2 tun_srsue 172.16.0.2 and Linux1 srs_spgw_sgi 172.16.0.1.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Codex EV-2 R3/R4 task observations"
+    limitations:
+      - "Successful attach and address assignment do not by themselves prove GTP-U forwarding or ICMP connectivity."
+
+  - evidence_id: "E05"
+    claim: "Original EV-2 R5 UE to EPC minimal ICMP failed。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      A single bounded command equivalent to ping -I tun_srsue -c 3 172.16.0.1
+      transmitted 3 packets, received 0 packets, and reported 100% packet loss.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Codex EV-2 R5 task output"
+    limitations:
+      - "This establishes the failed UE to EPC ICMP attempt only; no reverse ICMP result was established in that attempt."
+      - "It does not itself localize a root cause to UE TUN, bearer/GTP-U, SGi, return path, USB, or host networking."
+
+  - evidence_id: "E06"
+    claim: "EV-2 R6 controlled shutdown left srsepc, srsenb and srsue absent。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Post-shutdown checks found no active srsepc or srsenb on Linux1 and no active
+      srsue on Linux2. Runtime-created srs_spgw_sgi and tun_srsue later disappeared naturally.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Codex EV-2 post-failure shutdown verification"
+    limitations:
+      - "Human reported UE → eNB → EPC shutdown intent; exact per-stage order was not independently observed."
+
+  - evidence_id: "E07"
+    claim: "R5A counter observation was aborted before counters or a new R5 stimulus because Linux2 management became unreachable."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      After Human-reported UE startup and attach, two SSH attempts to 192.168.250.12:22
+      timed out at 8 and 15 seconds. No R5A pre/post counter snapshots and no new
+      3-packet UE to EPC ICMP stimulus were performed.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Codex R5A controlled runtime observation"
+    limitations:
+      - "Management loss was temporally associated with active UE runtime but did not establish a mechanism or causality."
+
+  - evidence_id: "E08"
+    claim: "Linux2 USB Ethernet incident was localized to USB/kernel device or physical-link layer."
+    evidence_type: "LOG"
+    exact_observation: >-
+      Linux2 kernel evidence included USB disconnect, cdc_ether unregister of
+      enxec9a0c14d470, descriptor/enumeration failures including error -71 and -32,
+      and absence of the adapter from lsusb and /sys/class/net during failure.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Linux2 kernel and local network observations"
+    limitations:
+      - "The evidence supports USB device or physical-link-layer failure, not an exact hardware, connector, port, power, driver, or firmware root cause."
+      - "It does not prove that the USB incident caused the original R5 ICMP failure."
+
+  - evidence_id: "E09"
+    claim: "Same-port physical replug recovered Linux2 USB enumeration, management and Sample Plane transport."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Human performed a physical replug into the same USB port. The 35b5:3500 SZNX LAN
+      100M device re-enumerated, cdc_ether recreated enxec9a0c14d470, Mac to Linux2
+      management ICMP was 3/3, SSH succeeded, and Linux2 to Linux1 Sample Plane ICMP
+      was 3/3 after Human restored temporary 10.0.0.2/24.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-30 USB incident recovery checks"
+    limitations:
+      - "Same-port recovery is not proof of a permanent fix or adapter stability."
+
+  - evidence_id: "E10"
+    claim: "The historical USB disappearance was not reproduced during one complete 120-second UE-active observation window."
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: >-
+      Local observer directory logs/usb-repro/20260830T212045+0800 covered
+      2026-08-30 21:23:58 to 21:25:58 +08:00 with 120 samples and no material gap.
+      Every sample retained USB 35b5:3500, enxec9a0c14d470, carrier 1, operstate up,
+      192.168.250.12 and 10.0.0.2; matching USB/cdc_ether disconnect events were zero.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "2026-08-30 Linux2 local observer artifact; bounded controlled reproduction"
+    limitations:
+      - "One bounded non-reproduction does not establish that the issue is fixed or that the adapter is stable."
+      - "It neither rules out a relationship to the historical incident nor resolves R5."
+
+recovered_or_observed_claims:
+  - claim: "EV-1 clean-source build on prepared Ubuntu 24.04 is PASS within the stated boundary."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["E01"]
+  - claim: "EV-2 R0 preflight is PASS."
+    status: "OBSERVED"
+    supporting_evidence: ["E02"]
+  - claim: "EV-2 R1 EPC and R2 eNB/S1 Setup are PASS."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["E03"]
+  - claim: "EV-2 R3 UE attach and R4 user-plane addressing are PASS."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["E04"]
+  - claim: "EV-2 R5 UE to EPC ICMP is FAIL / UNLOCALIZED."
+    status: "OBSERVED"
+    supporting_evidence: ["E05"]
+  - claim: "EV-2 R6 final runtime process absence is PASS."
+    status: "OBSERVED"
+    supporting_evidence: ["E06"]
+  - claim: "R5A was aborted without counters or a repeat ICMP stimulus."
+    status: "OBSERVED"
+    supporting_evidence: ["E07"]
+  - claim: "USB incident physical-link/device-layer localization and same-port recovery are observed."
+    status: "OBSERVED"
+    supporting_evidence: ["E08", "E09"]
+  - claim: "USB disappearance was not reproduced in the complete bounded UE-active window."
+    status: "OBSERVED"
+    supporting_evidence: ["E10"]
+
+provenance_gaps:
+  - "Original R5 root cause remains UNKNOWN."
+  - "USB incident exact root cause remains UNKNOWN."
+  - "USB incident to R5 relationship remains POTENTIAL_CORRELATION_ONLY."
+  - "R5A counter localization is NOT_STARTED after the aborted attempt."
+  - "TCP/iperf, NAT/Internet, performance/URLLC, Lab02/eMBMS and PCAP are NOT VALIDATED in this record."
+
+stop_point:
+  result: "CLEAN_STOP_AFTER_EV2_PART8 / R5_FAIL_UNLOCALIZED"
+  runtime_state: "srsepc STOPPED; srsenb STOPPED; srsue STOPPED"
+  next_authority_required: >-
+    Human must separately authorize R5A Counter Localization, restricted to pre/post
+    counters on Linux2 tun_srsue and Linux1 srs_spgw_sgi around exactly one 3-packet
+    UE to EPC ICMP stimulus.

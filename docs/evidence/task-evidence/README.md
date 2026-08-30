@@ -79,3 +79,7 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 - [`2026-08-24-lab01-current-truth-runtime-recovery.yaml`](2026-08-24-lab01-current-truth-runtime-recovery.yaml)：
   2026-08-24 fresh Host／Network observation、bounded attach recovery、post-attach error boundary、
   final process stop 與 temporary sample-plane cleanup evidence；不授權下一次 Runtime。
+- [`2026-08-30-lab01-ev2-part8-runtime-usb-incident.yaml`](2026-08-30-lab01-ev2-part8-runtime-usb-incident.yaml)：
+  2026-08-30 EV-1 clean-source build、EV-2 R0–R6 bounded Runtime evidence、R5 ICMP failure、
+  USB physical-link incident、same-port replug recovery 與 120-second controlled non-reproduction；
+  不將 USB incident 視為 R5 的已證明 root cause，亦不授權 R5A。
