@@ -12,7 +12,8 @@
 ## 目的（Purpose）
 
 本目錄保存一套供未來 6G LEO / NTN 研究使用的候選 Neuro-Symbolic RRM /
-Handover Supervisor 架構。將內容保存於 Repository 只代表文件化，不代表實作、部署、
+Handover Supervisor 架構，以及用來檢視研究問題的外部案例。將內容保存於 Repository
+只代表文件化，不代表實作、部署、
 符合標準或具備 Runtime evidence。
 
 ## 研究狀態（Research Status）
@@ -65,6 +66,9 @@ configuration、scheduler、source code 或 validation record。
 
 ## 入口文件（Entry Documents）
 
+- [Starlink Direct to Cell：LEO／NTN 實際案例](starlink-direct-to-cell-reference.md)
+  — 外部 LTE 衛星服務的來源查核、NR-NTN 分類邊界與研究問題；不是 6G 產品、
+  prototype validation 或新的 implementation scope。
 - [6G LEO / NTN 的 Neuro-Symbolic RRM 與 Handover Supervisor](neuro_symbolic_rrm_handoff.md)
   — 包含實質架構、state-machine constraints、edge cases、概念性 pseudocode 與
   candidate roadmap。
