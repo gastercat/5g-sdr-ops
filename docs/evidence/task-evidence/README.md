@@ -72,6 +72,9 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 
 ## Files
 
+- [`2026-09-09-starlink-dtc-luna-experiment.yaml`](2026-09-09-starlink-dtc-luna-experiment.yaml)：
+  兩個 Luna worker 的實際參與、Starlink reference-case 整合與來源限縮；僅文件研究實驗，
+  不改變 NTN lifecycle 或授權實作。
 - [`TASK_EVIDENCE_RECORD_TEMPLATE.yaml`](TASK_EVIDENCE_RECORD_TEMPLATE.yaml)：TER v0.1
   通用最小 template。
 - [`lab01-recovery-workstream.yaml`](lab01-recovery-workstream.yaml)：兩份重疊 historical

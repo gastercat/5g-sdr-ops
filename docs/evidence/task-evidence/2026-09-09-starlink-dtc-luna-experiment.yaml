@@ -1,0 +1,144 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "2026-09-09-starlink-dtc-luna-experiment"
+  source_thread: "01a0843d-3278-7d10-9d76-398c1bda67da"
+  date_or_range: "2026-09-09"
+  executor: "Parent Maintainer with two gpt-5.6-luna review workers"
+  historical_or_current: "Bounded documentation and research experiment"
+
+authorization:
+  scope:
+    - "User requested a minimal Repo-specific Luna Team and one Starlink Direct to Cell reference-case integration."
+  allowed_mutations:
+    - "Isolated documentation branch, research case/navigation, team task package and execution evidence."
+  forbidden:
+    - "5G SDR implementation, lab access, runtime/configuration changes, commit, push, merge or global Control Plane refactoring."
+
+repo_context:
+  root: "5g-sdr-ops"
+  branch: "docs/starlink-dtc-luna-experiment"
+  start_head: "52a262b6b362ac0d234125468dd950186dbe147b"
+  end_head: "52a262b6b362ac0d234125468dd950186dbe147b"
+
+evidence:
+  - evidence_id: "E01"
+    claim: "Preflight supported proceeding on an isolated documentation branch."
+    evidence_type: "GIT"
+    exact_observation: >-
+      Initial git status --short was empty; main HEAD and locally recorded origin/main both
+      resolved to 52a262b6b362ac0d234125468dd950186dbe147b; rev-list comparison returned 0 0.
+      PROGRESS had no explicit checkpoint SHA. Its linked 2026-08-30 TER records fcafd57
+      as repository context; merge-base --is-ancestor for that full commit returned success.
+      HEAD commit subject records the EV-2 Part 8 evidence checkpoint (#27).
+      git switch -c docs/starlink-dtc-luna-experiment succeeded after sandbox escalation.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Parent task exec_command preflight and branch creation outputs"
+    limitations:
+      - "No fetch; origin/main equality is against the local remote-tracking ref, not fresh server state."
+      - "Checkpoint provenance is reconstructed from the linked TER and commit subject, not an explicit PROGRESS checkpoint SHA."
+  - evidence_id: "E02"
+    claim: "Two Luna workers actually participated with distinct responsibilities."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      collaboration.spawn_agent accepted model gpt-5.6-luna and fork_turns none for
+      /root/satellite_evidence and /root/research_boundary. Both returned task reports.
+      Evidence worker researched primary external sources; Boundary worker inspected Repo
+      authority and recommended an independent case document plus research README navigation.
+      Parent used followup_task for the same Boundary worker to inspect the resulting draft.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Task collaboration tool results and worker messages; agent-prompts/ntn-reference-luna-team.md"
+    limitations:
+      - "Observed model selection is the tool request/acceptance, not independent provider attestation."
+      - "Worker source findings are reports; adopted external claims were also checked by Parent."
+      - "Read-only worker roles are instruction boundaries in a shared workspace, not OS isolation."
+  - evidence_id: "E03"
+    claim: "Worker findings changed the integration and claim boundaries."
+    evidence_type: "CODEX_REPORT"
+    exact_observation: >-
+      Satellite Evidence Reviewer separated LTE-phone DTC, NR-NTN and NB-IoT/eMTC NTN;
+      Parent preserved this three-way distinction using 3GPP TR metadata. Research Boundary
+      Reviewer recommended keeping the prototype handoff untouched and limiting case relevance
+      to questions, not an accepted bridge or reusable thresholds; Parent adopted that structure.
+      Parent further limited the proposed simulator relationship to research questions only.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "Worker final reports and docs/research/6g-ntn-handover/starlink-direct-to-cell-reference.md"
+    limitations:
+      - "These are identifiable contributions, not proof that a single agent would have missed them."
+  - evidence_id: "E04"
+    claim: "Parent narrowed source selection rather than promoting ambiguous or inaccessible claims."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      Parent opened the Starlink first-text PDF, T-Mobile 2025-07-23 launch-day announcement,
+      and 3GPP portal records 3926/3747. The dynamic Starlink business page returned only a
+      JavaScript notice to Parent; eNodeB wording was replaced with LTE modem from the PDF.
+      The February 2025 SpaceX service PDF used broad US commercial wording; the case instead
+      cites T-Mobile's launch-day report, not the worker's earlier forward-looking announcement.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Parent web open results; case source ledger S1-S4"
+    limitations:
+      - "3GPP overview returned 403; portal metadata supports classification only."
+      - "External service evidence is provider/operator self-report, not independent runtime validation."
+      - "No current global availability, performance or conformance conclusion."
+  - evidence_id: "E05"
+    claim: "The same Luna Boundary Reviewer inspected the draft; Parent resolved its four findings."
+    evidence_type: "CODEX_REPORT"
+    exact_observation: >-
+      Final worker review found no authority violation requiring rejection and returned four
+      findings. F1 adopted: broad NTN categorization explicitly labeled INFERENCE / WORKING
+      CLASSIFICATION. F2 adopted by replacing the existing scope sentence: evidence questions
+      are not implementation requirements and do not authorize data collection or implementation.
+      F3 not duplicated: provider/operator provenance already appears immediately above the claim
+      table, in claim scope cells and source ledger. F4 not duplicated: C4 excludes reusable
+      thresholds; the research section explicitly says the case does not validate the prototype
+      or demonstrate its AI/guard/state-machine design. Parent inspected these edits directly.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "Second /root/research_boundary report; Parent final case edits"
+    limitations:
+      - "Worker review is not Human acceptance; no additional worker round followed these narrow edits."
+  - evidence_id: "E06"
+    claim: "Documentation validation completed within the five-file scope."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      git diff --check passed. A Python check covered all five changed/new files for trailing
+      whitespace and final newlines, resolved 16 relative Markdown links, and found no matches
+      in a bounded private-key/token pattern scan. Ruby YAML parsed this TER and checked its
+      evidence structure and allowed claim statuses. Parent inspected the tracked diff and full
+      new files. A scoped git diff --exit-code confirmed PROGRESS, AGENTS, canonical architecture,
+      decisions, limitations, prototype handoff, configs and labs remained unchanged.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Parent final exec_command validation outputs"
+    limitations:
+      - "Pattern scan is not an exhaustive secret detector; document content was also reviewed."
+      - "No runtime tests apply to this documentation-only change."
+
+mutations:
+  - "Created agent-prompts/ntn-reference-luna-team.md as an experiment task package, not an installed skill."
+  - "Created docs/research/6g-ntn-handover/starlink-direct-to-cell-reference.md."
+  - "Updated docs/research/6g-ntn-handover/README.md purpose and navigation."
+  - "Created this TER and added a link in the task-evidence README."
+
+recovered_or_observed_claims:
+  - claim: "Two bounded Luna workers participated in the documentation experiment."
+    status: "OBSERVED"
+    supporting_evidence: ["E02"]
+  - claim: "Worker reports supplied distinct technical classification and Repo authority findings."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["E03"]
+
+provenance_gaps:
+  - "No installed /Team-mode skill was found in the session catalog or searched local skill paths; existing collaboration tools executed the team."
+  - "Local conceptual Team-mode material was navigation context only; private material was not copied into the Repo and grants no authority."
+  - "Token, credit and cost savings UNKNOWN; no single-agent A/B experiment or independent-model diversity test."
+  - "No Human acceptance of this uncommitted diff has occurred."
+
+stop_point:
+  result: "COMPLETED ONE EXPERIMENT / UNCOMMITTED DOCUMENTATION / HUMAN REVIEW PENDING"
+  next_authority_required: "Human Review; any later implementation/runtime requires a separately scoped authorization."
