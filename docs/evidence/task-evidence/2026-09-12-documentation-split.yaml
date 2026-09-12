@@ -1,0 +1,93 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "2026-09-12-documentation-split"
+  source_thread: "5G SDR Repository Documentation Split & Cleanup"
+  date_or_range: "2026-09-12"
+  executor: "Repository documentation agent; single-agent"
+  historical_or_current: "Documentation refactor execution record; no Runtime observation"
+
+authorization:
+  scope:
+    - "Human requested inventory, classification and documentation split through commit, push and PR."
+  allowed_mutations:
+    - "Repository documentation, navigation, docs branch, commit, push and PR."
+  forbidden:
+    - "Merge, follow-on cleanup, SSH, lab access, Runtime, active config, network, RF and new Lab validation."
+
+repo_context:
+  root: "5g-sdr-ops"
+  branch: "docs/delivery-exploration-split"
+  start_head: "1e760ae1861d2df3fd087c9fd036241c10ea51a7"
+  end_head: "Containing commit; final publication identity is recorded by Git and the PR."
+
+evidence:
+  - evidence_id: "DS-01"
+    claim: "The documentation branch started from a clean, traceable main checkpoint."
+    evidence_type: "GIT"
+    exact_observation: >-
+      Initial git status was clean on main; HEAD and origin/main matched with ahead/behind 0/0.
+      git ls-remote --heads origin main returned 1e760ae1861d2df3fd087c9fd036241c10ea51a7.
+      PROGRESS did not contain an explicit checkpoint SHA. Its latest change was
+      52a262b6b362ac0d234125468dd950186dbe147b (EV-2 Part 8 evidence checkpoint, PR 27),
+      confirmed an ancestor of HEAD. The historical README checkpoint 885c610 was also an ancestor.
+      git switch created docs/delivery-exploration-split before documentation writes.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Local repository Git commands and GitHub origin main ref, 2026-09-12"
+    limitations:
+      - "Checkpoint provenance was reconstructed; no explicit PROGRESS checkpoint SHA was invented."
+      - "Git network access and branch creation required sandbox escalation; no lab host was accessed."
+  - evidence_id: "DS-02"
+    claim: "The split preserves all baseline artifacts and technical evidence."
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: >-
+      All 94 baseline tracked files remained at their original paths; 77 were byte-identical.
+      The 17 edited baseline files were Markdown navigation or lifecycle surfaces.
+      Byte comparison against start_head confirmed 64 protected artifacts unchanged, including
+      student manual/config, canonical architecture/decisions/limitations, governance documents,
+      all audits/reports/presentation payloads and existing TEH files.
+      Original Lab prose remained intact; three Lab README heading levels were demoted only
+      to nest legacy sections under their historical label. No renames or deletions occurred.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "git show start_head:path byte comparison and local files; docs/documentation-map.md"
+    limitations:
+      - "Byte preservation is not a new validation of the claims inside those artifacts."
+  - evidence_id: "DS-03"
+    claim: "Repository-local navigation checks passed."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      A local Python scan checked Markdown inline/reference link paths, decoded local targets and
+      heading fragments while excluding fenced code and external URLs. All 60 Markdown files
+      were scanned; final counts and publication outcome are recorded in the PR validation report.
+      git diff --check passed. Manual diff review covered navigation, historical labels,
+      core/optional boundaries and unchanged R5/NTN/Security status.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Local Markdown path/anchor scan, git diff review and git diff --check, 2026-09-12"
+    limitations:
+      - "No external URL availability check, browser rendering certification or Runtime validation."
+      - "PR creation and Human acceptance are not inferred from pre-commit checks."
+
+mutations:
+  - "Added Delivery, Exploration, Shared and Historical navigation plus classification record."
+  - "Updated root navigation/TODO and added scoped lifecycle labels and return links."
+  - "Added this documentation-only TER; historical evidence payloads were preserved."
+
+recovered_or_observed_claims:
+  - claim: "Clean base provenance and preservation of existing artifacts were observed."
+    status: "OBSERVED"
+    supporting_evidence: ["DS-01", "DS-02"]
+  - claim: "Local documentation navigation validation passed."
+    status: "OBSERVED"
+    supporting_evidence: ["DS-03"]
+
+provenance_gaps:
+  - "The named final report PDF and an independent frozen legacy Team-mode archive were not found in this Repo; external existence/location remains UNKNOWN."
+  - "No technical acceptance criteria, Lab result, source authority or Runtime lifecycle was re-adjudicated."
+
+stop_point:
+  result: "Documentation prepared for commit/push/PR; publication outcome belongs to Git and PR records."
+  next_authority_required: "Human PR review; no merge or next Work Unit authorized."

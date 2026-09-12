@@ -1,10 +1,25 @@
 # Lab02 eMBB / eMBMS
 
+[Delivery 入口](../../delivery/README.md) · [目前限制](../../docs/known-limitations.md)
+
+## Delivery intent 與缺口
+
+狀態：`NOT ACTIVE / NOT AUTHORIZED / STUDENT PROCEDURE PENDING`
+
+交付方向是讓學生理解要建立的 multicast／eMBMS 應用、依可重現流程操作，並辨識最小成功
+結果。現有材料尚未提供完整學生手冊、已核准最小 acceptance criteria 或功能完成證據。
+Protocol-level 深度分析、完整 packet archaeology 與額外 showcase 不自動成為最低交付。
+
+## 歷史技術目標與待確認筆記
+
+以下保留原始架構、parser／PCAP 方向及 `NEEDS_CONFIRMATION`；不是 current validated
+procedure 或已接受的 minimum checklist。具體取捨待另行 Work Unit，不由本次分類裁定。
+
 本 Lab 目標是在 Lab01 基礎平台上加入 eMBMS / MBMS-GW，建立 multicast / broadcast 行動寬頻應用，並觀測控制面與使用者平面的資源配置。
 
 本文件只整理已知資料與待確認項目，不代表實驗已完成。
 
-## 核心驗證目標
+### 核心驗證目標
 
 - MBMS-GW、EPC、eNB、UE 可依序啟動：NEEDS_CONFIRMATION
 - eNB 正確載入 `sib.conf.mbsfn`：NEEDS_CONFIRMATION
@@ -13,7 +28,7 @@
 - 可觀測 MCCH、MTCH、MCH 資源配置：NEEDS_CONFIRMATION
 - 可使用 FFmpeg / FFplay 驗證 IPTV multicast 應用：NEEDS_CONFIRMATION
 
-## 系統架構
+### 系統架構
 
 ```text
 [PC1: EPC + eNB + MBMS-GW + BM-SC]
@@ -36,7 +51,7 @@ Wireshark:
    - UE MAC-LTE named pipe
 ```
 
-## 待確認項目
+### 待確認項目
 
 - `sib.conf.mbsfn.example` 是否已正確複製與調整：NEEDS_CONFIRMATION
 - SIB13 mapping 是否符合實際 parser 支援格式：NEEDS_CONFIRMATION
@@ -47,7 +62,7 @@ Wireshark:
 - 大流量 multicast 測試與 MCH 變化：NEEDS_CONFIRMATION
 - IPTV 串流驗證與截圖整理：NEEDS_CONFIRMATION
 
-## 已知問題方向
+### 已知問題方向
 
 | 問題 | 判斷方式 | 處理方向 | 狀態 |
 | --- | --- | --- | --- |
@@ -56,7 +71,7 @@ Wireshark:
 | 找不到 `SystemInformationBlockType13` filter | Wireshark dissector 命名或版本差異 | 從 MAC-LTE / RRC System Information 封包展開欄位找 | NEEDS_CONFIRMATION |
 | camelCase 設定導致 parser 問題 | 設定 key 名稱與 parser 預期不一致 | 回到原始碼 parser 或範例 conf 確認 key 名稱 | NEEDS_CONFIRMATION |
 
-## 重點整理
+### 重點整理
 
 - eMBMS 不是單純 IP multicast；需要 MBMS-GW、M1、MCH、MCCH、MTCH 與 SIB13 配合。
 - SIB13 是 UE 得知 MBMS 控制資訊的關鍵。

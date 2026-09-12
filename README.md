@@ -7,42 +7,27 @@
 Runbook 與研究停放入口。它不是 Lab Runtime、`srsRAN_4G` 原始碼倉庫，也不直接
 操作 `/etc/srsran/`、服務、網路或 SDR 設備。
 
-## 目前快照
+## 從這裡開始
 
-- **Lab01：**Phase 4C 保留為 historical execution baseline；2026-08-24 另以 selected
-  historical execution profile 進行 bounded recovery。EPC Stage 1 啟動由 Human-reported terminal
-  evidence 支持；eNB／UE startup 與後續 Cell Search、Random Access、RRC Connected、
-  Network Attach 及 UE `172.16.0.2` 等 UE attach milestones 則有 fresh observed evidence。Attach 後
-  一次 sample receive error 的 recovery／root cause 仍為 `UNKNOWN`，user plane 未驗證。
-  Runtime 現已停止，temporary sample plane 已移除，management plane 保留；本狀態不提供
-  下一次 Runtime 授權，也不等於 Full Lab01 PASS。
-- **2026-08-18 professor decisions：**已記錄於
-  [`docs/decisions/2026-08-18-professor-meeting.md`](docs/decisions/2026-08-18-professor-meeting.md)，
-  並由 [`docs/decision-register.md`](docs/decision-register.md) materialize current effect。
-- **Agent + Git：**Runbook 保留為 Maintainer／internal engineering reference；依 PD-03，
-  student Agent curriculum 已 supersede。依 PD-04，student Git 僅保留安全完成實驗所需內容。
-- **Lab02：**不是目前 active mainline，沒有因 Lab01 prerequisite 完成而自動取得執行授權。
-- **Security：**原獨立、後置 Lab04 teaching model 已 supersede；未來採 Lab01～03
-  cross-cutting mapping，目前尚未設計 exercises。
-- **Future Teaching：**為 `REPLAN_REQUIRED / NOT ACTIVE COURSE`。
-- **6G LEO / NTN：**僅為 `RESEARCH_PARKING / CONCEPT_PROTOTYPE`，沒有 Runtime integration。
-- **ACP：**維持 `PARKING / OBSERVATION`，不是正式 Protocol 或 Repository gate。
+本專題採 **Delivery First / Exploration Decoupled**：交付方向為 Lab01～03 與
+cross-cutting Security；研究與工程延伸另行保存，不成為課程完成的前提。
 
-## Canonical Knowledge Map
+| 想找什麼 | 入口 |
+| --- | --- |
+| 教授／學生：最低交付方向、現有材料與缺口 | [Delivery](delivery/README.md) |
+| Lab01 學生直接開始閱讀 | [學生實驗手冊](labs/lab01-small-cell/student-manual.md)、[教學設定](labs/lab01-small-cell/student-config/README.md) |
+| Agent、Git workflow、AI、Team-mode、Harness、6G／LEO／NTN、Starlink、Control Plane 研究 | [Exploration](exploration/README.md) |
+| 歷史結果、audits、Task Evidence、簡報與舊報告 | [Historical／Evidence](docs/history/README.md) |
+| 目前工程狀態與下一關 | [PROGRESS](PROGRESS.md)、[TODO](TODO.md) |
+| 架構、決策、限制、Repository 治理 | [Shared project controls](docs/README.md) |
+| 分類理由、保留原位與尚待判斷的材料 | [Documentation map](docs/documentation-map.md) |
 
-| 問題 | 目前權威入口 | 邊界 |
-| --- | --- | --- |
-| 現在在做什麼、停在哪裡 | [`PROGRESS.md`](PROGRESS.md) | 只保存 current delta、stop point、next gate 與 blockers |
-| Lab01 recovered architecture | [`docs/architecture-overview.md`](docs/architecture-overview.md) | 區分 Management／Sample／UE User Plane 與歷史 bearer 演進 |
-| 已接受與未決決策 | [`docs/decision-register.md`](docs/decision-register.md) | `UNRESOLVED` 不得由 Agent 自行裁定 |
-| 2026-08-18 professor decisions | [`docs/decisions/2026-08-18-professor-meeting.md`](docs/decisions/2026-08-18-professor-meeting.md) | Project decisions；不是 meeting recording 或 Runtime evidence |
-| 已知限制與未驗證項目 | [`docs/known-limitations.md`](docs/known-limitations.md) | 歷史 evidence 不等於 current Runtime validation |
-| Agent 與 Repository 規則 | [`AGENTS.md`](AGENTS.md) | 規則不等於某次 Runtime authorization |
-| 設定與 Runtime 邊界 | [`docs/engineering/CONFIGURATION_GOVERNANCE.md`](docs/engineering/CONFIGURATION_GOVERNANCE.md) | `/etc/srsran/` 不是 Git working tree |
-| Internal Agent + Git reference | [`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md) | 不是 student curriculum authority |
-| 未來教學歷史骨架 | [`docs/teaching/agent-git/README.md`](docs/teaching/agent-git/README.md) | `REPLAN_REQUIRED / NOT ACTIVE COURSE` |
-| 6G LEO / NTN | [`docs/research/6g-ntn-handover/README.md`](docs/research/6g-ntn-handover/README.md) | `RESEARCH_PARKING / NOT_INTEGRATED` |
-| Lifecycle 待辦導覽 | [`TODO.md`](TODO.md) | 未勾選項目不是完成或授權證據 |
+Lab01 手冊目前為 `DRAFT / HUMAN REVIEW REQUIRED`；其存在不代表 Full Lab01 PASS。
+Lab02／03 的交付方向與既有薄弱材料在 Delivery 入口分開列明；Security 不再是第四套必做
+Runtime。最新驗證狀態以 `PROGRESS.md` 為準，不以歷史成果展示替代。
+
+來源檔案保留原路徑，避免破壞 evidence 與 archive provenance；`docs/teaching/` 的 Agent + Git
+骨架依實際 lifecycle 歸於 Exploration／Historical，不是 current student curriculum。
 
 ## Source Authority
 
@@ -77,17 +62,9 @@ Runbook 與研究停放入口。它不是 Lab Runtime、`srsRAN_4G` 原始碼倉
 
 ## Historical and Supporting Material
 
-下列內容保留 provenance，但不與 canonical current-state surface 競爭：
-
-- `labs/lab01-small-cell/`：早期 Lab01 目標、Runbook、checklist 與 result notes。
-- `labs/lab02-embb/`：歷史 Lab02／eMBMS 待確認項目；不是 current execution authority。
-- `docs/reports/`、`docs/presentations/`：報告、簡報與 claim-to-evidence supporting material。
-- `docs/audits/`：特定時間點的唯讀 observation；檔案存在不證明 active 或 authoritative。
-- [`Task Evidence Harness`](docs/evidence/task-evidence/README.md)：保存 Agent-task execution
-  provenance；不授權或自行建立 canonical truth。
-- [`docs/device-status.md`](docs/device-status.md)：bootstrap 階段的設備狀態與待確認項目；不是目前實機狀態證據。
-- `docs/project-status.md`、`docs/engineering/TODO.md`、`docs/project-direction.md`：
-  已降級的 bootstrap／recovery／candidate-direction 歷史入口。
+歷史與 supporting material 的完整閱讀入口是 [Historical／Evidence](docs/history/README.md)。
+其中 Lab01 evidence 仍支撐現有 claim；舊簡報、bootstrap backlog 與 superseded learner drafts
+保留原位。教授決策仍依其適用範圍有效，不能因列在歷史導覽就視為失效。
 
 ## 安全與 Lifecycle 邊界
 

@@ -1,8 +1,29 @@
 # Lab01 Small Cell
 
+[Delivery 入口](../../delivery/README.md) · [目前進度](../../PROGRESS.md)
+
+## 學生與 Instructor／TA 閱讀路徑
+
+1. [學生實驗手冊](student-manual.md)：`DRAFT / HUMAN REVIEW REQUIRED`；已有實驗目的、
+   core 流程、protocol observation、Security Lens、troubleshooting 與 final checklist。
+2. [Student Teaching Config](student-config/README.md)：無 Secret 教學設定及 Instructor／TA
+   provisioning gate；static review 不等於 isolated Runtime validation。
+3. Instructor／TA 核對 [PROGRESS](../../PROGRESS.md) 與[限制](../../docs/known-limitations.md)。
+   EV-2 R5 為 `FAIL / UNLOCALIZED`；不宣稱 Full Lab01 PASS，也不把深層定位交給學生。
+
+## 歷史 supporting material
+
+[舊 runbook](runbook.md)、[recovery checklist](recovery-checklist.md)、
+[known issues](known-issues.md)、[result summary](result-summary.md) 保存早期來源筆記。
+它們不取代學生手冊，也不把 NAT／TCP／PCAP 等舊目標自動加進 minimum requirement。
+
+## 原始目標與筆記（Historical）
+
+以下保留 bootstrap 內容與原有 `NEEDS_CONFIRMATION`，不是目前驗證狀態或新驗收標準。
+
 本 Lab 目標是建立開源 LTE/5G SDR 小基站實驗平台，包含 EPC、eNB、UE、ZeroMQ 無線電模擬通道與 Linux NAT 外連環境。
 
-## 核心驗證目標
+### 核心驗證目標
 
 以下項目來自來源筆記，尚未由本 repo 實機確認：
 
@@ -12,7 +33,7 @@
 - UE 可透過 NAT 連外：NEEDS_CONFIRMATION
 - Wireshark 可觀測 S1-MME、S1-U、SGi 封包：NEEDS_CONFIRMATION
 
-## 系統架構
+### 系統架構
 
 ```text
 Internet
@@ -31,7 +52,7 @@ Internet
 UE Application / iperf / ping
 ```
 
-## 角色分工類型
+### 角色分工類型
 
 | 角色 | 負責項目 |
 | --- | --- |
@@ -39,7 +60,7 @@ UE Application / iperf / ping
 | 成員 2 | Ubuntu、srsRAN_4G / srsLTE 編譯、路由、NAT、設定檔除錯 |
 | 成員 3 | Wireshark、S1AP / NAS / GTP-U 封包截圖、實驗紀錄與結果整理 |
 
-## 重點整理
+### 重點整理
 
 - srsLTE / srsRAN 小基站平台可拆成 EPC、eNB、UE 三個主要元件。
 - ZeroMQ 在本實驗中扮演 RF sample transport，不是真正空口，但可降低 SDR 硬體需求。

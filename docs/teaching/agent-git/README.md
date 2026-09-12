@@ -1,5 +1,8 @@
 # Agent + Git 未來教學骨架（Preserved Historical Skeleton）
 
+導覽歸屬：[Exploration](../../../exploration/README.md)／[Historical](../../history/README.md)。
+保留 `teaching/` 原路徑以維持來源引用；目錄名稱不代表 current Delivery curriculum。
+
 狀態：`REPLAN_REQUIRED / STUDENT AGENT ASSUMPTIONS SUPERSEDED / NOT ACTIVE COURSE`
 
 ## 2026-08-18 Supersession Boundary

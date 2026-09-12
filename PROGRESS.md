@@ -1,7 +1,19 @@
 # 5G SDR Operations Progress
 
-更新日期：2026-08-30
+更新日期：2026-09-12（navigation only；Runtime evidence 日期維持原紀錄）
 文件角色：`CURRENT STATE / DELTA-ONLY NAVIGATION`
+
+## Documentation Navigation Delta
+
+- `KNOWN`：Delivery 與 Exploration 已建立分開的[文件入口](README.md)；分類依
+  [documentation map](docs/documentation-map.md)，historical／evidence 原路徑保留。
+- `KNOWN / DRAFT EXISTS`：[Lab01 學生手冊](labs/lab01-small-cell/student-manual.md)與
+  [教學設定](labs/lab01-small-cell/student-config/README.md)已有 repository artifact。
+  下方較早的 path／authoring 待定措辭保留其時間背景；存在不代表 completion criteria 已核准
+  或手冊完成，也不提升 teaching-profile validation。
+- `KNOWN / DOCUMENTATION-ONLY`：本次 split 已建立 Delivery／Exploration navigation；
+  未修改 Runtime、engineering claims 或 implementation authority。後續內容修訂與 validation
+  仍需另立 Work Unit。
 
 ## Current Status
 

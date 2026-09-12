@@ -1,5 +1,7 @@
 # Lab04 Security
 
+[Security cross-cutting 交付方向](../../delivery/README.md) · [Historical 入口](../../docs/history/README.md)
+
 狀態：`HISTORICAL LAB04 MATERIAL / INDEPENDENT POST-LAB MODEL SUPERSEDED`
 
 ## 2026-08-18 Curriculum Boundary

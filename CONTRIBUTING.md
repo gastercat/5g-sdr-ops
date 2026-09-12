@@ -2,6 +2,9 @@
 
 本 repo 用於管理 5G SDR 專題的文件、設備狀態、Lab baseline 與實驗流程。目前主要處理 Markdown 文件，不直接操作實驗環境。
 
+文件歸類請先讀 [Delivery](delivery/README.md)、[Exploration](exploration/README.md) 與
+[分類盤點](docs/documentation-map.md)。歷史 evidence 保留來源與日期，分類不升降驗證狀態。
+
 核心流程：
 
 ```text
@@ -13,7 +16,7 @@ Issue 記任務 -> Branch 做修改 -> Pull Request 合併 -> main 保持穩定
 - `main` 應保持可閱讀、可追蹤、狀態清楚。
 - 每次修改應有明確目的，避免一次處理太多不相關內容。
 - 未經實機確認的技術狀態需標記 `NEEDS_CONFIRMATION`。
-- Lab02、Lab03、Lab04 不應寫成已完成；只能整理為待確認、待執行或 future work。
+- Lab02、Lab03 不應寫成已完成；Security 採 cross-cutting direction，舊 Lab04 只作 historical／future mapping input。
 - 文件應使用繁體中文；技術名詞、Git 指令、branch、issue、pull request、commit、AI / Agent 等保留英文原文。
 
 ## Branch 命名規則
@@ -93,7 +96,7 @@ commit message 應簡短描述實際變更。
 - 私人對話、私人稱呼、未授權資料。
 - 帳號、密碼、token、IP、SIM / USIM 敏感資訊。
 - 未整理的大型 Log、PCAP 或截圖。
-- 會誤導讀者以為 Lab02、Lab03、Lab04 已完成的描述。
+- 會誤導讀者以為 Lab02、Lab03 已完成，或獨立 Lab04 仍是必做 Runtime 的描述。
 
 ## AI / Agent 使用提醒
 

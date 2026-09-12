@@ -1,5 +1,7 @@
 # 5G SDR｜Agent + Git Runbook
 
+[Exploration 入口](../../../exploration/README.md) · [Repository controls](../../README.md)
+
 ## Lifecycle
 
 - Version: `v0.1`
