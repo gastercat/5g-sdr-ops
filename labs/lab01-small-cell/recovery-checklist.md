@@ -1,5 +1,10 @@
 # Lab01 Recovery Checklist
 
+狀態：`HISTORICAL SUPPORTING NOTES / NOT CURRENT STUDENT PROCEDURE`
+
+學生請從[學生手冊](student-manual.md)開始；本文件保留早期流程／待確認筆記，不取代
+[目前進度](../../PROGRESS.md)或學生 minimum scope，亦不提供操作授權。
+
 本 checklist 用於 Lab01 啟動失敗、Attach 失敗、封包不通或 Wireshark 看不到封包時的分層排查。
 
 ## Process

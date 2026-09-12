@@ -123,6 +123,11 @@ deployment or service operation.
 
 ## Repository Navigation
 
+- [Delivery](delivery/README.md) indexes Lab01–03, cross-cutting Security, student materials and delivery gaps.
+- [Exploration](exploration/README.md) indexes optional research and internal engineering references; existing repository controls remain applicable.
+- [Historical / Evidence](docs/history/README.md) preserves source paths and evidence dependencies.
+- [Documentation map](docs/documentation-map.md) records classification and unresolved lifecycle questions.
+
 - `labs/lab01-small-cell/` contains the Lab01 runbook, checklist, issues, and result summary.
 - `docs/architecture-overview.md`, `docs/decision-register.md`, and
   `docs/known-limitations.md` contain the canonical architecture, accepted or

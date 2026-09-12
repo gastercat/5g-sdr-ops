@@ -1,5 +1,11 @@
 # AI Workflow
 
+導覽分類：`EXPLORATION / INTERNAL ENGINEERING REFERENCE`
+
+[Exploration 入口](../exploration/README.md)。以下保留工程方法與歷史 Runtime checklist
+examples；它們不是學生 minimum requirement，也不取代 [AGENTS](../AGENTS.md)、
+[目前限制](known-limitations.md)或當次授權。舊版技術規則的有效性本次未重驗。
+
 本文件整理 5G SDR 專案中使用 AI / Agent 的工程工作方式。核心原則是：
 
 ```text

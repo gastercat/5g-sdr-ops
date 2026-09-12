@@ -1,5 +1,10 @@
 # Lab01 Result Summary
 
+狀態：`HISTORICAL SUPPORTING NOTES / NOT CURRENT STUDENT PROCEDURE`
+
+學生請從[學生手冊](student-manual.md)開始；本文件保留早期流程／待確認筆記，不取代
+[目前進度](../../PROGRESS.md)或學生 minimum scope，亦不提供操作授權。
+
 本文件用於整理 Lab01 結果。來源筆記中的完成項目尚未由本 repo 實機確認，因此全部先標記 `NEEDS_CONFIRMATION`。
 
 ## 結果摘要

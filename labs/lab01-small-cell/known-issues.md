@@ -1,5 +1,10 @@
 # Lab01 Known Issues
 
+狀態：`HISTORICAL SUPPORTING NOTES / NOT CURRENT STUDENT PROCEDURE`
+
+學生請從[學生手冊](student-manual.md)開始；本文件保留早期流程／待確認筆記，不取代
+[目前進度](../../PROGRESS.md)或學生 minimum scope，亦不提供操作授權。
+
 以下問題來自來源筆記整理。是否仍存在需實機確認。
 
 | 問題 | 判斷方式 | 處理方向 | 狀態 |

@@ -1,10 +1,25 @@
 # Lab03 URLLC / PRP
 
+[Delivery 入口](../../delivery/README.md) · [目前進度](../../PROGRESS.md)
+
+## Delivery intent 與缺口
+
+狀態：`NEEDS_CONFIRMATION / STUDENT PROCEDURE PENDING / NOT AUTHORIZED`
+
+教學方向是觀察 baseline、Split Mode、Duplication Mode，並比較 reliability／latency
+trade-off。現有文件仍缺可重現學生流程、最小比較結果與已核准 acceptance criteria；
+uRLLC 名稱不構成完整 3GPP-grade URLLC system validation 的要求或成果聲明。
+
+## 歷史技術目標與待確認筆記
+
+以下保留舊版硬體／軟體與量測方向；版本相容性及哪些項目納入最小實驗仍待另行裁定。
+本次不將它們標為已完成或自動變成學生必做清單。
+
 本 Lab 目標是建立支援 uRLLC 的雙路徑傳輸實驗環境，驗證 Split Mode 與 Duplication Mode 對封包可靠度與延遲的影響。
 
 本文件只整理已知資料、待確認項目與 future work，不代表實驗已完成。
 
-## 核心驗證目標
+### 核心驗證目標
 
 - 建立 EPC / eNB 與 UE 雙主機環境：NEEDS_CONFIRMATION
 - 建立 LTE / SDR 路徑與額外 Ethernet / Switch 路徑：NEEDS_CONFIRMATION
@@ -12,7 +27,7 @@
 - 啟用 Duplication Mode 觀測重複傳輸：NEEDS_CONFIRMATION
 - 量測 PRP 對 packet loss、latency、jitter 的影響：NEEDS_CONFIRMATION
 
-## 系統架構
+### 系統架構
 
 ```text
 [Machine 1: EPC + eNB]
@@ -33,7 +48,7 @@
 Application traffic
 ```
 
-## 待執行項目
+### 待執行項目
 
 - Ubuntu 16.04 / lowlatency kernel 或相容替代環境確認：NEEDS_CONFIRMATION
 - UHD / USRP B210 初始化：NEEDS_CONFIRMATION
@@ -46,7 +61,7 @@ Application traffic
 - PRP 對 latency / reliability 的量測表：NEEDS_CONFIRMATION
 - 與 Lab01 基礎平台差異整理：NEEDS_CONFIRMATION
 
-## 已知風險與排查方向
+### 已知風險與排查方向
 
 | 可能問題 | 判斷方式 | 處理方向 | 狀態 |
 | --- | --- | --- | --- |
@@ -56,7 +71,7 @@ Application traffic
 | Duplication Mode 沒有重複封包 | 同一 flow 是否出現在兩條路徑 | 檢查 duplication enable、PRP / 應用層封包複製邏輯 | NEEDS_CONFIRMATION |
 | 延遲數據不穩 | 多次量測差異過大 | 固定 CPU governor、關閉背景程式、記錄 `htop` 與 RF 狀態 | NEEDS_CONFIRMATION |
 
-## 重點整理
+### 重點整理
 
 - uRLLC 的核心不是只追求高吞吐，而是低延遲、高可靠與低抖動。
 - Split Mode 偏向資源分流；Duplication Mode 偏向可靠度提升。

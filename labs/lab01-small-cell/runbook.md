@@ -1,5 +1,10 @@
 # Lab01 Runbook
 
+狀態：`HISTORICAL SUPPORTING NOTES / NOT CURRENT STUDENT PROCEDURE`
+
+學生請從[學生手冊](student-manual.md)開始；本文件保留早期流程／待確認筆記，不取代
+[目前進度](../../PROGRESS.md)或學生 minimum scope，亦不提供操作授權。
+
 本 runbook 整理 Lab01 的啟動與觀測流程。實際環境參數需依本機設定確認，未驗證項目標記 `NEEDS_CONFIRMATION`。
 
 ## 啟動順序
