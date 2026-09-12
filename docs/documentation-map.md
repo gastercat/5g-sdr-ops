@@ -5,8 +5,8 @@
 
 ## 分類依據與實體 layout
 
-本次 Human task 授權 Delivery First／Exploration Decoupled 的 documentation-only refactor、
-branch、commit、push 與 PR；停止於 Human Review，不 merge。
+本文件記錄 Delivery First／Exploration Decoupled 的 documentation architecture 與
+classification decision；分類本身不授予實作、Lab validation 或 Runtime 操作權限。
 既有 PD-01～06 提供課程方向，technical／validation 狀態仍依原始文件與 evidence。
 
 採 **index split，來源原位保存**。新增 `delivery/README.md`、`exploration/README.md` 與
@@ -95,4 +95,5 @@ agent-prompts、checklists、reports、teaching、research、evidence 與二進�
 
 本次只修改 Markdown navigation／lifecycle 說明與新增本次 TER；來源內容、學生 config、
 歷史 evidence payload、教授決策與 technical claims 均保留。Git diff、連結檢查與 PR 提供
-review surface；Human acceptance 保持 `PENDING`，不能由文件整理推出新 Lab PASS。
+review surface；technical acceptance、Lab validation 與 Runtime state 不因本次分類而改變，
+不能由文件整理推出新 Lab PASS。

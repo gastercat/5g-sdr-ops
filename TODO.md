@@ -70,4 +70,4 @@ Starlink 外部案例。下列保持候選，不構成 Lab minimum：
 
 真實 LEO handover、NTN scheduler、完整課程平台及 Runtime automation 均未由本文件啟動。
 分類過程發現的 stale content 見[deferred items](docs/documentation-map.md#deferred-items)；
-本次 PR 到 Human Review 即停止，不自動開始下一輪 cleanup。
+本次 documentation split 不自動啟動下一輪 cleanup；deferred items 仍需另立 Work Unit。

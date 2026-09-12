@@ -11,8 +11,9 @@
   [教學設定](labs/lab01-small-cell/student-config/README.md)已有 repository artifact。
   下方較早的 path／authoring 待定措辭保留其時間背景；存在不代表 completion criteria 已核准
   或手冊完成，也不提升 teaching-profile validation。
-- `PENDING / HUMAN REVIEW`：本次 docs-only split 交由 PR Review；未改 Runtime 或 engineering
-  claim。後續內容修訂與 validation 均不在本 Work Unit。
+- `KNOWN / DOCUMENTATION-ONLY`：本次 split 已建立 Delivery／Exploration navigation；
+  未修改 Runtime、engineering claims 或 implementation authority。後續內容修訂與 validation
+  仍需另立 Work Unit。
 
 ## Current Status
 
