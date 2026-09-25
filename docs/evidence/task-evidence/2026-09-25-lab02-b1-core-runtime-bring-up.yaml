@@ -1,0 +1,133 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "Lab02 Session B.1 - Core Runtime Bring-up + UE Attach Gate"
+  source_thread: "Current Codex task; thread ID UNKNOWN"
+  date_or_range: "2026-09-25; observations 22:01-22:08 Asia/Taipei"
+  executor: "Codex remote agent"
+  historical_or_current: "Current host observations, bounded to the observation window"
+
+authorization:
+  scope:
+    - "SSH to Linux1 (192.168.250.11) and Linux2 (192.168.250.12)"
+    - "Lab02 B.1 preflight, sequential startup of srsmbms/srsepc/srsenb/srsue, attach gate, and controlled shutdown"
+    - "Temporary artifacts and logs under /tmp/lab02_session_b1"
+  allowed_mutations:
+    - "Create temporary session directories and copy UE config to /tmp"
+    - "Change only the temporary UE copy's [pcap] mac_filename to /tmp/lab02_session_b_ue_mac.pcap"
+    - "Start/stop only the four named B.1 Runtime components; bounded ping"
+  forbidden:
+    - "sudo, sudo password, privilege escalation on either host"
+    - "Persistent network, route, firewall, package, build, or active /etc/srsran configuration changes"
+    - "Subscriber database or secret inspection/modification"
+    - "EV-1, backup, temporary, or duplicate source clone inspection"
+    - "Starting any component beyond the four B.1 components; packet capture decoding or multicast payload"
+
+repo_context:
+  root: "/Users/gastercat/Workspace/5g-sdr-ops"
+  branch: "main"
+  start_head: "ccf2a05f8f35064c1e9255b935032d6f21f63b35"
+  end_head: "ccf2a05f8f35064c1e9255b935032d6f21f63b35"
+
+evidence:
+  - evidence_id: "B1-01"
+    claim: "The repository checkpoint was clean and matched origin/main before this task's evidence documentation."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Branch main; HEAD and origin/main both ccf2a05f8f35064c1e9255b935032d6f21f63b35; initial git status had no changes."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Local repository preflight command output, 2026-09-25 Asia/Taipei"
+    limitations:
+      - "This is the pre-documentation repository state; the TER and index update are task-generated uncommitted documentation changes."
+
+  - evidence_id: "B1-02"
+    claim: "Both management and temporary Sample Plane addresses remained present, with bidirectional Sample Plane reachability."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Linux1 enxec9a0c14d482 had 192.168.250.11/24 and 10.0.0.1/24; Linux2 enxec9a0c14d470 had 192.168.250.12/24 and 10.0.0.2/24. Each ip route get selected its specified interface/source. Preflight and final ping in both directions each received 3/3 replies with 0% loss."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "SSH command output from Linux1 and Linux2, 2026-09-25 22:01 and 22:08 +08:00"
+    limitations:
+      - "This establishes reachability only during the recorded observation windows."
+
+  - evidence_id: "B1-03"
+    claim: "The observed active eNB/UE ZeroMQ endpoint values matched the B.1 expected mapping, and 3350 remained configured on both sides."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Linux1 eNB: tx_port=tcp://*:2000, rx_port=tcp://10.0.0.2:2001. Linux2 UE: tx_port=tcp://*:2001, rx_port=tcp://10.0.0.1:2000; UE dl_earfcn=3350. Linux1 rr.conf numeric dl_earfcn observations were line 61=3350 and line 84=2850."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Filtered SSH output from /etc/srsran/enb.conf, /etc/srsran/ue.conf, and numeric dl_earfcn extraction from /etc/srsran/rr.conf, 2026-09-25"
+    limitations:
+      - "Only endpoint tokens and EARFCN numbers were emitted; the role of the additional 2850 value was not reclassified in this turn."
+      - "Configuration consistency is static evidence and does not establish a working Runtime."
+
+  - evidence_id: "B1-04"
+    claim: "Installed binaries displayed positional config_file invocation syntax."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "The --help output for /usr/local/bin/srsmbms, srsepc, srsenb, and srsue displayed Usage: <binary> [OPTIONS] config_file. srsmbms and srsepc help returned 0; srsenb and srsue printed usage but returned 1."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "SSH invocation of installed binary --help on Linux1 and Linux2, 2026-09-25"
+    limitations:
+      - "Help output verifies syntax only; it does not verify that a component can initialize."
+
+  - evidence_id: "B1-05"
+    claim: "Temporary B.1 artifacts were prepared; the UE copy retained MAC capture enablement and pointed to the requested fresh PCAP path."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Both /tmp/lab02_session_b1 directories were created mode 700. Linux2 /tmp/lab02_session_b1/ue.conf was mode 600; filtered [pcap] output was enable = mac and mac_filename = /tmp/lab02_session_b_ue_mac.pcap. The target PCAP was absent before startup and at final check."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "SSH copy/edit command output and read-only metadata/filtered [pcap] output on Linux2, 2026-09-25"
+    limitations:
+      - "The active UE config was copied as explicitly authorized; subscriber fields were not displayed or inspected."
+      - "No full config diff was emitted; the only edit command targeted mac_filename within [pcap]."
+
+  - evidence_id: "B1-06"
+    claim: "The authorized MBMS-GW start attempt exited before the short observation window; the B.1 startup chain stopped at its first component."
+    evidence_type: "LOG"
+    exact_observation: "Command: /usr/local/bin/srsmbms /etc/srsran/mbms.conf. Recorded PID 5898 was not alive after 3 seconds. The 146-byte log contained the error excerpts 'Error initializing SGi-MB.' and 'Error initializing MBMS-GW'. The filtered error matches contained no explicit 'permission denied' or 'operation not permitted' text."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Linux1 /tmp/lab02_session_b1/srsmbms.log and immediate PID check, 2026-09-25 22:06 +08:00"
+    limitations:
+      - "The initialization failure's root cause is unresolved."
+      - "No sudo was used or requested; the evidence does not establish a privilege denial."
+
+  - evidence_id: "B1-07"
+    claim: "After the failed start attempt, management SSH remained available, both Sample Plane addresses and bidirectional reachability remained intact, and all four target Runtime processes were inactive."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Fresh SSH commands succeeded on both hosts at 22:08 +08:00. Each host retained its expected management/sample IPv4 addresses; final ping was 3/3 with 0% loss in both directions. pgrep checks reported srsmbms, srsepc, srsenb, and srsue inactive on both hosts. Linux1 PID 5898 had exited. The UE PCAP target remained absent."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Final SSH read-only checks on Linux1 and Linux2, 2026-09-25 22:08 +08:00"
+    limitations:
+      - "No UE Runtime was started, so no attach, user-plane interface/address, MBMS-GW ping, or PCAP artifact was produced."
+
+mutations:
+  - "Created /tmp/lab02_session_b1 on Linux1 and Linux2 with mode 700."
+  - "Copied /etc/srsran/ue.conf to Linux2 /tmp/lab02_session_b1/ue.conf with mode 600; changed only the temporary copy's [pcap] mac_filename to /tmp/lab02_session_b_ue_mac.pcap."
+  - "Started Linux1 srsmbms as PID 5898; it exited naturally before observation completed. No other Runtime was started and no stop signal was needed."
+  - "Created this sanitized TER and added its entry to the TEH README; PROGRESS.md and active host configuration were not changed."
+
+recovered_or_observed_claims:
+  - claim: "The management and Sample Plane addresses were present and bidirectional Sample Plane ping succeeded at preflight and final-check times."
+    status: "OBSERVED"
+    supporting_evidence: ["B1-02", "B1-07"]
+  - claim: "B.1 Runtime bring-up did not pass: srsmbms failed during SGi-MB / MBMS-GW initialization, so EPC, eNB, and UE were not started."
+    status: "OBSERVED"
+    supporting_evidence: ["B1-06"]
+  - claim: "No B.1 target Runtime remained active after controlled shutdown checks; temporary Sample Plane addresses were retained."
+    status: "OBSERVED"
+    supporting_evidence: ["B1-07"]
+
+provenance_gaps:
+  - "No UE attach or user-plane runtime evidence exists because startup stopped at srsmbms."
+  - "The SGi-MB initialization failure is unexplained; no explicit privilege denial was observed, so no Human sudo command is evidenced."
+  - "No fresh UE MAC PCAP was created; no PCAP size, mtime, or SHA-256 is available."
+  - "No MBMS-GW connectivity test was run because the attach gate was not reached."
+  - "The additional Linux1 rr.conf dl_earfcn value 2850 was observed but not classified in this turn."
+
+stop_point:
+  result: "LAB02_B1_BLOCKED_RUNTIME; startup stopped at srsmbms; final checks passed for SSH, address preservation, bidirectional Sample Plane ping, and no active target Runtime. Temporary Sample Plane addresses remain in place."
+  next_authority_required: "Human review of the MBMS-GW initialization blocker before any new Runtime attempt; no privilege escalation or retry was performed."
