@@ -95,3 +95,9 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 - [`2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml`](2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml)：
   Lab02 B.3D.1 DLT 149／PKTAP initial decoder behavior、User DLT 149 → UDP 與 `mac_lte_udp`
   recovery，及 MTCH RLC preference；不把 decoder dispatch 問題泛化成舊格式相容性結論。
+- [`2026-09-26-lab02-teaching-extension-runtime.yaml`](2026-09-26-lab02-teaching-extension-runtime.yaml)：
+  Human-supplied Lab02 Teaching Extension Runtime、multicast recovery 與 FFmpeg/MPEG-TS/H.264
+  decode observations；保留 visible playback 未驗證與 bitrate causality 未建立。
+- [`2026-09-26-lab02-sample-plane-usb-incident.yaml`](2026-09-26-lab02-sample-plane-usb-incident.yaml)：
+  Human-supplied Sample Plane loss/recovery 與 Linux2 USB Ethernet disconnect/re-enumeration
+  evidence；NetworkManager 為後續 reactivation，底層 USB disconnect cause 未定位。

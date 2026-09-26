@@ -83,6 +83,26 @@
 - `NEXT GATE`：B.3D/B.3D.1 已停止於文件 canonicalization。Teaching Extension 是可能的下一
   Lab02 工作，但須另立範圍並取得授權；本紀錄不授權 Runtime。
 
+## Lab02 Teaching Extension Runtime Observation｜2026-09-26
+
+- `LAB02_TEACHING_EXTENSION: PARTIAL_PASS / HUMAN-REPORTED / BOUNDED`：Runtime、UE attach、
+  eMBMS 與 `LAB02_SHARK_1` multicast E2E 在 incident 前及 controlled recovery 後均由 Human
+  Operator 回報成功。Recovery 前 UE address 為 `172.16.0.2/24`，recovery 後為
+  `172.16.0.3/24`；這是觀測轉換，不是可正規化為單一值的設定。
+- Video：`~1 Mbps target = DEGRADED OBSERVED / CONFOUNDED`；約 `248 kbps aggregate MPEG-TS`
+  有一段 `STABLE DECODE OBSERVED`。`VISIBLE_VIDEO_PLAYBACK=NOT VERIFIED`，bitrate causality
+  與 eMBMS capacity threshold 均 `NOT ESTABLISHED`。
+- `SAMPLE_PLANE_FAILURE_TRIGGER_LOCALIZED`：Human-supplied Linux2 kernel/NM report 記錄 USB
+  Ethernet interface disconnect、`cdc_ether` unregister/re-enumeration/re-register，之後
+  management profile 恢復但手動 Sample IP 未恢復。NetworkManager reactivation 是後續事件，
+  不是已建立的 USB disconnect trigger；底層 USB disconnect cause `UNLOCALIZED`。
+- Sample IP 手動恢復後 host-level Sample Plane 通訊恢復；ZMQ/LTE 未自動恢復。Human-reported
+  controlled eNB/UE restart 後 attach、user plane 與 multicast 恢復。Runtime controlled
+  shutdown 已由 Human Operator 回報；Latency 仍 `DEFERRED / UNLOCALIZED`，不歸因於 USB。
+- Evidence provenance 與限制見 [Teaching Extension TER](docs/evidence/task-evidence/2026-09-26-lab02-teaching-extension-runtime.yaml)
+  和 [Sample Plane incident TER](docs/evidence/task-evidence/2026-09-26-lab02-sample-plane-usb-incident.yaml)。
+  USB adapter A/B isolation、visible video verification 與任何後續 Runtime 均未執行或獲本紀錄授權。
+
 ## Workstream Status
 
 | Workstream | Lifecycle | Current boundary |
@@ -90,7 +110,7 @@
 | Lab01 completion | `EV-2 PARTIAL / R5 FAIL UNLOCALIZED / COMPLETION CRITERIA UNRESOLVED` | EV-1 PASS；EV-2 R0–R4、R6 PASS，R5 UE → EPC ICMP 未通；不宣稱 EV-2 或 Full Lab01 PASS |
 | Lab01 experiment manual | `CURRENT SUMMER PROJECT PRIORITY / NOT YET COMPLETE` | Canonical path、章節與 completion criteria 待另行 docs-only Work Unit |
 | Lab01 recovered baseline | `HISTORICAL PHASE 4C + 2026-08-24 FRESH BOUNDED RECOVERY / CLOSED` | 兩組 evidence 分開保存；目前 Runtime 已停止、temporary sample plane 已移除 |
-| Lab02 eMBMS | `SESSION B B.0–B.3D EVIDENCE ESTABLISHED / TEACHING EXTENSIONS PENDING` | finalized PCAP 建立代表性 SIB13／MCCH／MTCH evidence；Runtime 已停止，任何新 Runtime 操作仍須新授權 |
+| Lab02 eMBMS | `SESSION B CLOSED / TEACHING EXTENSION PARTIAL_PASS / INCIDENT TRIGGER LOCALIZED` | multicast E2E/recovery 與 limited stream decode 有 Human-reported evidence；visible playback 未驗證，USB disconnect cause 未定位，Latency deferred |
 | Agent + Git Runbook | `INTERNAL ENGINEERING REFERENCE / STUDENT CURRICULUM SUPERSEDED` | 可保留 Maintainer safety／governance reference；不是 current teaching mainline |
 | Future Teaching | `REPLAN_REQUIRED / NOT ACTIVE COURSE` | student Agent assumptions 已由 PD-03 supersede；Git scope 受 PD-04 限制 |
 | Security curriculum mapping | `CROSS-CUTTING DIRECTION / NOT YET DESIGNED` | 未來對應 Lab01～03；不授權 security exercise 或 Runtime |
