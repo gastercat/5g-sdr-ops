@@ -1,0 +1,91 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "LAB02-B3D-EVIDENCE-CANONICALIZATION"
+  source_thread: "Current Codex task; thread ID UNKNOWN"
+  date_or_range: "2026-09-26; offline localization of decoder behavior for the existing Session B PCAP"
+  executor: "Codex agent"
+  historical_or_current: "Local Wireshark/TShark decoder behavior; not Runtime state"
+
+authorization:
+  scope:
+    - "Record the supplied offline decoder failure and recovery observations for the finalized PCAP."
+    - "Preserve the earlier CLI result as an intermediate decoder state."
+  allowed_mutations:
+    - "Edit scoped documentation and Task Evidence Records only."
+  forbidden:
+    - "Start Runtime, capture new packets, or modify the PCAP."
+    - "Install/downgrade software or modify Lab02 configuration."
+    - "Commit or push repository changes."
+
+repo_context:
+  root: "/Users/gastercat/Workspace/5g-sdr-ops"
+  branch: "main"
+  start_head: "afc26372ca05bcb743c65b984735ba6dfc441892"
+  end_head: "afc26372ca05bcb743c65b984735ba6dfc441892"
+
+tooling:
+  tshark_cli_version: "4.6.9, recorded during the earlier offline sweep"
+  wireshark_gui_version: "UNKNOWN from the supplied screenshots"
+
+evidence:
+  - evidence_id: "B3D1-01"
+    claim: "The initial default decoder path did not expose the finalized artifact as MAC-LTE."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: "The supplied account reports the PCAP opening as DLT 149, initially being interpreted as PKTAP, and displaying malformed packets. One reported PKTAP interpretation had an impossible header size of 2917068734 bytes; the User DLT table was initially empty. The earlier TShark CLI sweep returned no target display-filter matches and classified the protocol identity as decoder-indeterminate."
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "Original bounded offline sweep result and supplied human-reviewed Wireshark observations. TShark CLI version recorded as 4.6.9."
+    limitations:
+      - "Malformed PKTAP output describes the decoder's interpretation; it does not establish PCAP corruption."
+      - "Zero display-filter matches under that decoder state do not establish protocol absence."
+
+  - evidence_id: "B3D1-02"
+    claim: "Correcting the local DLT/dissector dispatch exposed the MAC-LTE payload without rewriting the PCAP."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: "The supplied GUI recovery sequence maps User DLT 149 to UDP; affected frames then decode as UDP and the payload visibly contains the ASCII marker 'mac-lte'. Enabling the 'mac_lte_udp' heuristic makes LTE MAC/RLC/RRC decoding available."
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "Supplied human-reviewed Wireshark recovery observations."
+    limitations:
+      - "The exact Wireshark GUI version is not visible in the supplied screenshots."
+      - "This task did not repeat the earlier TShark CLI sweep with an equivalent custom DLT/heuristic mapping."
+
+  - evidence_id: "B3D1-03"
+    claim: "The MTCH decode required a separate MAC-LTE preference."
+    evidence_type: "SCREENSHOT"
+    exact_observation: "With 'Call RLC dissector MTCH LCIDs' disabled, Frame 41 appeared as an MCH SDU with LCID 1 and length 45 bytes. After enabling that preference, the same immutable frame decoded as RLC-LTE MTCH."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Human-reviewed before/after Wireshark screenshots and supplied observation for Frame 41."
+    limitations:
+      - "LCID 1 by itself was not used to establish MTCH."
+
+recovered_or_observed_claims:
+  - claim: "The original default DLT/parser path was insufficient to identify the MAC-LTE payload."
+    status: "OBSERVED"
+    supporting_evidence: ["B3D1-01"]
+  - claim: "The GUI path was recovered by mapping User DLT 149 to UDP and enabling mac_lte_udp; MTCH additionally required its RLC preference."
+    status: "OBSERVED"
+    supporting_evidence: ["B3D1-02", "B3D1-03"]
+  - claim: "The earlier TShark DECODER_INDETERMINATE result was intermediate and does not contradict the later direct GUI decode."
+    status: "OBSERVED"
+    supporting_evidence: ["B3D1-01", "B3D1-02"]
+
+provenance_gaps:
+  - "No equivalent TShark CLI decode was demonstrated after applying the GUI User DLT and heuristic settings."
+  - "The screenshots do not identify the Wireshark GUI version; no version compatibility matrix was tested."
+  - "The supplied preferences screenshot shows 'Attempt to dissect MCH LCID 0 as MCCH' unchecked at that view; its state during the reported Frame 22 decode is UNKNOWN, so it is not recorded as a required decoder setting."
+  - "The evidence localizes a decoder-dispatch/configuration problem but does not prove a general incompatibility between old srsLTE-era framing and current Wireshark/TShark."
+
+compatibility_assessment:
+  observed_facts:
+    - "With the initial default decode path, DLT 149 was interpreted as PKTAP and the target protocol fields were unavailable."
+    - "After explicitly mapping User DLT 149 to UDP and enabling mac_lte_udp, the same unchanged PCAP exposed LTE MAC/RLC/RRC decode."
+  unverified_hypothesis: "The old srsLTE-era mac-lte framing may interact differently with current Wireshark/TShark defaults; this sweep did not establish a general format incompatibility."
+  narrowest_unresolved_question: "Would an equivalent custom User DLT plus mac_lte_udp configuration make the earlier TShark CLI path decode these frames as the GUI did? This question is not a blocker for B.3D closure."
+
+stop_point:
+  result: "DLT149_MAC_LTE_DECODER_PATH_RECOVERED for the supplied GUI procedure; B.3D protocol evidence is available from the unchanged PCAP."
+  next_authority_required: "No further decoder investigation is required to close B.3D. Any broader compatibility study requires a separate task."

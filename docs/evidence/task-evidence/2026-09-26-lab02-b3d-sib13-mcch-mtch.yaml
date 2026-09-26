@@ -1,0 +1,107 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "LAB02-B3D-EVIDENCE-CANONICALIZATION"
+  source_thread: "Current Codex task; thread ID UNKNOWN"
+  date_or_range: "2026-09-26; underlying finalized artifact is from Lab02 Session B"
+  executor: "Codex agent"
+  historical_or_current: "Offline decode observations of an existing Session B Runtime artifact; not current Runtime state"
+
+authorization:
+  scope:
+    - "Canonicalize supplied human-reviewed Wireshark observations for SIB13, MCCH, and MTCH from the finalized UE MAC PCAP."
+    - "Update scoped repository progress and evidence documentation only."
+  allowed_mutations:
+    - "Edit documentation and Task Evidence Records required for B.3D canonicalization."
+  forbidden:
+    - "Start any Lab02 Runtime component or obtain a new capture."
+    - "Modify, replace, move, truncate, or delete the finalized PCAP."
+    - "Modify Lab02 configuration, install software, or commit/push changes."
+
+repo_context:
+  root: "/Users/gastercat/Workspace/5g-sdr-ops"
+  branch: "main"
+  start_head: "afc26372ca05bcb743c65b984735ba6dfc441892"
+  end_head: "afc26372ca05bcb743c65b984735ba6dfc441892"
+
+artifact:
+  path: ".local/lab02-b3c/lab02-ue-mac-finalized.pcap"
+  size_bytes: 17087
+  packet_count: 52
+  sha256: "cd62278cbe633b102c91341d3e92a3bc76c39e7f6cd8cd03b957a3838d61598b"
+  integrity_note: "Current size and SHA-256 were rechecked during documentation canonicalization; packet count is from the previously completed offline inventory."
+
+evidence:
+  - evidence_id: "B3D-01"
+    claim: "SIB13 is directly decoded in the finalized UE MAC PCAP."
+    evidence_type: "SCREENSHOT"
+    exact_observation: "Wireshark Frame 3 is LTE RRC DL_SCH with Info 'SystemInformation [ SIB2 SIB3 SIB13 ]'. The expanded BCCH-DL-SCH tree contains sib13-v920 and mbsfn-AreaInfoList-r9; MBSFN-AreaId-r9 is 1. The mcch-Config-r9 fields include repetition period rf64, offset 0, modification period rf512, sf-AllocInfo-r9 80, and signallingMCS-r9 n2."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Human-reviewed Wireshark screenshot supplied with the canonicalization task; Frame 3 packet list and expanded LTE RRC tree."
+    limitations:
+      - "This establishes the decoded contents of this saved capture, not behavior across other sessions or UEs."
+      - "The decode depended on the corrected local DLT/dissector path recorded in the B.3D.1 record."
+
+  - evidence_id: "B3D-02"
+    claim: "MCCH is directly identified in the finalized UE MAC PCAP."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: "The task-supplied human-reviewed Wireshark observation for Frame 22 reports a MAC-LTE MCH tree with 2-byte MCH Scheduling Information and a 16-byte MCCH, decoded as 'SDU (MCCH, length=16 bytes)'."
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "Frame 22 Wireshark observation transcribed in the supplied B.3D task context; no screenshot or raw decoder export for this selected frame is stored in the repository."
+    limitations:
+      - "The recorded identity is the reported direct Wireshark SDU decode; this TER does not independently re-decode Frame 22."
+      - "MCH presence alone is not the basis for the MCCH claim."
+
+  - evidence_id: "B3D-03"
+    claim: "MTCH is directly decoded in the finalized UE MAC PCAP."
+    evidence_type: "SCREENSHOT"
+    exact_observation: "Wireshark Frame 41 is Protocol RLC-LTE, Info '[DL] [UM] MTCH sn=0 [44-bytes]'. The tree shows Direction Downlink, Unacknowledged Mode, Channel Type MTCH (8), Channel ID 0, PDU Length 45, and Sequence number 0. The screenshot also shows multiple frames in the displayed set decoded as MTCH."
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Human-reviewed Wireshark screenshot supplied with the canonicalization task; Frame 41 selected with the RLC-LTE tree expanded."
+    limitations:
+      - "The Call RLC dissector MTCH LCIDs preference had to be enabled for this direct RLC-LTE decode."
+      - "This does not establish stream continuity, application playback, or performance."
+
+  - evidence_id: "B3D-04"
+    claim: "The same finalized PCAP was sufficient to establish all three B.3D targets after local decoder settings were corrected."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: "The supplied GUI observations report direct SIB13, MCCH, and MTCH decoding from the existing 52-packet finalized artifact; no replacement capture or Runtime restart was used during B.3D/B.3D.1."
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "Supplied B.3D canonicalization task observations and referenced human-reviewed Wireshark screenshots."
+    limitations:
+      - "The screenshots and transcribed observations are task-context evidence and are not archived in the repository."
+
+recovered_or_observed_claims:
+  - claim: "Frame 3 directly decodes SIB13 and its MBSFN/MCCH configuration in the finalized PCAP."
+    status: "OBSERVED"
+    supporting_evidence: ["B3D-01"]
+  - claim: "Frame 22 directly decodes a 16-byte MCCH SDU, as reported by the supplied human-reviewed observation."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["B3D-02"]
+  - claim: "Frame 41 directly decodes as RLC-LTE MTCH after enabling the MTCH RLC dissector preference."
+    status: "OBSERVED"
+    supporting_evidence: ["B3D-03"]
+  - claim: "The finalized PCAP was sufficient for B.3D; a new Runtime session was not needed."
+    status: "OBSERVED"
+    supporting_evidence: ["B3D-01", "B3D-02", "B3D-03", "B3D-04"]
+
+interpretation_boundaries:
+  - "SIB13, MCCH, and MTCH verdicts rely on their decoded packet-tree identities, not configuration presence."
+  - "MCH alone does not establish MCCH or MTCH."
+  - "Frame 41 LCID 1 alone was not used to establish MTCH; the RLC-LTE MTCH decode was used."
+  - "Zero matches under the earlier default TShark decoder state do not establish protocol absence."
+  - "A decoder's malformed PKTAP interpretation does not establish capture corruption."
+
+provenance_gaps:
+  - "The Frame 22 GUI observation is transcribed in the supplied task context; its selected-frame screenshot is not stored in the repository."
+  - "The source screenshots are not committed artifacts; this record preserves the observations and their source class, not the original image files."
+  - "No new Runtime session, repeated capture, stability test, or application-level playback test was performed for B.3D."
+
+stop_point:
+  result: "LAB02_B3D_EVIDENCE_ESTABLISHED for the three bounded PCAP observations; Runtime remained OFF during B.3D/B.3D.1."
+  next_authority_required: "Any Teaching Extension or future Runtime operation requires a separately scoped authorization; this record does not grant it."

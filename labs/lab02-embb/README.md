@@ -19,6 +19,24 @@ procedure 或已接受的 minimum checklist。具體取捨待另行 Work Unit，
 
 本文件只整理已知資料與待確認項目，不代表實驗已完成。
 
+### B.3D 單一 finalized PCAP 證據更新｜2026-09-26
+
+`LAB02_B3D_EVIDENCE_ESTABLISHED / OBSERVED / BOUNDED`：既有 Session B UE MAC PCAP 經離線
+Wireshark 解碼後有下列代表性 evidence：
+
+| Claim | Verdict | Representative Frame | Direct Evidence | Decoder Requirement |
+| --- | --- | --- | --- | --- |
+| SIB13 | `ESTABLISHED` | 3 | LTE RRC `SystemInformation [ SIB2 SIB3 SIB13 ]`；tree 含 `sib13-v920`、MBSFN area 與 MCCH config | User DLT 149 → UDP；啟用 `mac_lte_udp` heuristic |
+| MCCH | `ESTABLISHED` | 22 | 人工 Wireshark observation 記錄 `SDU (MCCH, length=16 bytes)` | User DLT 149 → UDP；啟用 `mac_lte_udp` heuristic；未另主張 MCCH 專用 preference 是必要條件 |
+| MTCH | `ESTABLISHED` | 41 | RLC-LTE `[DL] [UM] MTCH`；Channel Type `MTCH (8)`，PDU Length 45 | User DLT 149 → UDP；啟用 `mac_lte_udp` heuristic 及 `Call RLC dissector MTCH LCIDs` |
+
+詳細來源與 provenance 限制見 [B.3D TER](../../docs/evidence/task-evidence/2026-09-26-lab02-b3d-sib13-mcch-mtch.yaml)
+及 [B.3D.1 TER](../../docs/evidence/task-evidence/2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml)。
+
+此更新只確認這份既有 capture 的代表性封包；不建立跨 session 穩定性、完整教學流程、IPTV
+播放或效能結論。下列 `NEEDS_CONFIRMATION` 教學／程序項目仍保留其較廣的驗收範圍，不代表
+這些封包在該 finalized PCAP 中缺席。
+
 ### 核心驗證目標
 
 - MBMS-GW、EPC、eNB、UE 可依序啟動：NEEDS_CONFIRMATION
