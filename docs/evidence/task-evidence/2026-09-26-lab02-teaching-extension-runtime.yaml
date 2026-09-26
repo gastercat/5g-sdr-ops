@@ -1,0 +1,137 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "LAB02-TEACHING-EXTENSION-RUNTIME-EVIDENCE-CANONICALIZATION"
+  record_slug: "2026-09-26-lab02-teaching-extension-runtime"
+  source_thread: "ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e; user-referenced evidence source"
+  date_or_range: "2026-09-26; Human-reported Lab02 Teaching Extension Runtime session"
+  executor: "Codex documentation canonicalization; Runtime actions reported by Human Operator"
+  historical_or_current: "Historical task-reported Runtime observations; controlled shutdown reported, not current process state"
+
+authorization:
+  scope:
+    - "Canonicalize the supplied Teaching Extension Runtime, multicast, video decode, and shutdown observations."
+    - "Update scoped Lab02 documentation and Task Evidence Records only."
+  allowed_mutations:
+    - "Create scoped documentation and Task Evidence Records for the supplied evidence."
+  forbidden:
+    - "Start or reconstruct Runtime; SSH to runtime hosts; use sudo."
+    - "Modify NetworkManager, USB/Ethernet settings, Lab02 configuration, or the finalized PCAP."
+    - "Obtain a new capture, modify B.3D/B.3D.1, or claim visible video playback PASS."
+    - "Infer a bitrate/capacity threshold or an unreported root cause."
+    - "Push directly to main or merge a PR."
+
+repo_context:
+  root: "/Users/gastercat/Workspace/5g-sdr-ops"
+  branch: "main"
+  start_head: "174213faff10f547b8ab3565318bac18120b7f46"
+  end_head: "174213faff10f547b8ab3565318bac18120b7f46"
+  limitations:
+    - "Repo state is the pre-documentation baseline; this record preserves supplied Runtime provenance, not a Runtime execution by Codex."
+
+evidence:
+  - evidence_id: "TE-01"
+    claim: "The supplied Runtime report records EPC, MBMS-GW, eNB, UE attach, and eMBMS service establishment."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      The supplied report records `srs_spgw_sgi` at 172.16.0.1/24, `sgi_mb` at
+      172.16.0.254/32, multicast route 239.255.1.0/24 via `sgi_mb`, and successful
+      EPC, MBMS-GW, eNB, UE attach, and eMBMS service. The UE address was first
+      reported as 172.16.0.2/24 and, after controlled eNB/UE recovery, as
+      172.16.0.3/24. Both address observations are retained as a transition.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, sections 1-2; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "These are Human-supplied Runtime observations; Codex did not access the hosts or independently verify current state."
+      - "The two UE address observations are not normalized or attributed to a configuration change."
+
+  - evidence_id: "TE-02"
+    claim: "The supplied report records multicast E2E success before the incident and after controlled recovery."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      `LAB02_SHARK_1` was reported sent from Linux1 to 239.255.1.1:3456 through
+      eMBMS and `tun_srsue` to Linux2 before the Runtime incident. It was reported
+      successful again after Sample Plane restoration and controlled eNB/UE restart.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, section 3; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "This record preserves the supplied session report; it does not reproduce the multicast test."
+      - "It does not add a new packet capture or reopen B.3D/B.3D.1."
+
+  - evidence_id: "TE-03"
+    claim: "The approximately 1 Mbps-target stream was delivered to ffplay but decoding was degraded."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      The supplied report says ffplay received MPEG-TS/H.264 from the
+      239.255.1.1:1234 path, while persistent messages included `Packet corrupt`,
+      `Invalid NAL unit`, corrupted macroblock, and decoding errors. The reported
+      classification is `VIDEO DELIVERY OBSERVED / DECODE DEGRADED`.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, section 5; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "The reported stream was confounded by recurrent Sample Plane instability."
+      - "This does not establish visible playback or an eMBMS capacity limit."
+
+  - evidence_id: "TE-04"
+    claim: "A lower-bitrate testsrc2 stream had a period of stable decoder output, but visible playback was not verified."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      The supplied report describes FFmpeg testsrc2 at 320x180 and 15 fps, with
+      200 kbps target video bitrate and approximately 248 kbps aggregate MPEG-TS
+      bitrate. Linux2 ffplay reportedly recognized MPEG-TS and H.264 Constrained
+      Baseline at 320x180/15 fps and decoded for a period without the previous
+      continuous corruption storm, before later Sample Plane instability. The
+      Linux2 GUI image was not visually inspected because the operator used SSH.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, section 5; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "`VISIBLE_VIDEO_PLAYBACK` remains `NOT VERIFIED`."
+      - "The two bitrate observations do not establish bitrate causality or a throughput threshold."
+
+  - evidence_id: "TE-05"
+    claim: "The Human Operator reported controlled Runtime shutdown after the session."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      The supplied task context states that controlled shutdown was completed
+      and Runtime is stopped. This canonicalization task performed no Runtime
+      start, SSH, sudo, or packet capture.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, context and section 10; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "The post-shutdown process state was not independently checked by Codex."
+
+recovered_or_observed_claims:
+  - claim: "Teaching Extension Runtime, eMBMS, and multicast E2E/recovery were reported successful in the supplied session."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-01", "TE-02"]
+  - claim: "MPEG-TS/H.264 delivery was observed; the approximately 1 Mbps-target attempt decoded with persistent errors."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-03"]
+  - claim: "The approximately 248 kbps aggregate test had a period of stable decode; visible video playback remains unverified."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-04"]
+  - claim: "Runtime shutdown was reported after the session."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-05"]
+
+interpretation_boundaries:
+  - "The record preserves Human-supplied observations; it does not describe them as independently observed by Codex."
+  - "Do not merge UE address 172.16.0.2/24 and post-recovery 172.16.0.3/24 into one value."
+  - "Do not promote decoder recognition to visible-video playback PASS."
+  - "Do not infer a bitrate/capacity threshold or bitrate causality from the confounded attempts."
+  - "B.3D/B.3D.1 remain closed and are not reopened by this record."
+
+provenance_gaps:
+  - "The original Runtime terminals and full raw logs are not stored in this repository; this TER points to the supplied conversation/task report."
+  - "No visual inspection of the Linux2 ffplay output was performed."
+  - "No clean bitrate comparison was made under a demonstrated stable Sample Plane."
+
+stop_point:
+  result: "LAB02_TEACHING_EXTENSION_PARTIAL_PASS based on supplied Runtime report; visible playback and bitrate causality remain unverified; controlled shutdown was reported."
+  next_authority_required: "Any new Runtime, visible-playback check, packet capture, or hardware isolation requires separately scoped authorization."

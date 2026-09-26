@@ -37,6 +37,32 @@ Wireshark 解碼後有下列代表性 evidence：
 播放或效能結論。下列 `NEEDS_CONFIRMATION` 教學／程序項目仍保留其較廣的驗收範圍，不代表
 這些封包在該 finalized PCAP 中缺席。
 
+### Teaching Extension runtime observations｜2026-09-26
+
+`LAB02_TEACHING_EXTENSION: PARTIAL_PASS / HUMAN-REPORTED / BOUNDED`。以下是由 Human Operator
+提供的同日 Runtime 摘要，不是本次文件工作重新觀測的目前 Runtime 狀態：
+
+- Runtime report 記錄 EPC、MBMS-GW、eNB、UE、UE attach 與 eMBMS service 均曾建立。UE
+  address 從初始 `172.16.0.2/24` 到 controlled eNB/UE recovery 後的 `172.16.0.3/24`，兩個
+  observation 分別保留，不合併成單一值。
+- `MULTICAST_E2E_SANITY=PASS` 與 `MULTICAST_E2E_RECOVERY=PASS`：`LAB02_SHARK_1` 在 Sample
+  Plane incident 前及 recovery 後均被報告從 Linux1 經 `239.255.1.1:3456`、eMBMS、
+  `tun_srsue` 到達 Linux2。
+- `VIDEO_DELIVERY_OBSERVED / DECODE_DEGRADED`：約 1 Mbps target 的 FFmpeg MPEG-TS/H.264
+  stream 被 ffplay 識別，但持續出現 packet、NAL unit、macroblock 與 decode errors。
+- `LOW-BITRATE STABLE DECODE OBSERVED`：`testsrc2` 的 320×180、15 fps、200 kbps target
+  stream，aggregate MPEG-TS bitrate 約 248 kbps；Linux2 ffplay 曾識別 MPEG-TS/H.264
+  Constrained Baseline，並在一段期間持續 decode，之後 Sample Plane 再次不穩。
+- `VISIBLE_VIDEO_PLAYBACK=NOT VERIFIED`：操作端透過一般 SSH，實際 ffplay GUI 畫面沒有目視
+  檢查。兩個 bitrate observation 受反覆 Sample Plane instability 混淆，不建立 capacity
+  threshold 或 bitrate causality。
+- 另有 Linux2 USB Ethernet disconnect/re-enumeration 與 Sample Plane 中斷的 Human-supplied
+  log evidence；trigger 記為 established，USB disconnect 的底層原因仍是 `UNLOCALIZED`。詳見
+  [Teaching Extension TER](../../docs/evidence/task-evidence/2026-09-26-lab02-teaching-extension-runtime.yaml)
+  與 [Sample Plane incident TER](../../docs/evidence/task-evidence/2026-09-26-lab02-sample-plane-usb-incident.yaml)。
+- Runtime controlled shutdown 由 Human Operator 回報完成。此紀錄不授權新的 Runtime、USB
+  adapter A/B isolation、設定變更或 packet capture，也不改變 B.3D/B.3D.1 的既有結論。
+
 ### 核心驗證目標
 
 - MBMS-GW、EPC、eNB、UE 可依序啟動：NEEDS_CONFIRMATION

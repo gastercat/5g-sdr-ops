@@ -1,0 +1,160 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "LAB02-SAMPLE-PLANE-USB-INCIDENT-CANONICALIZATION"
+  record_slug: "2026-09-26-lab02-sample-plane-usb-incident"
+  source_thread: "ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e; user-referenced evidence source"
+  date_or_range: "2026-09-26; Lab02 Teaching Extension Sample Plane interruptions and recovery"
+  executor: "Codex documentation canonicalization; Runtime actions and host observations reported by Human Operator"
+  historical_or_current: "Historical task-reported incident evidence; Runtime shutdown reported, not current host state"
+
+authorization:
+  scope:
+    - "Preserve the supplied Sample Plane failure, recovery, and Linux2 USB Ethernet kernel/NM observations."
+    - "Record bounded incident localization without selecting an underlying hardware or software root cause."
+  allowed_mutations:
+    - "Create scoped documentation and Task Evidence Records for supplied evidence."
+  forbidden:
+    - "Start Runtime, SSH to runtime hosts, or use sudo."
+    - "Modify NetworkManager, USB/Ethernet settings, active configuration, or the finalized PCAP."
+    - "Execute adapter swap/A-B testing or any additional Runtime investigation."
+    - "Promote a hypothesis to a confirmed USB disconnect root cause."
+
+repo_context:
+  root: "/Users/gastercat/Workspace/5g-sdr-ops"
+  branch: "main"
+  start_head: "174213faff10f547b8ab3565318bac18120b7f46"
+  end_head: "174213faff10f547b8ab3565318bac18120b7f46"
+  limitations:
+    - "Repo state is the pre-documentation baseline; the incident observations are Human-supplied and were not re-run."
+
+evidence:
+  - evidence_id: "SPI-01"
+    claim: "The first reported Sample Plane failure coincided with loss of the manually configured Sample IPs and UE sample-receive errors."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      The supplied report states that Linux1 `10.0.0.1/24` and Linux2
+      `10.0.0.2/24` were absent while Ethernet physical links remained UP and
+      management addresses remained present. `srsUE` repeatedly reported
+      `/home/user/srsRAN_4G/lib/src/phy/ue/ue_sync.c:772: Error receiving samples`;
+      UE to EPC `172.16.0.1` subsequently reached 100% packet loss.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, section 6; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "The first loss observation alone did not identify the mechanism that removed the addresses."
+
+  - evidence_id: "SPI-02"
+    claim: "Manual Sample IP restoration recovered host-level Sample Plane connectivity, but the ZMQ/LTE Runtime required controlled eNB/UE restart."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      The supplied report gives the Human-executed commands `sudo ip addr add
+      10.0.0.1/24 dev enxec9a0c14d482` on Linux1 and `sudo ip addr add
+      10.0.0.2/24 dev enxec9a0c14d470` on Linux2. Initial bidirectional checks
+      were reported at 0% loss with average 1.154 ms and 0.939 ms; after address
+      recovery they were 0% loss with average 0.352 ms and 0.288 ms. ZMQ/LTE did
+      not automatically recover. Human then stopped UE and eNB, preserved EPC
+      and MBMS-GW, verified Sample IPs, and restarted eNB then UE; attach, user
+      plane, and multicast were reported restored.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, sections 1 and 6; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "The commands are recorded as historical Human actions, not instructions or authorization to repeat them."
+      - "Recovery does not establish a permanent repair or the underlying address-loss cause by itself."
+
+  - evidence_id: "SPI-03"
+    claim: "A later Linux2 kernel report recorded USB Ethernet disconnect, cdc_ether removal, USB re-enumeration, and interface registration."
+    evidence_type: "LOG"
+    exact_observation: >-
+      The supplied kernel-log transcription at 2026-09-26 19:21:02 CST includes
+      `usb 1-4: USB disconnect, device number 13`, `cdc_ether` unregister of
+      `enxec9a0c14d470`, then a new high-speed USB device numbered 14 and
+      re-registration/rename of the Ethernet interface to `enxec9a0c14d470`.
+      The reported device was Naxiang `SZNX LAN 100M`, USB ID `35b5:3500`;
+      `ethtool` reported driver `cdc_ether`, kernel driver version
+      `6.8.0-110-generic`, bus `usb-0000:00:14.0-4`.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, section 7, and kernel-log excerpt in referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "The original host log file is not stored in this repository; this TER preserves the supplied log excerpt and provenance."
+      - "The kernel event establishes device disconnect/re-enumeration, not why the event occurred."
+
+  - evidence_id: "SPI-04"
+    claim: "NetworkManager reactivated the normal Ethernet profile after interface re-enumeration; the management IP returned while the manual Sample IP did not."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      The supplied NetworkManager observation reports interface removal followed
+      by device recreation and successful activation of `有線連線 1`. After
+      re-enumeration Linux2 again had `192.168.250.12/24`, while manually added
+      `10.0.0.2/24` was absent. The supplied chronology places NetworkManager
+      profile reactivation after the kernel USB event.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, sections 7-8; Linux2 NetworkManager observations in referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "NetworkManager is recorded as part of the subsequent restoration sequence, not as the established trigger of the USB disconnect."
+      - "The evidence does not establish why the manually added Sample IP was not restored."
+
+  - evidence_id: "SPI-05"
+    claim: "The Linux2 USB Ethernet disconnect trigger was localized, while its underlying cause remained unresolved."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      The supplied report identifies Linux2 USB Ethernet disconnect/re-enumeration
+      as the event preceding Sample Plane interruption and subsequent
+      `Error receiving samples`. Two USB-to-Ethernet adapters were in use, but
+      direct disconnect evidence was reported only for Linux2. Adapter, connector,
+      USB port/power/controller, and driver/kernel interaction remain untested
+      candidates; no adapter swap/A-B experiment was performed.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, sections 7-9; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "The underlying USB disconnect cause is `UNLOCALIZED`; no candidate is ranked or selected."
+      - "Linux1's adapter is not implicated by the supplied direct Linux2 USB event."
+
+  - evidence_id: "SPI-06"
+    claim: "The UE-to-EPC latency observation remains deferred and unlocalized."
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: >-
+      After recovery, the supplied report gives UE to EPC 172.16.0.1 ping results
+      of approximately 434.6 ms minimum, 666.8 ms average, and 814.3 ms maximum
+      with 0% packet loss; earlier observations were approximately 500-600+ ms.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied TRRB task attachment, section 4; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
+    limitations:
+      - "The latency anomaly was not investigated or localized in this canonicalization."
+      - "No causal attribution to USB Ethernet is established."
+
+recovered_or_observed_claims:
+  - claim: "Sample Plane address loss and later connectivity recovery were reported; ZMQ/LTE required controlled eNB/UE restart."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["SPI-01", "SPI-02"]
+  - claim: "Linux2 USB Ethernet disconnect/re-enumeration preceded the reported Sample Plane interruption."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["SPI-03", "SPI-04", "SPI-05"]
+  - claim: "NetworkManager reactivation followed device re-enumeration; NetworkManager is not established as the USB disconnect trigger."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["SPI-03", "SPI-04"]
+  - claim: "The underlying USB disconnect cause remains unlocalized; the latency anomaly remains deferred/unlocalized."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["SPI-05", "SPI-06"]
+
+interpretation_boundaries:
+  - "The trigger localization is the Linux2 USB Ethernet disconnect/re-enumeration event; it is not a hardware root-cause diagnosis."
+  - "NetworkManager reactivation occurred after the reported kernel device event; it is not established as the trigger."
+  - "Do not attribute the event to either USB adapter, connector, port, power, controller, driver, cable, or switch without new evidence."
+  - "Do not attribute the UE-to-EPC latency anomaly to USB Ethernet."
+  - "The address restoration commands and physical A/B experiment are historical evidence/planned future work, not authorization to repeat them."
+
+provenance_gaps:
+  - "Original kernel and NetworkManager log files are not stored in the repository; the record uses the supplied conversation/task excerpts."
+  - "No adapter swap, USB port/power isolation, or other root-cause experiment was performed."
+  - "No new Runtime observation was made after the reported controlled shutdown."
+
+stop_point:
+  result: "LAB02_SAMPLE_PLANE_FAILURE_TRIGGER_LOCALIZED to reported Linux2 USB Ethernet disconnect/re-enumeration; underlying USB cause UNLOCALIZED; controlled recovery and shutdown were reported."
+  next_authority_required: "Any adapter A/B isolation, network/configuration change, or new Runtime requires separate scope and Human authorization."
