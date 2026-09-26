@@ -85,23 +85,29 @@
 
 ## Lab02 Teaching Extension Runtime Observation｜2026-09-26
 
-- `LAB02_TEACHING_EXTENSION: PARTIAL_PASS / HUMAN-REPORTED / BOUNDED`：Runtime、UE attach、
+- `LAB02_TEACHING_EXTENSION: PASS_WITH_LIMITATIONS / HUMAN-REPORTED / BOUNDED`：Runtime、UE attach、
   eMBMS 與 `LAB02_SHARK_1` multicast E2E 在 incident 前及 controlled recovery 後均由 Human
   Operator 回報成功。Recovery 前 UE address 為 `172.16.0.2/24`，recovery 後為
   `172.16.0.3/24`；這是觀測轉換，不是可正規化為單一值的設定。
 - Video：`~1 Mbps target = DEGRADED OBSERVED / CONFOUNDED`；約 `248 kbps aggregate MPEG-TS`
-  有一段 `STABLE DECODE OBSERVED`。`VISIBLE_VIDEO_PLAYBACK=NOT VERIFIED`，bitrate causality
-  與 eMBMS capacity threshold 均 `NOT ESTABLISHED`。
+  有一段 `STABLE DECODE OBSERVED`。原始 session 當時的 `VISIBLE_VIDEO_PLAYBACK=NOT VERIFIED`
+  已由 PR #32 後的 bounded follow-up 補足：Human-supplied photo 顯示 Linux2 ffplay test-pattern
+  畫面，建立 `VISIBLE_VIDEO_PLAYBACK=PASS / APPLICATION_E2E_VISIBLE_PLAYBACK=ESTABLISHED`。
+  同一張照片可見 `Packet corrupt`、`Invalid NAL unit`、macroblock 與 decode/concealment errors，
+  故 `STREAM_INTEGRITY=DEGRADED / INTERMITTENT`；bitrate causality 與 eMBMS capacity threshold
+  仍 `NOT ESTABLISHED`。照片由 Codex 在 task context 檢視但未存入 Repo；Runtime 仍非 Codex
+  獨立執行或驗證。
 - `SAMPLE_PLANE_FAILURE_TRIGGER_LOCALIZED`：Human-supplied Linux2 kernel/NM report 記錄 USB
   Ethernet interface disconnect、`cdc_ether` unregister/re-enumeration/re-register，之後
   management profile 恢復但手動 Sample IP 未恢復。NetworkManager reactivation 是後續事件，
   不是已建立的 USB disconnect trigger；底層 USB disconnect cause `UNLOCALIZED`。
 - Sample IP 手動恢復後 host-level Sample Plane 通訊恢復；ZMQ/LTE 未自動恢復。Human-reported
-  controlled eNB/UE restart 後 attach、user plane 與 multicast 恢復。Runtime controlled
-  shutdown 已由 Human Operator 回報；Latency 仍 `DEFERRED / UNLOCALIZED`，不歸因於 USB。
+  controlled eNB/UE restart 後 attach、user plane 與 multicast 恢復。原始 session 的 Runtime
+  controlled shutdown 由 Human Operator 回報；Latency 仍 `DEFERRED / UNLOCALIZED`，不歸因於 USB。
 - Evidence provenance 與限制見 [Teaching Extension TER](docs/evidence/task-evidence/2026-09-26-lab02-teaching-extension-runtime.yaml)
   和 [Sample Plane incident TER](docs/evidence/task-evidence/2026-09-26-lab02-sample-plane-usb-incident.yaml)。
-  USB adapter A/B isolation、visible video verification 與任何後續 Runtime 均未執行或獲本紀錄授權。
+  USB adapter A/B isolation 尚未執行。後續 visual-playback check 的 Runtime stop/current process
+  state 未建立；此文件工作未操作 Runtime，也不授權新的 Runtime。
 
 ## Workstream Status
 
@@ -110,7 +116,7 @@
 | Lab01 completion | `EV-2 PARTIAL / R5 FAIL UNLOCALIZED / COMPLETION CRITERIA UNRESOLVED` | EV-1 PASS；EV-2 R0–R4、R6 PASS，R5 UE → EPC ICMP 未通；不宣稱 EV-2 或 Full Lab01 PASS |
 | Lab01 experiment manual | `CURRENT SUMMER PROJECT PRIORITY / NOT YET COMPLETE` | Canonical path、章節與 completion criteria 待另行 docs-only Work Unit |
 | Lab01 recovered baseline | `HISTORICAL PHASE 4C + 2026-08-24 FRESH BOUNDED RECOVERY / CLOSED` | 兩組 evidence 分開保存；目前 Runtime 已停止、temporary sample plane 已移除 |
-| Lab02 eMBMS | `SESSION B CLOSED / TEACHING EXTENSION PARTIAL_PASS / INCIDENT TRIGGER LOCALIZED` | multicast E2E/recovery 與 limited stream decode 有 Human-reported evidence；visible playback 未驗證，USB disconnect cause 未定位，Latency deferred |
+| Lab02 eMBMS | `SESSION B CLOSED / TEACHING EXTENSION PASS_WITH_LIMITATIONS / INCIDENT TRIGGER LOCALIZED` | visible playback 有 bounded photo evidence，stream integrity degraded/intermittent；USB disconnect cause 未定位，Latency deferred |
 | Agent + Git Runbook | `INTERNAL ENGINEERING REFERENCE / STUDENT CURRICULUM SUPERSEDED` | 可保留 Maintainer safety／governance reference；不是 current teaching mainline |
 | Future Teaching | `REPLAN_REQUIRED / NOT ACTIVE COURSE` | student Agent assumptions 已由 PD-03 supersede；Git scope 受 PD-04 限制 |
 | Security curriculum mapping | `CROSS-CUTTING DIRECTION / NOT YET DESIGNED` | 未來對應 Lab01～03；不授權 security exercise 或 Runtime |
@@ -208,9 +214,11 @@ configuration、historical deployment 或 current Runtime evidence。
 - `LAB02_B3D_EVIDENCE_ESTABLISHED / LAB02_B3D1_DECODER_PATH_RECOVERED`：既有 finalized PCAP
   已足以建立代表性 SIB13／MCCH／MTCH；B.3D/B.3D.1 未啟動 Runtime、未更換 capture。decoder
   觀察及 provenance 限制見上方兩份 TER。
-- `LAB02_SESSION_B_CLOSED_CORE_FLOW_COMPLETE`：Session B Runtime clean stop；目前停止於 B.3D
-  文件 canonicalization。Named Pipe／FIFO → FFmpeg／FFplay Teaching Extension 尚未開始，
-  需另行定義範圍與授權。
+- `LAB02_SESSION_B_CLOSED_CORE_FLOW_COMPLETE`：Session B core flow 與 B.3D/B.3D.1 維持 canonical。
+  Teaching Extension 後續有 Human-reported Runtime 與 bounded visible-playback photo evidence，
+  狀態為 `PASS_WITH_LIMITATIONS`；Named Pipe／FIFO 未納入此 evidence。stream integrity degraded /
+  intermittent，USB disconnect cause 未定位，約 600+ ms UE → MBMS-GW latency anomaly 仍 deferred /
+  unlocalized。後續 visual check 的 Runtime stop/current process state 未驗證。
 - `CLEAN_STOP_AFTER_EV2_PART8`：Part 8 Runtime 已停止；EV-2 R5 為 `FAIL / UNLOCALIZED`，USB
   incident 與 R5 的 exact root cause 都仍為 `UNKNOWN`。
 - `NOT_STARTED / NEEDS_HUMAN_AUTHORIZATION`：`R5A Counter Localization` 不會自動開始；不得將
@@ -230,8 +238,9 @@ configuration、historical deployment 或 current Runtime evidence。
 ## Next Authorized Gate
 
 本文件本身不授權下一個 mutation。Lab02 B.3D／B.3D.1 已以既有 finalized PCAP 完成 evidence
-canonicalization；可能的下一階段是 Named Pipe／FIFO 與 FFmpeg／FFplay Teaching Extension，但
-尚未開始，須另行定義並取得授權。若未來工作需要 Runtime，亦須單獨明確授權。其他 Lab01
+canonicalization；Teaching Extension 的 Human-reported Runtime 與 bounded visible-playback evidence
+已記錄為 `PASS_WITH_LIMITATIONS`。Named Pipe／FIFO 未納入該 evidence，也尚未執行；任何後續
+Runtime、packet capture、USB isolation 或 FIFO work 都須另行定義範圍並取得授權。其他 Lab01
 work unit 仍須由 Human 明確選擇，並重新定義 authority、scope、evidence、abort／stop point
 與 cleanup boundary。
 

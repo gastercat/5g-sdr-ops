@@ -97,7 +97,8 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
   recovery，及 MTCH RLC preference；不把 decoder dispatch 問題泛化成舊格式相容性結論。
 - [`2026-09-26-lab02-teaching-extension-runtime.yaml`](2026-09-26-lab02-teaching-extension-runtime.yaml)：
   Human-supplied Lab02 Teaching Extension Runtime、multicast recovery 與 FFmpeg/MPEG-TS/H.264
-  decode observations；保留 visible playback 未驗證與 bitrate causality 未建立。
+  decode observations；後續 Human-supplied screenshot 建立 bounded visible playback，並保留
+  stream decode degraded、bitrate causality 未建立及照片未存入 Repo 的 provenance 限制。
 - [`2026-09-26-lab02-sample-plane-usb-incident.yaml`](2026-09-26-lab02-sample-plane-usb-incident.yaml)：
   Human-supplied Sample Plane loss/recovery 與 Linux2 USB Ethernet disconnect/re-enumeration
   evidence；NetworkManager 為後續 reactivation，底層 USB disconnect cause 未定位。
