@@ -67,15 +67,21 @@
   attach／connectivity 與 B2 application multicast E2E 均已完成；`LAB02_SHARK_1` 在
   `239.255.1.1:3456` 送出與接收內容一致。
 - `B3 REPRESENTATIVE MCH PASS`：已由本次 UE MAC PCAP 離線解碼觀察到代表性 MCH 記錄。
-  此證據不涵蓋 SIB13、MCCH-specific 或 MTCH-specific observation。
+  MCH 僅為 transport-channel observation，不單獨證明 MCCH 或 MTCH。
+- `LAB02_B3D_EVIDENCE_ESTABLISHED`：同一份 finalized PCAP 的離線 Wireshark GUI observation
+  直接建立 SIB13（Frame 3）、MCCH（Frame 22，task-supplied human observation）與 MTCH
+  （Frame 41）。Decoder recovery 與來源限制分見
+  [B.3D TER](docs/evidence/task-evidence/2026-09-26-lab02-b3d-sib13-mcch-mtch.yaml) 和
+  [B.3D.1 TER](docs/evidence/task-evidence/2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml)。
 - `LAB02_B3B_RUNTIME_STOPPED_CLEAN`：Session B Runtime 已停止。UE MAC PCAP 已保存並驗證：
   [finalized PCAP](.local/lab02-b3c/lab02-ue-mac-finalized.pcap)，17,087 bytes、52 packets、
-  `USER 2`，SHA-256 `cd62278cbe633b102c91341d3e92a3bc76c39e7f6cd8cd03b957a3838d61598b`。
-- `PENDING`：SIB13 direct observation、MCCH／MTCH-specific evidence、Named Pipe／FIFO 與
-  FFmpeg／FFplay IPTV teaching extension、Student Manual、Result slides。
-- `NEXT SESSION`：先對 finalized PCAP 做 bounded offline SIB13／MCCH／MTCH inspection；只有
-  現有 artifact 不足時，才評估另開 Runtime session。之後規劃 Named Pipe／FIFO 與
-  FFmpeg／FFplay IPTV Teaching Extension。任何新 Runtime session 仍須獨立授權。
+  `USER 2`，SHA-256 `cd62278cbe633b102c91341d3e92a3bc76c39e7f6cd8cd03b957a3838d61598b`；
+  B.3D/B.3D.1 僅使用此 artifact，未啟動 Runtime 或取得新 capture。
+- `PENDING / OUTSIDE B.3D`：Named Pipe／FIFO 與 FFmpeg／FFplay IPTV Teaching Extension、
+  Student Manual、Result slides。既有約 600+ ms UE → MBMS-GW latency anomaly 維持 deferred /
+  unlocalized，本次未調查。
+- `NEXT GATE`：B.3D/B.3D.1 已停止於文件 canonicalization。Teaching Extension 是可能的下一
+  Lab02 工作，但須另立範圍並取得授權；本紀錄不授權 Runtime。
 
 ## Workstream Status
 
@@ -84,7 +90,7 @@
 | Lab01 completion | `EV-2 PARTIAL / R5 FAIL UNLOCALIZED / COMPLETION CRITERIA UNRESOLVED` | EV-1 PASS；EV-2 R0–R4、R6 PASS，R5 UE → EPC ICMP 未通；不宣稱 EV-2 或 Full Lab01 PASS |
 | Lab01 experiment manual | `CURRENT SUMMER PROJECT PRIORITY / NOT YET COMPLETE` | Canonical path、章節與 completion criteria 待另行 docs-only Work Unit |
 | Lab01 recovered baseline | `HISTORICAL PHASE 4C + 2026-08-24 FRESH BOUNDED RECOVERY / CLOSED` | 兩組 evidence 分開保存；目前 Runtime 已停止、temporary sample plane 已移除 |
-| Lab02 eMBMS | `SESSION B CORE FLOW COMPLETE / TEACHING EXTENSIONS PENDING` | Session B 已在獨立授權下完成並 clean stop；後續 Runtime 操作仍須新授權 |
+| Lab02 eMBMS | `SESSION B B.0–B.3D EVIDENCE ESTABLISHED / TEACHING EXTENSIONS PENDING` | finalized PCAP 建立代表性 SIB13／MCCH／MTCH evidence；Runtime 已停止，任何新 Runtime 操作仍須新授權 |
 | Agent + Git Runbook | `INTERNAL ENGINEERING REFERENCE / STUDENT CURRICULUM SUPERSEDED` | 可保留 Maintainer safety／governance reference；不是 current teaching mainline |
 | Future Teaching | `REPLAN_REQUIRED / NOT ACTIVE COURSE` | student Agent assumptions 已由 PD-03 supersede；Git scope 受 PD-04 限制 |
 | Security curriculum mapping | `CROSS-CUTTING DIRECTION / NOT YET DESIGNED` | 未來對應 Lab01～03；不授權 security exercise 或 Runtime |
@@ -179,9 +185,12 @@ configuration、historical deployment 或 current Runtime evidence。
 
 ## Current Stop Point
 
-- `LAB02_SESSION_B_CLOSED_CORE_FLOW_COMPLETE`：B0–B2 core flow 與 representative MCH evidence
-  已完成；Runtime clean stop，finalized PCAP 已保存。下一個 planned entry point 是既有 PCAP
-  的 bounded offline SIB13／MCCH／MTCH inspection；不代表已授權 Runtime restart。
+- `LAB02_B3D_EVIDENCE_ESTABLISHED / LAB02_B3D1_DECODER_PATH_RECOVERED`：既有 finalized PCAP
+  已足以建立代表性 SIB13／MCCH／MTCH；B.3D/B.3D.1 未啟動 Runtime、未更換 capture。decoder
+  觀察及 provenance 限制見上方兩份 TER。
+- `LAB02_SESSION_B_CLOSED_CORE_FLOW_COMPLETE`：Session B Runtime clean stop；目前停止於 B.3D
+  文件 canonicalization。Named Pipe／FIFO → FFmpeg／FFplay Teaching Extension 尚未開始，
+  需另行定義範圍與授權。
 - `CLEAN_STOP_AFTER_EV2_PART8`：Part 8 Runtime 已停止；EV-2 R5 為 `FAIL / UNLOCALIZED`，USB
   incident 與 R5 的 exact root cause 都仍為 `UNKNOWN`。
 - `NOT_STARTED / NEEDS_HUMAN_AUTHORIZATION`：`R5A Counter Localization` 不會自動開始；不得將
@@ -200,10 +209,11 @@ configuration、historical deployment 或 current Runtime evidence。
 
 ## Next Authorized Gate
 
-本文件本身不授權下一個 mutation。Lab02 下一個 planned read-only entry point 是使用既有 finalized
-PCAP 做 bounded offline SIB13／MCCH／MTCH inspection；若需 Runtime session，必須另行定義並取得
-授權。其他 Lab01 work unit 仍須由 Human 明確選擇，並重新定義 authority、scope、evidence、
-abort／stop point 與 cleanup boundary。
+本文件本身不授權下一個 mutation。Lab02 B.3D／B.3D.1 已以既有 finalized PCAP 完成 evidence
+canonicalization；可能的下一階段是 Named Pipe／FIFO 與 FFmpeg／FFplay Teaching Extension，但
+尚未開始，須另行定義並取得授權。若未來工作需要 Runtime，亦須單獨明確授權。其他 Lab01
+work unit 仍須由 Human 明確選擇，並重新定義 authority、scope、evidence、abort／stop point
+與 cleanup boundary。
 
 2026-08-26 meeting 的最小 review delta 是：8/24 已完成 fresh Host／Network recovery、以
 historical execution profile fresh-observe attach 與 UE IP，並 clean stop；user plane 未驗證，
@@ -220,6 +230,8 @@ post-attach sample receive error 的 recovery／root cause 仍為 `UNKNOWN`。
 - 2026-08-24 Lab01 fresh execution evidence：[`TER`](docs/evidence/task-evidence/2026-08-24-lab01-current-truth-runtime-recovery.yaml)
 - 2026-08-30 Lab01 EV-1／EV-2 Part 8 evidence：[`TER`](docs/evidence/task-evidence/2026-08-30-lab01-ev2-part8-runtime-usb-incident.yaml)
 - 2026-09-25 Lab02 B.1 blocked-attempt evidence：[`TER`](docs/evidence/task-evidence/2026-09-25-lab02-b1-core-runtime-bring-up.yaml)
+- 2026-09-26 Lab02 B.3D SIB13／MCCH／MTCH evidence：[`TER`](docs/evidence/task-evidence/2026-09-26-lab02-b3d-sib13-mcch-mtch.yaml)
+- 2026-09-26 Lab02 B.3D.1 DLT149 decoder localization：[`TER`](docs/evidence/task-evidence/2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml)
 - Internal Agent + Git reference：[`docs/runbooks/agent-git/README.md`](docs/runbooks/agent-git/README.md)
 - Historical Future Teaching skeleton：[`docs/teaching/agent-git/README.md`](docs/teaching/agent-git/README.md)
 - 6G NTN Research Parking：[`docs/research/6g-ntn-handover/README.md`](docs/research/6g-ntn-handover/README.md)

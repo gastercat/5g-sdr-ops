@@ -89,3 +89,9 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 - [`2026-09-25-lab02-b1-core-runtime-bring-up.yaml`](2026-09-25-lab02-b1-core-runtime-bring-up.yaml)：
   Lab02 B.1 preflight、temporary UE PCAP-path preparation 與 srsmbms 啟動失敗 evidence；
   B.1 `LAB02_B1_BLOCKED_RUNTIME`，未啟動 EPC/eNB/UE，不代表 attach 或 current Runtime 狀態。
+- [`2026-09-26-lab02-b3d-sib13-mcch-mtch.yaml`](2026-09-26-lab02-b3d-sib13-mcch-mtch.yaml)：
+  Lab02 B.3D finalized UE MAC PCAP 的 SIB13、MCCH、MTCH bounded decode observations；保留
+  screenshot 與 transcribed Frame 22 observation 的來源差異，不授權新的 Runtime。
+- [`2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml`](2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml)：
+  Lab02 B.3D.1 DLT 149／PKTAP initial decoder behavior、User DLT 149 → UDP 與 `mac_lte_udp`
+  recovery，及 MTCH RLC preference；不把 decoder dispatch 問題泛化成舊格式相容性結論。
