@@ -107,7 +107,8 @@
 - Evidence provenance 與限制見 [Teaching Extension TER](docs/evidence/task-evidence/2026-09-26-lab02-teaching-extension-runtime.yaml)
   和 [Sample Plane incident TER](docs/evidence/task-evidence/2026-09-26-lab02-sample-plane-usb-incident.yaml)。
   USB adapter A/B isolation 尚未執行。後續 visual-playback check 的 Runtime stop/current process
-  state 未建立；此文件工作未操作 Runtime，也不授權新的 Runtime。
+  shutdown 為 `POST_CHECK_RUNTIME_SHUTDOWN=REPORTED_COMPLETE`（Human-reported）；Codex 未獨立檢查
+  process state，不宣稱零殘留程序或目前停機狀態。此文件工作未操作 Runtime，也不授權新的 Runtime。
 
 ## Workstream Status
 
@@ -218,7 +219,8 @@ configuration、historical deployment 或 current Runtime evidence。
   Teaching Extension 後續有 Human-reported Runtime 與 bounded visible-playback photo evidence，
   狀態為 `PASS_WITH_LIMITATIONS`；Named Pipe／FIFO 未納入此 evidence。stream integrity degraded /
   intermittent，USB disconnect cause 未定位，約 600+ ms UE → MBMS-GW latency anomaly 仍 deferred /
-  unlocalized。後續 visual check 的 Runtime stop/current process state 未驗證。
+  unlocalized。後續 visual check 的 Runtime shutdown 為 Human-reported complete；零殘留程序與目前
+  process state 未獨立驗證。
 - `CLEAN_STOP_AFTER_EV2_PART8`：Part 8 Runtime 已停止；EV-2 R5 為 `FAIL / UNLOCALIZED`，USB
   incident 與 R5 的 exact root cause 都仍為 `UNKNOWN`。
 - `NOT_STARTED / NEEDS_HUMAN_AUTHORIZATION`：`R5A Counter Localization` 不會自動開始；不得將

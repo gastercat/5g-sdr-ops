@@ -70,7 +70,8 @@ Runtime 或目前 process state：
   與 [Sample Plane incident TER](../../docs/evidence/task-evidence/2026-09-26-lab02-sample-plane-usb-incident.yaml)。
 - 原始 session 的 Runtime controlled shutdown 由 Human Operator 回報完成。此紀錄不授權新的 Runtime、USB
   adapter A/B isolation、設定變更或 packet capture，也不改變 B.3D/B.3D.1 的既有結論。後續
-  visual-playback follow-up 的 Runtime stop/current process state 未提供證據。
+  bounded visual-playback check 後，Human Operator 回報已 shutdown 該次重啟的 Runtime components；
+  Codex 未獨立檢查 host process state，不宣稱零殘留程序或目前停機狀態。
 
 ### 核心驗證目標
 

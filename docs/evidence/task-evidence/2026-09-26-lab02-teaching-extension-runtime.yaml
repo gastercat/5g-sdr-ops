@@ -132,7 +132,21 @@ evidence:
       - "The image directly establishes visible ffplay output and concurrent decoder warnings at the photographed moment; a still image alone does not establish motion, continuous playback duration, or later stability."
       - "Runtime execution and the operator's live observation remain Human-reported; Codex did not access or operate Linux2."
       - "The image does not establish error-free transport, packet integrity, a bitrate threshold, or an eMBMS capacity limit."
-      - "No post-follow-up Runtime shutdown or current process-state evidence was supplied."
+      - "Post-check Runtime shutdown is separately Human-reported in TE-07; no independent process-state inspection was performed."
+
+  - evidence_id: "TE-07"
+    claim: "The Human Operator reported controlled shutdown of the Runtime components restarted for the bounded visible-playback check."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      The supplied follow-up task states that, after the bounded local
+      visible-playback verification, the Human Operator shut down the Runtime
+      components that had been restarted for that check.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied Lab02 Visual Playback Follow-up task attachment, New Human Observation section."
+    limitations:
+      - "Codex did not independently inspect host process state after the reported shutdown."
+      - "This does not establish that zero related processes remained or that the system is currently stopped."
 
 recovered_or_observed_claims:
   - claim: "Teaching Extension Runtime, eMBMS, and multicast E2E/recovery were reported successful in the supplied session."
@@ -153,6 +167,9 @@ recovered_or_observed_claims:
   - claim: "Visible playback is established for the bounded check, while stream integrity remains degraded/intermittent."
     status: "REPORTED_ONLY"
     supporting_evidence: ["TE-03", "TE-04", "TE-06"]
+  - claim: "POST_CHECK_RUNTIME_SHUTDOWN=REPORTED_COMPLETE for the components restarted for the bounded visible-playback check."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-07"]
   - claim: "Runtime shutdown was reported after the original session."
     status: "REPORTED_ONLY"
     supporting_evidence: ["TE-05"]
@@ -162,14 +179,15 @@ interpretation_boundaries:
   - "Do not merge UE address 172.16.0.2/24 and post-recovery 172.16.0.3/24 into one value."
   - "The earlier `VISIBLE_VIDEO_PLAYBACK=NOT VERIFIED` applied to the original session record; the later Human-supplied photo supports `VISIBLE_VIDEO_PLAYBACK=PASS` for the bounded follow-up only."
   - "Visible playback PASS does not mean error-free, continuous, or stable playback; the same photo shows packet corruption and H.264 decode/concealment errors."
+  - "`POST_CHECK_RUNTIME_SHUTDOWN=REPORTED_COMPLETE` is Human-reported; do not claim independently verified zero remaining processes or current stopped state."
   - "Do not infer a bitrate/capacity threshold or bitrate causality from the confounded attempts."
   - "B.3D/B.3D.1 remain closed and are not reopened by this record."
 
 provenance_gaps:
   - "The original Runtime terminals and full raw logs are not stored in this repository; this TER points to the supplied conversation/task report."
-  - "The follow-up photo was reviewed in task context but is not archived in the repository; no post-follow-up Runtime shutdown or current process-state evidence was supplied."
+  - "The follow-up photo was reviewed in task context but is not archived in the repository; the post-check shutdown is Human-reported and no host process inventory was collected."
   - "No clean bitrate comparison was made under a demonstrated stable Sample Plane."
 
 stop_point:
-  result: "LAB02_TEACHING_EXTENSION_PASS_WITH_LIMITATIONS: the bounded visible-playback objective is supported by Human-reported Runtime evidence and the TE-06 photograph; visible output is present alongside decode corruption, while stable/error-free playback, bitrate causality, USB disconnect cause, UE-to-EPC latency, and post-follow-up Runtime stop state remain unestablished or unresolved."
+  result: "LAB02_TEACHING_EXTENSION_PASS_WITH_LIMITATIONS: the bounded visible-playback objective is supported by Human-reported Runtime evidence and the TE-06 photograph; visible output is present alongside decode corruption, and POST_CHECK_RUNTIME_SHUTDOWN=REPORTED_COMPLETE in TE-07. Stable/error-free playback, bitrate causality, USB disconnect cause, and UE-to-EPC latency remain unestablished or unresolved; post-check process state was not independently inspected."
   next_authority_required: "Any new Runtime, visible-playback check, packet capture, or hardware isolation requires separately scoped authorization."
