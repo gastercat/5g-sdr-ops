@@ -30,6 +30,14 @@ repo_context:
   limitations:
     - "Repo state is the pre-documentation baseline; this record preserves supplied Runtime provenance, not a Runtime execution by Codex."
 
+follow_up_context:
+  task_id: "LAB02-TEACHING-EXTENSION-VISUAL-PLAYBACK-EVIDENCE-FOLLOW-UP"
+  date_or_range: "2026-09-26; Human-reported post-PR #32 bounded visual-playback check"
+  repo_start_head: "5b787656cbfa12ad5f38e1c67946eda3f1d1c774"
+  authorization: "This follow-up task authorizes documenting the supplied photo and reconciling the existing status; it does not authorize Runtime operation, capture, or configuration changes."
+  scope: "Documentation/evidence reconciliation only; no Runtime operation, packet capture, configuration change, or PCAP access by Codex."
+  source: "Human-supplied photograph attached to referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e; reviewed in task context and not copied into the repository."
+
 evidence:
   - evidence_id: "TE-01"
     claim: "The supplied Runtime report records EPC, MBMS-GW, eNB, UE attach, and eMBMS service establishment."
@@ -74,10 +82,10 @@ evidence:
     source_location: "User-supplied TRRB task attachment, section 5; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
     limitations:
       - "The reported stream was confounded by recurrent Sample Plane instability."
-      - "This does not establish visible playback or an eMBMS capacity limit."
+      - "This TE-03 observation alone does not establish visible playback or an eMBMS capacity limit."
 
   - evidence_id: "TE-04"
-    claim: "A lower-bitrate testsrc2 stream had a period of stable decoder output, but visible playback was not verified."
+    claim: "The original session record reported a period of stable lower-bitrate testsrc2 decoder output; visible playback was unverified at that time."
     evidence_type: "COMMAND_OUTPUT"
     exact_observation: >-
       The supplied report describes FFmpeg testsrc2 at 320x180 and 15 fps, with
@@ -90,11 +98,11 @@ evidence:
     confidence: "HIGH"
     source_location: "User-supplied TRRB task attachment, section 5; referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e."
     limitations:
-      - "`VISIBLE_VIDEO_PLAYBACK` remains `NOT VERIFIED`."
+      - "At the time of this original-session evidence, `VISIBLE_VIDEO_PLAYBACK` was `NOT VERIFIED`; the later bounded follow-up is recorded separately as TE-06."
       - "The two bitrate observations do not establish bitrate causality or a throughput threshold."
 
   - evidence_id: "TE-05"
-    claim: "The Human Operator reported controlled Runtime shutdown after the session."
+    claim: "The Human Operator reported controlled Runtime shutdown after the original session."
     evidence_type: "HUMAN_OBSERVATION"
     exact_observation: >-
       The supplied task context states that controlled shutdown was completed
@@ -106,6 +114,40 @@ evidence:
     limitations:
       - "The post-shutdown process state was not independently checked by Codex."
 
+  - evidence_id: "TE-06"
+    claim: "A Human-supplied photograph shows ffplay visibly displaying video output while the terminal reports media metadata and decode corruption during a later bounded playback check."
+    evidence_type: "SCREENSHOT"
+    exact_observation: >-
+      The photograph shows a Linux2 desktop with an ffplay window displaying a
+      colored test-pattern frame. The adjacent terminal identifies service_name
+      Service01, service_provider FFmpeg, and H.264 (Constrained Baseline),
+      yuv420p progressive, 320x180, 15 fps. The same visible terminal output
+      includes `Packet corrupt`, `Invalid NAL unit`, corrupted macroblock,
+      decoding-error, and concealment messages. The task context identifies
+      this as a Human Operator's bounded visual-playback check after PR #32.
+    directness: "PRIMARY"
+    confidence: "HIGH"
+    source_location: "Human-supplied photo IMG_8931.jpeg attached to referenced ChatGPT conversation 6ab732cd-951c-83ee-a792-3c2e60ea714e; image reviewed by Codex for this follow-up and intentionally not copied into the repository."
+    limitations:
+      - "The image directly establishes visible ffplay output and concurrent decoder warnings at the photographed moment; a still image alone does not establish motion, continuous playback duration, or later stability."
+      - "Runtime execution and the operator's live observation remain Human-reported; Codex did not access or operate Linux2."
+      - "The image does not establish error-free transport, packet integrity, a bitrate threshold, or an eMBMS capacity limit."
+      - "Post-check Runtime shutdown is separately Human-reported in TE-07; no independent process-state inspection was performed."
+
+  - evidence_id: "TE-07"
+    claim: "The Human Operator reported controlled shutdown of the Runtime components restarted for the bounded visible-playback check."
+    evidence_type: "HUMAN_OBSERVATION"
+    exact_observation: >-
+      The supplied follow-up task states that, after the bounded local
+      visible-playback verification, the Human Operator shut down the Runtime
+      components that had been restarted for that check.
+    directness: "REPORTED"
+    confidence: "HIGH"
+    source_location: "User-supplied Lab02 Visual Playback Follow-up task attachment, New Human Observation section."
+    limitations:
+      - "Codex did not independently inspect host process state after the reported shutdown."
+      - "This does not establish that zero related processes remained or that the system is currently stopped."
+
 recovered_or_observed_claims:
   - claim: "Teaching Extension Runtime, eMBMS, and multicast E2E/recovery were reported successful in the supplied session."
     status: "REPORTED_ONLY"
@@ -113,25 +155,39 @@ recovered_or_observed_claims:
   - claim: "MPEG-TS/H.264 delivery was observed; the approximately 1 Mbps-target attempt decoded with persistent errors."
     status: "REPORTED_ONLY"
     supporting_evidence: ["TE-03"]
-  - claim: "The approximately 248 kbps aggregate test had a period of stable decode; visible video playback remains unverified."
+  - claim: "The approximately 248 kbps aggregate test had a period of stable decode; visible playback was unverified at the time of the original session record."
     status: "REPORTED_ONLY"
     supporting_evidence: ["TE-04"]
-  - claim: "Runtime shutdown was reported after the session."
+  - claim: "The Human-supplied photograph visibly shows ffplay output and concurrent media decode warnings during the later bounded playback check."
+    status: "OBSERVED"
+    supporting_evidence: ["TE-06"]
+  - claim: "The Human Operator reported that the later bounded visual-playback check showed the test video."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-06"]
+  - claim: "Visible playback is established for the bounded check, while stream integrity remains degraded/intermittent."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-03", "TE-04", "TE-06"]
+  - claim: "POST_CHECK_RUNTIME_SHUTDOWN=REPORTED_COMPLETE for the components restarted for the bounded visible-playback check."
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["TE-07"]
+  - claim: "Runtime shutdown was reported after the original session."
     status: "REPORTED_ONLY"
     supporting_evidence: ["TE-05"]
 
 interpretation_boundaries:
-  - "The record preserves Human-supplied observations; it does not describe them as independently observed by Codex."
+  - "Runtime execution remains Human-reported. TE-06 is a Codex-reviewed observation of a Human-supplied image, not independent Runtime operation or host access."
   - "Do not merge UE address 172.16.0.2/24 and post-recovery 172.16.0.3/24 into one value."
-  - "Do not promote decoder recognition to visible-video playback PASS."
+  - "The earlier `VISIBLE_VIDEO_PLAYBACK=NOT VERIFIED` applied to the original session record; the later Human-supplied photo supports `VISIBLE_VIDEO_PLAYBACK=PASS` for the bounded follow-up only."
+  - "Visible playback PASS does not mean error-free, continuous, or stable playback; the same photo shows packet corruption and H.264 decode/concealment errors."
+  - "`POST_CHECK_RUNTIME_SHUTDOWN=REPORTED_COMPLETE` is Human-reported; do not claim independently verified zero remaining processes or current stopped state."
   - "Do not infer a bitrate/capacity threshold or bitrate causality from the confounded attempts."
   - "B.3D/B.3D.1 remain closed and are not reopened by this record."
 
 provenance_gaps:
   - "The original Runtime terminals and full raw logs are not stored in this repository; this TER points to the supplied conversation/task report."
-  - "No visual inspection of the Linux2 ffplay output was performed."
+  - "The follow-up photo was reviewed in task context but is not archived in the repository; the post-check shutdown is Human-reported and no host process inventory was collected."
   - "No clean bitrate comparison was made under a demonstrated stable Sample Plane."
 
 stop_point:
-  result: "LAB02_TEACHING_EXTENSION_PARTIAL_PASS based on supplied Runtime report; visible playback and bitrate causality remain unverified; controlled shutdown was reported."
+  result: "LAB02_TEACHING_EXTENSION_PASS_WITH_LIMITATIONS: the bounded visible-playback objective is supported by Human-reported Runtime evidence and the TE-06 photograph; visible output is present alongside decode corruption, and POST_CHECK_RUNTIME_SHUTDOWN=REPORTED_COMPLETE in TE-07. Stable/error-free playback, bitrate causality, USB disconnect cause, and UE-to-EPC latency remain unestablished or unresolved; post-check process state was not independently inspected."
   next_authority_required: "Any new Runtime, visible-playback check, packet capture, or hardware isolation requires separately scoped authorization."
