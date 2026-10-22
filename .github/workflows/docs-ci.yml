@@ -1,0 +1,81 @@
+name: Documentation CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+  CI_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  docs-quality:
+    name: docs-quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.19.0'
+          package-manager-cache: false
+      - name: Install locked linters
+        run: |
+          npm ci --prefix .github/ci --ignore-scripts --no-audit --no-fund
+          python3 -m venv "$RUNNER_TEMP/docs-ci-venv"
+          "$RUNNER_TEMP/docs-ci-venv/bin/python" -m pip install --require-hashes -r .github/ci/requirements.txt
+          echo "$RUNNER_TEMP/docs-ci-venv/bin" >> "$GITHUB_PATH"
+      - name: Install verified binaries for check regression tests
+        run: |
+          python3 .github/ci/install_tools.py lychee "$RUNNER_TEMP/docs-ci-bin"
+          python3 .github/ci/install_tools.py gitleaks "$RUNNER_TEMP/docs-ci-bin"
+          echo "$RUNNER_TEMP/docs-ci-bin" >> "$GITHUB_PATH"
+      - name: Verify failure detection in temporary repositories
+        run: python3 .github/ci/test_checks.py
+      - name: Check documentation and PR whitespace
+        run: python3 .github/ci/checks.py docs-quality
+
+  local-links:
+    name: local-links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install verified lychee binary
+        run: |
+          python3 .github/ci/install_tools.py lychee "$RUNNER_TEMP/docs-ci-bin"
+          echo "$RUNNER_TEMP/docs-ci-bin" >> "$GITHUB_PATH"
+      - name: Check all local document links
+        run: python3 .github/ci/checks.py local-links
+
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install verified Gitleaks binary
+        run: |
+          python3 .github/ci/install_tools.py gitleaks "$RUNNER_TEMP/docs-ci-bin"
+          echo "$RUNNER_TEMP/docs-ci-bin" >> "$GITHUB_PATH"
+      - name: Scan current files and introduced commits
+        run: python3 .github/ci/checks.py secret-scan
