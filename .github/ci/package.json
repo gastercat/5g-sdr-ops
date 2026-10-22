@@ -1,0 +1,6 @@
+{
+  "name": "5g-sdr-ops-docs-ci",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "devDependencies": { "markdownlint-cli2": "0.24.0" }
+}
