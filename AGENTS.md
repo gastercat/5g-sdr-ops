@@ -6,11 +6,16 @@ This repository manages 5G SDR project documentation, approved configuration tem
 
 ## Current Delivery Goal
 
-Preserve the completed Lab01 Phase 4C recovered baseline as a bounded historical
-execution baseline. The current summer project priority has two distinct deliverable
-dimensions: completing Lab01 and completing its experiment manual. Their completion
-scope and criteria remain to be recovered or defined in separately authorized Work
-Units. The Agent + Git Runbook is an internal engineering reference, not
+The current primary engineering priority is Track B Physical RF Transition, per
+the 2026-10-29 Owner decision [DR-015](docs/decision-register.md#dr-015track-b-physical-rf-transition-成為目前主要工程優先事項).
+Work covers Controlled RF Preparation, Mock Integration, Evidence Preservation
+and verification of each explicitly scoped gate; priority does not establish Gate
+Acceptance or authorize RF Runtime operations. The earlier Lab01 baseline recovery,
+experiment manual and summer-delivery priority is historical and superseded as a
+priority only; outstanding delivery obligations are neither completed nor cancelled
+by this decision. Preserve Phase 4C as a bounded historical execution baseline.
+Lab01 and manual completion scope and criteria still require separately authorized
+Work Units. The Agent + Git Runbook is an internal engineering reference, not
 student curriculum authority. Future Security mapping across Lab01–03, student-safe
 minimum Git scope, and workflow-vocabulary externalization each require a separately
 authorized documentation Work Unit. Lab02 is not an active execution mainline. No
@@ -29,7 +34,7 @@ validation is authorized without a separately scoped task and explicit human app
 - Use [docs/evidence/task-evidence/README.md](docs/evidence/task-evidence/README.md)
   when material execution evidence would otherwise remain only in an Agent task.
   TEH preserves provenance; it does not grant authorization or canonical authority.
-- `srsRAN_4G/` manages source code and project patches. `/etc/srsran/` is the active runtime configuration on a lab host.
+- `srsRAN_4G/` manages source code and project patches. `/etc/srsran/` is a known Lab01 configuration location; Runtime selection must be confirmed for the track, host and component using execution evidence. See [configuration governance](docs/engineering/CONFIGURATION_GOVERNANCE.md#2-管理邊界).
 - `configs/` holds only human-reviewed, approved configuration templates.
 
 ## Required Startup Procedure
@@ -44,6 +49,13 @@ For every new task:
 
 ## Repository Checkpoint Validation
 
+Run commit comparison only when an explicit, traceable, reviewed `5g-sdr-ops`
+checkpoint is identified in `PROGRESS.md` or the current authorized Task Pack;
+record its source. The Agent must not select a SHA to obtain PASS or substitute
+an srsRAN source commit for the repository checkpoint.
+
+- `NOT_VERIFIED`: no explicit checkpoint input is supplied. Do not infer a SHA or report PASS; retain any task-specific prerequisite requiring a verified checkpoint. Missing input alone is not a global STOP.
+- Apply the existing STOP conditions independently and before either PASS condition. A supplied checkpoint with untrusted provenance remains subject to STOP; missing input does not override dirty-tree, diverged-branch or other STOP conditions. This check does not grant authorization.
 - `PASS`: the recorded checkpoint commit equals `HEAD`.
 - `PASS`: the recorded checkpoint commit is an ancestor of `HEAD`, the working tree is clean, and the checked branch matches its remote.
 - `STOP`: the recorded checkpoint commit is absent from current history.

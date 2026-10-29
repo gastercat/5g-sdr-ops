@@ -2,7 +2,7 @@
 
 狀態：`CANONICAL DECISION SURFACE / HUMAN-REVIEWED INPUT`
 
-更新日期：2026-08-20
+更新日期：2026-10-29
 
 ## 目的
 
@@ -21,6 +21,8 @@ Repository、Runtime 或 Lab authority。
 | `UNRESOLVED` | 缺少足夠 Owner decision；不得由 Agent 補成規則 |
 
 ## Decision Register
+
+目前主要工程優先事項見 [DR-015](#dr-015track-b-physical-rf-transition-成為目前主要工程優先事項)。DR-010 保留原始決策與歷史狀態，其 `CURRENT PRIORITY` 不再表示目前優先順序。
 
 ### DR-001｜先建立 Lab01 stable baseline，再考慮 Lab02
 
@@ -162,6 +164,17 @@ Repository、Runtime 或 Lab authority。
 - Boundary：final ontology 與 external-language mapping 仍須另行 Work Unit；historical artifacts
   不因本決策而 mass-rewrite，Git branch `main` 亦須與 internal `Main／Mainline` 區分。
 - Evidence：[`2026-08-18 Professor Meeting Decision Record`](decisions/2026-08-18-professor-meeting.md)。
+
+### DR-015｜Track B Physical RF Transition 成為目前主要工程優先事項
+
+- Status：`ACCEPTED / CURRENT PRIORITY`
+- Decision Date：2026-10-29。
+- Authority：Owner 在 `PHASE_3_CONTROLLED_DOCUMENTATION_UPDATE` Task Pack 中明確核准的 R6 `SUPERSEDED_PRIORITY` decision；本紀錄保存該次直接授權內容，不推定另有會議紀錄或 Runtime evidence。
+- Decision：Track B Physical RF Transition 成為目前主要工程優先事項，涵蓋 Controlled RF Preparation、Mock Integration、Evidence Preservation 與逐項 Gate Verification。
+- Superseded effect：Lab01 Baseline Recovery、實驗手冊與夏季交付的舊 priority 被取代；PD-01 與 DR-010 的歷史事實保留。
+- Rationale：優先順序的變更來自 Owner 明確決策，不能由近期 RF 工程產物自行推定。舊工作仍保留原有完成狀態，既有交付責任也不因 priority 改變而自動取消。
+- Boundary：本決策不變更 RF Safety、Runtime Authorization、default-deny 或 Gate Acceptance。任何 RF Runtime 操作仍須另行明確授權；mock success 不等於 Physical RF PASS，也不建立 B0.6 Gate PASS 或 Owner Acceptance。
+- Materialization：[AGENTS.md](../AGENTS.md#current-delivery-goal)、[PROGRESS.md](../PROGRESS.md#current-status)。本次僅授權六份既有文件的受控更新；不授權 Commit、Push 或後續工程階段，也不將文件更新設為 G3-3H／B0.6 的新前置 Gate。
 
 ## Historical but Still Relevant
 
