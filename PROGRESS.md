@@ -1,6 +1,6 @@
 # 5G SDR Operations Progress
 
-更新日期：2026-09-26（navigation only；Runtime evidence 日期維持原紀錄）
+更新日期：2026-10-29（priority／documentation navigation；Runtime evidence 日期維持原紀錄）
 文件角色：`CURRENT STATE / DELTA-ONLY NAVIGATION`
 
 ## Documentation Navigation Delta
@@ -15,10 +15,23 @@
   未修改 Runtime、engineering claims 或 implementation authority。後續內容修訂與 validation
   仍需另立 Work Unit。
 
+## RF Evidence Navigation｜2026-10-29 inventory
+
+近期 RF 工程的 saved results 位於 Repo 外，可用 evidence package identifier
+`2026-10-29-g3-3h-b05-b06` 與下列包內 references 定位。目前尚無可攜共享 locator，
+因此其他讀者可能無法取得資料；此時回報 `NOT_VERIFIED`，不改寫為失敗或未執行。
+儲存位置本身不賦予 canonical authority。
+
+- B0.5 saved mock result：`b05-baseline/evidence/mock-run-mqnraem0/summary.json` 保存 90/90 PASS，僅為 mock test results。
+- Candidate saved results：`b06-work/centralized-mock-candidate-01/integrated-01/evidence/` 下的 `mock-run-6lcdl57y/summary.json` 保存 local mock regression 90/90，`integration-rerun-03/integration-summary.json` 保存 mock integration 13/13；不等於 B0.6 Gate PASS、Physical RF PASS 或 Owner Acceptance。
+- Physical RF observation：G3-3H-A1-RX PASS 缺少本次可核對的原始 evidence，維持 `NOT_VERIFIED`；不表示失敗或未執行。
+- Package identifier 與包內 references 只是定位線索，不是永久路徑契約；`/private/tmp/` 不作永久 Evidence Authority。上述紀錄不授予新的執行權限。
+
 ## Current Status
 
 目前 project checkpoint：
 
+- `ACCEPTED / CURRENT PRIORITY`：依 2026-10-29 Owner decision [DR-015](docs/decision-register.md#dr-015track-b-physical-rf-transition-成為目前主要工程優先事項)，Track B Physical RF Transition 為目前主要工程優先事項，涵蓋 Controlled RF Preparation、Mock Integration、Evidence Preservation 與逐項 Gate Verification。這是優先順序決策，不是 RF Runtime Authorization 或 Gate Acceptance。
 - `KNOWN / EV-1 PASS (PREPARED UBUNTU 24.04)`：pinned srsRAN_4G source 的 clean out-of-source
   build、ZeroMQ-enabled build、isolated install 與 upstream test suite 已完成；這不等於 pristine
   Ubuntu dependency-install reproducibility。
@@ -47,10 +60,10 @@
   均已確認停止；temporary `10.0.0.1/24`、`10.0.0.2/24` 與 direct route 已移除，
   management plane 保持完整。Human reported shutdown intent 為 UE → eNB → EPC／Ctrl-C，
   但 exact sequence 未被 Codex 逐階段獨立驗證。
-- `ACCEPTED / CURRENT PRIORITY`：依 2026-08-18 professor meeting PD-01，暑假階段的
-  current project priority 是完成 Lab01 與實驗手冊；兩者是必須分別保留的 deliverable
-  dimensions。本 priority 不等於 Runtime authorization，兩者的 completion scope／criteria
-  仍待另行 recovery／definition。
+- `HISTORICAL PRIORITY / SUPERSEDED_PRIORITY`：2026-08-18 professor meeting PD-01 的暑假
+  優先順序是完成 Lab01 與實驗手冊。2026-10-29 DR-015 已取代該 priority；這不表示舊工作
+  已完成，也不取消原有交付責任。兩項 deliverables 的 completion scope／criteria 仍待另行
+  recovery／definition，既有 Runtime authorization 邊界不變。
 - `ACCEPTED / CURRENT CURRICULUM BOUNDARY`：學生課程不教 Agent；Git 僅保留安全完成實驗
   所需內容。既有 Agent learner draft 保留為 historical material。
 - `ACCEPTED / PENDING MAPPING`：Security 改為未來穿插 Lab01～03 的 cross-cutting direction；
@@ -114,8 +127,9 @@
 
 | Workstream | Lifecycle | Current boundary |
 | --- | --- | --- |
+| Track B Physical RF Transition | `CURRENT PRIMARY ENGINEERING PRIORITY` | DR-015；controlled RF preparation、mock integration、evidence preservation 與逐項 gate verification；不建立 RF Runtime Authorization 或 Gate Acceptance |
 | Lab01 completion | `EV-2 PARTIAL / R5 FAIL UNLOCALIZED / COMPLETION CRITERIA UNRESOLVED` | EV-1 PASS；EV-2 R0–R4、R6 PASS，R5 UE → EPC ICMP 未通；不宣稱 EV-2 或 Full Lab01 PASS |
-| Lab01 experiment manual | `CURRENT SUMMER PROJECT PRIORITY / NOT YET COMPLETE` | Canonical path、章節與 completion criteria 待另行 docs-only Work Unit |
+| Lab01 experiment manual | `HISTORICAL SUMMER PRIORITY / NOT YET COMPLETE` | DR-015 僅取代優先順序，不取消交付責任；canonical path、章節與 completion criteria 待另行 docs-only Work Unit |
 | Lab01 recovered baseline | `HISTORICAL PHASE 4C + 2026-08-24 FRESH BOUNDED RECOVERY / CLOSED` | 兩組 evidence 分開保存；目前 Runtime 已停止、temporary sample plane 已移除 |
 | Lab02 eMBMS | `SESSION B CLOSED / TEACHING EXTENSION PASS_WITH_LIMITATIONS / INCIDENT TRIGGER LOCALIZED` | visible playback 有 bounded photo evidence，stream integrity degraded/intermittent；USB disconnect cause 未定位，Latency deferred |
 | Agent + Git Runbook | `INTERNAL ENGINEERING REFERENCE / STUDENT CURRICULUM SUPERSEDED` | 可保留 Maintainer safety／governance reference；不是 current teaching mainline |
@@ -212,6 +226,7 @@ configuration、historical deployment 或 current Runtime evidence。
 
 ## Current Stop Point
 
+- Track B：本次僅完成受控文件更新；後續工程操作仍依當次 scope 與授權執行。上方 saved mock results 不建立 B0.6 Gate PASS，G3-3H-A1-RX PASS 仍為 `NOT_VERIFIED`。本次文件更新不是 G3-3H／B0.6 的新前置 Gate。
 - `LAB02_B3D_EVIDENCE_ESTABLISHED / LAB02_B3D1_DECODER_PATH_RECOVERED`：既有 finalized PCAP
   已足以建立代表性 SIB13／MCCH／MTCH；B.3D/B.3D.1 未啟動 Runtime、未更換 capture。decoder
   觀察及 provenance 限制見上方兩份 TER。

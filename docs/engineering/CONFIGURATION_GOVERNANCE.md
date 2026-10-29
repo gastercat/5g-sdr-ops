@@ -13,10 +13,19 @@
 | --- | --- | --- | --- |
 | 原始碼 | `srsRAN_4G/` | 是 | 管理 srsRAN 原始碼、patch 與版本 |
 | 核准設定 | `5g-sdr-ops/configs/` | 是 | 儲存已清理且經 Review 的設定範本 |
-| 執行階段設定 | `/etc/srsran/` | 否 | 主機實際使用的 active config |
+| 執行階段設定 | 依 track／host／component 核對 | 否 | Runtime selection 需有 execution evidence |
 | 敏感資料 | 主機受限位置 | 否 | subscriber 與驗證資料 |
 | 稽核證據 | `docs/audits/` | 是 | 儲存盤點、雜湊與稽核報告 |
 | 部署狀態 | `manifests/` | 是 | 未來記錄已部署 Profile 與版本 |
+
+`/etc/srsran/` 是 known Lab01 configuration location，不概括所有實驗，也不表示現在未被使用。
+判讀設定來源時，先分清時間與用途：historical configuration 描述當時設定，launch arguments
+支持當次 selected configuration；兩者都不能單獨證明目前 active Runtime。Canonical source
+依已核准範圍與 provenance 判定，不由路徑或檔案存在決定。
+Runtime selection 必須依 track、host、component 及 execution evidence 確認。
+
+Active Runtime Configuration 不得作為一般 Git working tree 管理，適用於所有實際配置位置。
+任何 active configuration 變更仍適用第 7、8 節的 review、backup、diff、Human approval 與 controlled deployment。
 
 ## 3. 系統角色
 

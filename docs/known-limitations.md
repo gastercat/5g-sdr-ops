@@ -2,7 +2,7 @@
 
 狀態：`CANONICAL CLAIM-BOUNDARY REGISTER`
 
-更新日期：2026-08-24
+更新日期：2026-10-29（claim-register delta；historical evidence 日期維持原紀錄）
 
 ## 使用方式
 
@@ -104,7 +104,9 @@ version。
 
 Lifecycle：`HISTORICAL_NEEDS_REVALIDATION / NOT ACTIVE / NOT AUTHORIZED`
 
-| Claim | Current status | 不可越過的邊界 |
+先保留較早的 compatibility snapshot，再於表後補上 Session B observations，讓兩個時段的證據分開判讀。
+
+| Claim | Historical status | 不可越過的邊界 |
 | --- | --- | --- |
 | Lab02／eMBMS configuration residue | `HISTORICAL_CONFIGURATION_RESIDUE_OBSERVED` | 歷史 active-selection／field evidence 不等於 current config 或 feature validation |
 | SIB13 configuration mapping | `HISTORICAL_CONFIGURATION_RESIDUE_OBSERVED` | 不等於 UE Runtime observation |
@@ -115,6 +117,17 @@ Lifecycle：`HISTORICAL_NEEDS_REVALIDATION / NOT ACTIVE / NOT AUTHORIZED`
 | UE MAC PCAP／FIFO final procedure | `UNRESOLVED / HISTORICAL_NEEDS_REVALIDATION` | actual repair root cause 與 final startup／recovery procedure 尚未裁定 |
 | DLT 147 vs 149 | `UNRESOLVED / VERSION_SENSITIVE` | 不建立無版本條件的固定操作步驟 |
 | eMBMS Control Plane terminology | `UNRESOLVED_TERMINOLOGY` | 不宣稱 Control Plane completed |
+
+### Session B bounded observation delta｜2026-09-26
+
+| Saved-PCAP observation | Record status | Source / limitation |
+| --- | --- | --- |
+| SIB13，Frame 3 | `OBSERVED` | B.3D TER B3D-01；來源為當時 supplied screenshot，未存入 Repo |
+| MCCH，Frame 22 | `REPORTED_ONLY` | B.3D TER B3D-02；來源為 transcribed Human observation，未由本紀錄獨立重解碼 |
+| MTCH，Frame 41 | `OBSERVED` | B.3D TER B3D-03；來源為當時 supplied screenshot，未存入 Repo |
+
+這三項結果來自 [B.3D TER](evidence/task-evidence/2026-09-26-lab02-b3d-sib13-mcch-mtch.yaml)，只支持該份 finalized PCAP 的 bounded observations，不是目前 live Runtime PASS。
+[B.3D.1 TER](evidence/task-evidence/2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml) 保存的 GUI decoder recovery 使用 User DLT 149 → UDP、啟用 `mac_lte_udp` 及 MTCH RLC preference。等效 TShark CLI、version compatibility matrix 與 FIFO procedure 仍未由這份紀錄建立驗證結果。
 
 必須持續保留：
 

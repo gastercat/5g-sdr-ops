@@ -86,11 +86,11 @@
 
 ## Repository 與執行環境邊界
 
-`srsRAN_4G/` 是由 Git 管理的原始碼 Repository，負責管理 srsRAN 原始碼、patch 與版本。`/etc/srsran/` 是主機實際使用的執行階段設定目錄，不得初始化或作為一般 Git working tree 管理。
+`srsRAN_4G/` 是由 Git 管理的原始碼 Repository，負責管理 srsRAN 原始碼、patch 與版本。`/etc/srsran/` 是 known Lab01 configuration location，不表示所有實驗均使用此處，也不表示現在未被使用。Runtime selection 必須依 track、host、component 及 execution evidence 確認；見 [Configuration Governance 管理邊界](CONFIGURATION_GOVERNANCE.md#2-管理邊界)。Active Runtime Configuration 不得初始化或作為一般 Git working tree 管理，適用於所有實際配置位置。
 
 已核准且已清理的設定範本應存放於 `5g-sdr-ops` Repository；不得複製或提交啟用中的設定檔。Linux1、Linux2 等主機角色不得以永久 Git 分支表示。Lab01 與 Lab02 Profile 應以目錄、manifests 與已驗證標籤表示，而非永久分支。
 
-代理不得在 `/etc/srsran/` 內執行 `git checkout`、`git reset`、`git merge` 或其他等效的破壞性 Git 操作。任何啟用中設定變更都必須依序具備：
+代理不得在 `/etc/srsran/` 或任何其他 Active Runtime Configuration 位置執行 `git checkout`、`git reset`、`git merge` 或其他等效的破壞性 Git 操作。任何啟用中設定變更都必須依序具備：
 
 1. 備份
 2. 差異
