@@ -8,7 +8,7 @@ const untested = { status: 'NOT_TESTED', label: '本網站未建立的結果', t
 const claim = { status: 'PARTIAL', label: 'Lab02：PASS_WITH_LIMITATIONS', type: 'HISTORICAL_REPORT', detail: 'Session B 與 Teaching Extension 已記錄 multicast E2E 和 bounded visible playback；保留人工來源及串流降級限制。', reference: 'PROGRESS.md · Lab02 Session B／Teaching Extension；labs/lab02-embb/README.md' };
 const protocolEvidence = [
   { status: 'VERIFIED', label: 'SIB13 · Frame 3', type: 'SCREENSHOT / OBSERVED', detail: '歷史 Wireshark 紀錄：SystemInformation [SIB2 SIB3 SIB13] 與 sib13-v920、MBSFN／MCCH config。只適用於該 finalized capture。', reference: protocolRecord + ' · B3D-01' },
-  { status: 'VERIFIED', label: 'MCCH · Frame 22（人工觀察）', type: 'HUMAN_OBSERVATION / REPORTED_ONLY', detail: 'Canonical 記錄為 ESTABLISHED：SDU (MCCH, length=16 bytes)。來源是人工觀察轉錄；該 frame 的截圖未存入 Repo，本網站沒有獨立重解碼。', reference: protocolRecord + ' · B3D-02' },
+  { status: 'PARTIAL', label: 'MCCH · Frame 22（人工觀察）', type: 'HUMAN_OBSERVATION / REPORTED_ONLY', detail: 'Canonical 記錄為 ESTABLISHED：SDU (MCCH, length=16 bytes)。來源是人工觀察轉錄；該 frame 的截圖未存入 Repo，本網站沒有獨立重解碼。', reference: protocolRecord + ' · B3D-02' },
   { status: 'VERIFIED', label: 'MTCH · Frame 41', type: 'SCREENSHOT / OBSERVED', detail: '歷史紀錄直接解碼 RLC-LTE [DL] [UM] MTCH，Channel Type MTCH (8)，PDU Length 45；不等於應用播放或穩定性證據。', reference: protocolRecord + ' · B3D-03' }
 ];
 const common = {
@@ -80,7 +80,7 @@ export const lab02Scenes = [
     recommendedLayers: ['service'],
     description: 'SIB13 提供 MBSFN／MCCH 設定，MCCH 提供 eMBMS 控制資訊，MTCH 承載服務資料；三項歷史 frame 證據不是一次互動訊息時序。',
     activeNodes: ['enb', 'ue'], activeLinks: [],
-    claim: { status: 'VERIFIED', label: 'B.3D：三項通道證據已建立（限定 capture）', type: 'CANONICAL_RECORD', detail: '同一份 52-packet finalized UE MAC PCAP 記錄 SIB13、MCCH 與 MTCH。MCH 存在本身不足以證明 MCCH／MTCH；此結論依據解碼身分。', reference: protocolRecord + '；2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml' },
+    claim: { status: 'PARTIAL', label: 'B.3D：通道歷史記錄；MCCH 為 REPORTED_ONLY', type: 'CANONICAL_RECORD', detail: '同一份 52-packet finalized UE MAC PCAP 記錄 SIB13、MCCH 與 MTCH。MCH 存在本身不足以證明 MCCH／MTCH；SIB13／MTCH 有歷史 screenshot observation；MCCH Frame 22 僅為 HUMAN_OBSERVATION / REPORTED_ONLY，原始截圖及 decoder export 未存入 Repo，未獨立重解碼。', reference: protocolRecord + '；2026-09-26-lab02-b3d1-dlt149-decoder-compatibility.yaml' },
     evidence: [bmScScope, ...protocolEvidence, untested],
     step: { title: '先知道如何接收，再辨識服務資料', summary: 'SIB13 → MCCH → MTCH 是閱讀依存關係：前兩項是控制資訊，MTCH 是服務資料通道。下列 frame 編號是同一份歷史 capture 的代表例，不是每次實驗固定的編號，也不代表本網站正在解碼。', note },
     beats: [{ title: 'SIB13 · Frame 3', detail: '找到 MBSFN／MCCH 設定；歷史 screenshot observation。' }, { title: 'MCCH · Frame 22', detail: 'eMBMS 控制資訊；人工觀察轉錄，REPORTED_ONLY。' }, { title: 'MTCH · Frame 41', detail: '服務 payload 通道；RLC-LTE [DL] [UM] MTCH 直接解碼記錄。' }]

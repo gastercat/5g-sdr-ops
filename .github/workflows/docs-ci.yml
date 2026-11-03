@@ -42,22 +42,6 @@ jobs:
             echo 'No Interactive Lab Pages changes; package check skipped.'
             exit 0
           fi
-          while IFS= read -r path; do
-            case "$path" in
-              .github/workflows/interactive-lab-pages.yml|\
-              .github/workflows/docs-ci.yml|\
-              exploration/5g-sdr-interactive-lab/index.html|\
-              exploration/5g-sdr-interactive-lab/evidence.html|\
-              exploration/5g-sdr-interactive-lab/css/*|\
-              exploration/5g-sdr-interactive-lab/js/*|\
-              exploration/5g-sdr-interactive-lab/assets/*)
-                ;;
-              *)
-                echo "Changed path is outside the Interactive Lab Pages scope: $path" >&2
-                exit 1
-                ;;
-            esac
-          done <<< "$changed"
           site=exploration/5g-sdr-interactive-lab
           test -f "$site/index.html"
           test -f "$site/evidence.html"
@@ -103,7 +87,9 @@ jobs:
           python3 .github/ci/install_tools.py gitleaks "$RUNNER_TEMP/docs-ci-bin"
           echo "$RUNNER_TEMP/docs-ci-bin" >> "$GITHUB_PATH"
       - name: Verify failure detection in temporary repositories
-        run: python3 .github/ci/test_checks.py
+        run: |
+          python3 .github/ci/test_checks.py
+          python3 .github/ci/test_interactive_lab_pages.py
       - name: Check documentation and PR whitespace
         run: python3 .github/ci/checks.py docs-quality
 

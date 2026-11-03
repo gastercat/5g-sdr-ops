@@ -11,9 +11,9 @@ const historical = {
   reference: 'PROGRESS.md · Confirmed Phase 4C scope；docs/architecture-overview.md · Sample Plane'
 };
 const rfUnverified = {
-  status: 'NOT_TESTED', label: 'USRP B210 / OTA 尚未驗證', type: 'SCOPE_BOUNDARY',
-  detail: 'Phase 4C 使用 ZeroMQ；B210 OTA、Cell detection、attach 與 user plane 的 RF Gate 沒有本階段通過紀錄。',
-  reference: `${boundary}；${source} · 核心驗證目標`
+  status: 'NOT_VERIFIED', label: 'RF observation 已記錄；原始證據未核實', type: 'SCOPE_BOUNDARY',
+  detail: 'PROGRESS 2026-10-29 記錄 G3-3H-A1-RX PASS；原始 evidence 尚無可攜共享 locator，維持 NOT_VERIFIED，不表示失敗或未執行。RX observation 不證明 Cell detection、Random Access、UE attach 或 User Plane PASS。',
+  reference: `PROGRESS.md · RF Evidence Navigation 2026-10-29；package 2026-10-29-g3-3h-b05-b06（Repo 外，無可攜共享 locator）；${boundary}`
 };
 const diagramReference = {
   status: 'NOT_TESTED', label: 'RF 配線參考圖 · 非本專案驗證', type: 'USER_PROVIDED_DIAGRAM',
@@ -95,9 +95,9 @@ export const rfPhysicalArchitecture = {
   }],
   locations: [...radioBase.locations,
     { term: '獨立 Ethernet NIC · 圖例', location: 'Linux1 / Linux2 主機各一端 · 可選圖層', role: '只用於對照截圖配線；不是 RF 樣本鏈路或已實作的 Lab03 Path B。' },
-    { term: 'USRP B210 · eNB / UE', location: 'Linux1 與 Linux2 各一台，位於程序與 OTA 之間', role: '計畫將 ZeroMQ sample transport 換成實體無線鏈路；目前仍為 NOT_TESTED。' }]
+    { term: 'USRP B210 · eNB / UE', location: 'Linux1 與 Linux2 各一台，位於程序與 OTA 之間', role: '計畫將 ZeroMQ sample transport 換成實體無線鏈路；RX observation 為 NOT_VERIFIED，完整 OTA Gate 尚未 PASS。' }]
 };
-const rfClaim = { status: 'NOT_TESTED', label: 'RF Gate 尚無通過結果', type: 'PLANNED_GATE', detail: 'B210 偵測、Cell detection、UE attach、User Plane PASS 各需新的 RF Runtime evidence。', reference: `${source} · 核心驗證目標；${boundary}` };
+const rfClaim = { status: 'NOT_VERIFIED', label: 'RF Gate 尚無通過結果', type: 'PLANNED_GATE', detail: 'B210 偵測、Cell detection、UE attach、User Plane PASS 各需新的 RF Runtime evidence。', reference: `${source} · 核心驗證目標；${boundary}` };
 export const rfScenes = [
   {
     ...radioBase, focusNodeId: 'sample-nic-enb', id: 'RF-S1', title: 'RF Transition · ZeroMQ 基線', shortTitle: '已知 ZeroMQ 基線',
@@ -112,7 +112,7 @@ export const rfScenes = [
   {
     ...rfPhysicalArchitecture, id: 'RF-S2', title: 'RF Transition · ZeroMQ → USRP', shortTitle: 'USRP B210 / OTA',
     change: '以 eNB 與 UE 兩端 USRP B210、低功率 OTA 表示 sample transport 的目標替換；網路架構未變。',
-    description: 'eNB／UE 程序與 EPC 邏輯節點保留；ZeroMQ NIC／Socket 鏈在這個目標視圖中換成 B210 與 OTA。實測狀態 NOT_TESTED。',
+    description: 'eNB／UE 程序與 EPC 邏輯節點保留；ZeroMQ NIC／Socket 鏈在這個目標視圖中換成 B210 與 OTA。RX observation 已記錄但 NOT_VERIFIED；完整 OTA Gate 尚未 PASS。',
     activeNodes: ['enb-host', 'b210-enb', 'b210-ue', 'ue-host', ...referenceNodeIds], activeLinks: ['enb-b210', 'ota-rf', 'b210-ue-host', ...referenceLinkIds],
     claim: rfClaim, evidence: [historical, rfUnverified, diagramReference],
     step: { title: 'Transport changed. Network architecture did not.', summary: '把兩主機間的 radio samples 傳輸從 ZeroMQ／Ethernet 換為各一台 USRP B210 與低功率 OTA。UE、eNB、MME、S-GW、P-GW 的邏輯位置與路徑仍在同一張畫布上；這是待驗證架構。', note },
@@ -121,14 +121,14 @@ export const rfScenes = [
   {
     ...rfPhysicalArchitecture, id: 'RF-S3', title: 'RF Transition · Pre-Lab03 Gate', shortTitle: 'RF gate',
     change: '檢查四個 RF 前置條件；畫布仍顯示同一個 B210 目標鏈路。',
-    description: 'Gate：USRP detected → Cell detected → UE attached → User Plane PASS。目前四項均 NOT_TESTED。',
+    description: 'Gate：USRP detected → Cell detected → UE attached → User Plane PASS。各項 RF Gate 尚無可獨立核實的 PASS；另有 RX observation 記錄，狀態 NOT_VERIFIED。',
     activeNodes: ['enb-host', 'b210-enb', 'b210-ue', 'ue-host', ...referenceNodeIds], activeLinks: ['enb-b210', 'ota-rf', 'b210-ue-host', ...referenceLinkIds],
     claim: rfClaim,
-    evidence: [...['USRP detected', 'Cell detected', 'UE attached', 'User Plane PASS'].map(label => ({
-      status: 'NOT_TESTED', label, type: 'RF_GATE / NO_EXECUTION',
-      detail: '這是進入 Lab03 前需要實測的檢查點；目前沒有本專案 B210 OTA 通過紀錄。', reference: source + ' · 核心驗證目標'
+    evidence: [rfUnverified, ...['USRP detected', 'Cell detected', 'UE attached', 'User Plane PASS'].map(label => ({
+      status: 'NOT_VERIFIED', label, type: 'RF_GATE / NO_VERIFIED_PASS',
+      detail: '這是進入 Lab03 前需要實測的檢查點；目前未建立此項可獨立核實的 RF PASS；不能由 RX observation 推論，也不判定是否曾執行。', reference: source + ' · 核心驗證目標'
     })), diagramReference],
     step: { title: 'RF gate：四項都需要實測', summary: '依序確認 USRP 偵測、Cell detection、UE attach 與 User Plane。這裡只展示檢查點，沒有讀取硬體或替任何一項打勾。', note },
-    beats: ['USRP detected', 'Cell detected', 'UE attached', 'User Plane PASS'].map(title => ({ title: `${title} · NOT_TESTED`, detail: '等待獨立的 RF Runtime 證據。' }))
+    beats: ['USRP detected', 'Cell detected', 'UE attached', 'User Plane PASS'].map(title => ({ title: `${title} · NOT_VERIFIED`, detail: '等待獨立的 RF Runtime 證據。' }))
   }
 ];

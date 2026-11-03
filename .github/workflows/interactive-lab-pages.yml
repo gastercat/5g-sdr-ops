@@ -90,6 +90,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
+      # Administrator must first select Settings → Pages → GitHub Actions.
+      # Default GITHUB_TOKEN does not create a disabled Pages site.
       - name: Configure GitHub Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Deploy site
