@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+    <meta name="description" content="以可檢查的歷史證據，理解 5G SDR 專案的架構演進。">
+    <title>5G SDR Interactive Lab</title>
+    <script src="./js/theme.js"></script>
+    <link rel="stylesheet" href="./css/main.css">
+    <script type="module" src="./js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要內容</a>
+    <div class="pinned-header">
+    <header class="site-header">
+      <div>
+        <h1>5G SDR Interactive Lab</h1>
+        <nav class="page-tabs" aria-label="頁面"><a href="./index.html" aria-current="page">架構</a><a data-evidence-link href="./evidence.html">證據與範圍 →</a><button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">玻璃主題</button></nav>
+      </div>
+    </header>
+
+      <nav class="timeline-card" aria-label="實驗架構演進時間軸">
+        <ol id="lab-timeline" class="timeline-list"></ol>
+        <p class="proposal-note">Security 現為 Lab01–03 跨階段方向；此 Lab04／Tailcat 視角為 PROPOSED。</p>
+      </nav>
+      <div class="panel-tools" aria-label="架構控制">
+        <div class="scene-picker"><label for="scene-select">目前步驟</label><select id="scene-select" aria-controls="architecture-canvas scene-position"></select></div>
+        <div class="playback-buttons">
+          <button id="scene-previous" disabled type="button" aria-label="上一個場景">上一個</button>
+          <button id="scene-play" type="button" aria-pressed="false" aria-label="播放場景與封包示意">播放</button>
+          <button id="scene-next" type="button" aria-label="下一個場景">下一個</button>
+          <button id="scene-reset" type="button" aria-label="重設至第一個場景並隱藏介面資訊">重設</button>
+        </div>
+        <button id="explanation-toggle" type="button" aria-expanded="false" aria-controls="explanation-panel">步驟說明</button>
+        <button id="interface-toggle" type="button" aria-expanded="false" aria-controls="interface-details architecture-canvas">IP / Port</button>
+      </div>
+    </div>
+    <main id="main-content" tabindex="-1">
+      <section class="architecture-card" aria-labelledby="scene-title">
+        <div class="section-heading canvas-heading">
+          <div>
+            <h2 id="scene-title">Lab01 · Connectivity</h2>
+            <p id="scene-change" class="muted"></p>
+          </div>
+          <span class="context-label">歷史架構示意</span>
+        </div>
+
+        <p id="scene-position" role="status" aria-live="polite" aria-atomic="true">載入場景…</p>
+        <p id="playback-status" class="playback-status" role="status" aria-live="polite"></p>
+        <p class="animation-note">動畫為教學示意；速度與抵達順序不代表量測、逐封包重播或 Runtime 結果。</p>
+        <div class="canvas-legend" aria-label="架構線條圖例">
+          <span class="legend-item legend-user-item"><i class="legend-line"></i>User Plane · 實線</span>
+          <span class="legend-item"><i class="legend-line legend-control"></i>Control Plane · 虛線</span>
+          <span id="socket-legend" class="legend-item" hidden><i class="legend-socket"></i>Socket · 端點方塊</span>
+          <span class="legend-item legend-sample-item" hidden><i class="legend-line legend-sample"></i>Sample Plane</span>
+          <span class="legend-item legend-radio-item" hidden><i class="legend-line legend-radio"></i>OTA RF · NOT_TESTED</span>
+          <span class="legend-item legend-plain-item" hidden><i class="legend-line legend-plain"></i>一般路徑 · 保護未知</span>
+          <span class="legend-item legend-proposed-item" hidden><i class="legend-line legend-proposed"></i>Tailcat · PROPOSED</span>
+        </div>
+        <details class="layer-settings">
+          <summary>顯示圖層 <span id="layer-count">0 / 5</span></summary>
+          <p class="muted">各步驟預設展開相關圖層；手動選擇會優先保留，重設可恢復預設。</p>
+          <fieldset><legend>選擇要補充的架構細節</legend><div id="layer-controls"></div></fieldset>
+        </details>
+        <p class="canvas-hint">左右捲動畫布，查看完整架構。</p>
+        <div class="canvas-scroll" tabindex="0" aria-label="累積架構圖；窄螢幕可左右捲動">
+          <svg id="architecture-canvas" class="architecture-svg" viewBox="0 0 720 800" role="img"
+            aria-labelledby="canvas-title canvas-description" xmlns="http://www.w3.org/2000/svg">
+            <title id="canvas-title">Lab01 LTE 小型基地台歷史架構</title>
+            <desc id="canvas-description">UE 經由 eNB 連接 S-GW、P-GW 與 Internet；MME 透過虛線 S1-MME 連接 eNB，透過 S11 控制面連接 S-GW。tun_srsue 位於 Linux2 UE 端；srs_spgw_sgi 位於 Linux1 EPC 端。SCTP 在 eNB 與 MME 之間；HSS 及 user_db.csv 在 EPC 區域。下方另列主機間 ZMQ samples。</desc>
+            <defs id="svg-defs"></defs>
+            <g id="svg-links" aria-hidden="true"></g>
+            <g id="svg-nodes"></g>
+            <g id="svg-packets" aria-hidden="true"></g>
+            <g id="svg-labels" aria-hidden="true"></g>
+          </svg>
+        </div>
+<p class="canvas-caption">歷史架構示意；淡化表示非目前重點，路徑不代表已驗證。</p>
+        <section id="security-questions" class="security-questions" aria-labelledby="security-questions-title" hidden>
+          <h3 id="security-questions-title">Security questions · PROPOSED</h3><ol></ol>
+        </section>
+
+
+      </section>
+
+
+
+
+      <p class="claim-preview"><span id="claim-preview"></span> · <a data-evidence-link href="./evidence.html">查看適用範圍與來源 →</a></p>
+    </main>
+    <aside id="explanation-panel" class="floating-panel floating-panel--left" aria-labelledby="explanation-title" hidden>
+      <div class="floating-heading"><h2 id="explanation-title">步驟說明</h2><button type="button" data-close-panel="explanation-panel" aria-label="關閉步驟說明">關閉</button></div>
+      <div class="floating-content">          <h3 id="scene-summary-title"></h3><p id="scene-summary"></p><p id="historical-note" class="historical-callout"></p><ol id="scene-beats" class="scene-beats" hidden></ol>
+          <details class="location-details"><summary>元件位置與作用</summary><dl id="location-list"></dl></details>
+
+        <div id="layer-notes" class="layer-notes"></div>
+      </div>
+    </aside>
+        <aside id="interface-details" class="floating-panel floating-panel--right" aria-labelledby="interface-title" hidden>
+          <div class="floating-heading"><h2 id="interface-title">介面端點 · IP / Port</h2><button type="button" data-close-panel="interface-details" aria-label="關閉介面端點">關閉</button></div><div class="floating-content">
+          <p class="muted">依圖中的介面名稱對照端點。教學設定、歷史位址與上游實作分開標示；不是目前 Runtime 的監聽狀態。實際部署版本與動態 Port 未驗證。</p>
+          <ul id="interface-list" class="interface-list"></ul>
+        </div></aside>
+    <footer class="site-footer">
+      <p>本網站是教學視覺化，不是網路模擬器或即時 SDR telemetry。</p>
+      <a href="#main-content">回到頁面頂端</a>
+    </footer>
+  </body>
+</html>
