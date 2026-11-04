@@ -29,7 +29,7 @@ const radioBase = {
   recommendedLayers: ['transport'],
   layers: lab02.layers.map(layer => layer.id === 'transport'
     ? { ...layer, label: 'Radio transport', detail: 'ZeroMQ 基線或 B210 OTA 轉換', top: 500, bottom: 680,
-        note: 'RF Transition 只改 eNB／UE 間的 radio sample transport；EPC、S1 與 UE IP 邏輯架構留在原位。B210 OTA 仍待實測。' }
+        note: 'RF Transition 只改 eNB／UE 間的 radio sample transport；EPC、S1 與 UE IP 邏輯架構留在原位。完整 B210 OTA 端到端目標測試為 NOT_TESTED；歷史 RX observation 為 NOT_VERIFIED。' }
     : layer.id === 'external' ? { ...layer, bottom: 1010 } : layer),
   annotations: [
     ...lab02.annotations.filter(item => !item.layers?.includes('transport')),
@@ -54,10 +54,10 @@ const radioBase = {
     : link.id === 'sgi-nat' ? { ...link, via: [{ x: 710, y: 268 }, { x: 710, y: 800 }, { x: 432, y: 800 }], labelAt: { x: 575, y: 800 } } : link),
   evidenceFootnote: 'RF Gate 目前是教學檢查清單；不能由歷史 ZeroMQ、Lab02 播放或拓樸圖推論 B210 OTA 通過。',
   interfaces: [...lab02.interfaces, {
-    title: 'USRP B210 / OTA · 規劃位置', basis: 'NOT_TESTED · Lab03 目標架構',
+    title: 'USRP B210 / OTA · 規劃位置', basis: 'NOT_TESTED · 完整 B210 OTA 端到端目標測試',
     endpoints: ['Linux1 eNB ↔ USRP B210', 'USRP B210 ↔ 低功率 OTA ↔ USRP B210', 'USRP B210 ↔ Linux2 UE'],
     note: 'USRP 是實體 radio device，OTA 不使用 ZeroMQ 的 IP／Port；頻率、增益、功率及實際 RF 結果均未在本網站設定或驗證。',
-    sources: [{ label: 'Lab03 delivery intent', reference: source }, { label: 'RF 尚未測試', reference: boundary }]
+    sources: [{ label: 'Lab03 delivery intent', reference: source }, { label: 'Phase 4C 範圍：B210 OTA NOT_TESTED', reference: boundary }]
   }]
 };
 const zmqLinks = ['sample-enb-nic', 'sample-plane', 'sample-nic-ue'];
@@ -67,7 +67,7 @@ const physicalNodes = [
 ];
 const physicalLinks = [
   { id: 'enb-b210', source: 'enb-host', target: 'b210-enb', kind: 'sample', label: 'USB 3.0 · 圖例', labelOffsetY: -40, bidirectional: false, layers: ['transport'] },
-  { id: 'ota-rf', source: 'b210-enb', target: 'b210-ue', kind: 'radio', label: '低功率 OTA · NOT_TESTED', labelOffsetY: 42, bidirectional: false, layers: ['transport'] },
+  { id: 'ota-rf', source: 'b210-enb', target: 'b210-ue', kind: 'radio', label: 'OTA E2E 目標 · NOT_TESTED', labelOffsetY: 42, bidirectional: false, layers: ['transport'] },
   { id: 'b210-ue-host', source: 'b210-ue', target: 'ue-host', kind: 'sample', label: 'USB 3.0 · 圖例', labelOffsetY: -40, bidirectional: false, layers: ['transport'] }
 ];
 const referenceNodes = [
@@ -95,9 +95,9 @@ export const rfPhysicalArchitecture = {
   }],
   locations: [...radioBase.locations,
     { term: '獨立 Ethernet NIC · 圖例', location: 'Linux1 / Linux2 主機各一端 · 可選圖層', role: '只用於對照截圖配線；不是 RF 樣本鏈路或已實作的 Lab03 Path B。' },
-    { term: 'USRP B210 · eNB / UE', location: 'Linux1 與 Linux2 各一台，位於程序與 OTA 之間', role: '計畫將 ZeroMQ sample transport 換成實體無線鏈路；RX observation 為 NOT_VERIFIED，完整 OTA Gate 尚未 PASS。' }]
+    { term: 'USRP B210 · eNB / UE', location: 'Linux1 與 Linux2 各一台，位於程序與 OTA 之間', role: '計畫將 ZeroMQ sample transport 換成實體無線鏈路；RX observation 為 NOT_VERIFIED，整體 RF Gate 為 NO VERIFIED PASS。' }]
 };
-const rfClaim = { status: 'NOT_VERIFIED', label: '整體 RF Gate 尚無獨立核實的 PASS', type: 'RF_GATE / EVIDENCE_BOUNDARY', detail: 'PROGRESS.md 已記錄歷史 G3-3H-A1-RX PASS；原始 evidence 目前無法獨立核對，因此為 NOT_VERIFIED，不表示未執行或失敗。此 RX observation 不等於 Cell detection、Random Access、UE attach 或 User Plane PASS。', reference: `${source} · 核心驗證目標；${boundary}` };
+const rfClaim = { status: 'NO VERIFIED PASS', label: '整體 RF Gate · 尚無獨立核實的 PASS', type: 'RF_GATE / EVIDENCE_BOUNDARY', detail: 'PROGRESS.md 已記錄歷史 G3-3H-A1-RX PASS；原始 evidence 目前無法獨立核對，因此為 NOT_VERIFIED，不表示未執行或失敗。此 RX observation 不等於 Cell detection、Random Access、UE attach 或 User Plane PASS。', reference: `${source} · 核心驗證目標；${boundary}` };
 export const rfScenes = [
   {
     ...radioBase, focusNodeId: 'sample-nic-enb', id: 'RF-S1', title: 'RF Transition · ZeroMQ 基線', shortTitle: '已知 ZeroMQ 基線',
@@ -112,16 +112,16 @@ export const rfScenes = [
   {
     ...rfPhysicalArchitecture, id: 'RF-S2', title: 'RF Transition · ZeroMQ → USRP', shortTitle: 'USRP B210 / OTA',
     change: '以 eNB 與 UE 兩端 USRP B210、低功率 OTA 表示 sample transport 的目標替換；網路架構未變。',
-    description: 'eNB／UE 程序與 EPC 邏輯節點保留；ZeroMQ NIC／Socket 鏈在這個目標視圖中換成 B210 與 OTA。RX observation 已記錄但 NOT_VERIFIED；完整 OTA Gate 尚未 PASS。',
+    description: 'eNB／UE 程序與 EPC 邏輯節點保留；ZeroMQ NIC／Socket 鏈在這個目標視圖中換成 B210 與 OTA。RX observation 已記錄但 NOT_VERIFIED；整體 RF Gate 為 NO VERIFIED PASS。',
     activeNodes: ['enb-host', 'b210-enb', 'b210-ue', 'ue-host', ...referenceNodeIds], activeLinks: ['enb-b210', 'ota-rf', 'b210-ue-host', ...referenceLinkIds],
     claim: rfClaim, evidence: [historical, rfUnverified, diagramReference],
     step: { title: 'Transport changed. Network architecture did not.', summary: '把兩主機間的 radio samples 傳輸從 ZeroMQ／Ethernet 換為各一台 USRP B210 與低功率 OTA。UE、eNB、MME、S-GW、P-GW 的邏輯位置與路徑仍在同一張畫布上；這是待驗證架構。', note },
-    beats: [{ title: 'eNB Process → B210', detail: 'Linux1 的實體 RF 裝置位置。' }, { title: '低功率 OTA', detail: '兩端裝置之間的預期無線鏈路，NOT_TESTED。' }, { title: 'B210 → UE Process', detail: 'Linux2 的實體 RF 裝置位置。' }]
+    beats: [{ title: 'eNB Process → B210', detail: 'Linux1 的實體 RF 裝置位置。' }, { title: '低功率 OTA', detail: '完整 B210 OTA 端到端目標測試為 NOT_TESTED；歷史 RX observation 另列 NOT_VERIFIED。' }, { title: 'B210 → UE Process', detail: 'Linux2 的實體 RF 裝置位置。' }]
   },
   {
     ...rfPhysicalArchitecture, id: 'RF-S3', title: 'RF Transition · Pre-Lab03 Gate', shortTitle: 'RF gate',
     change: '檢查四個 RF 前置條件；畫布仍顯示同一個 B210 目標鏈路。',
-    description: 'Gate：USRP detected → Cell detected → UE attached → User Plane PASS。PROGRESS.md 已記錄歷史 G3-3H-A1-RX PASS（NOT_VERIFIED）；整體 RF Gate 尚無可獨立核實的 PASS。',
+    description: 'Gate：USRP detected → Cell detected → UE attached → User Plane PASS。PROGRESS.md 已記錄歷史 G3-3H-A1-RX PASS（NOT_VERIFIED）；整體 RF Gate：NO VERIFIED PASS。',
     activeNodes: ['enb-host', 'b210-enb', 'b210-ue', 'ue-host', ...referenceNodeIds], activeLinks: ['enb-b210', 'ota-rf', 'b210-ue-host', ...referenceLinkIds],
     claim: rfClaim,
     evidence: [rfUnverified, ...['USRP detected', 'Cell detected', 'UE attached', 'User Plane PASS'].map(label => ({

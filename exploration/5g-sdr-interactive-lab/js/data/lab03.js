@@ -10,9 +10,9 @@ const pending = {
   reference: `${source}；${scope}`
 };
 const rfGate = {
-  status: 'NOT_TESTED', label: '前置 RF Gate 尚未通過', type: 'PREREQUISITE',
-  detail: 'Lab03 目標架構以 USRP B210 的 LTE SDR Path A 和額外 Ethernet / Switch Path B 為基礎；B210 OTA 尚未建立本專案通過證據。',
-  reference: 'labs/lab03-urllc/README.md · 系統架構；docs/known-limitations.md · B210 OTA'
+  status: 'NO VERIFIED PASS', label: '前置整體 RF Gate · 尚無獨立核實的 PASS', type: 'PREREQUISITE',
+  detail: 'Lab03 目標架構以 USRP B210 的 LTE SDR Path A 和額外 Ethernet / Switch Path B 為基礎。歷史 G3-3H-A1-RX PASS 為 NOT_VERIFIED；不能據此推論 Cell detection、Random Access、UE attach 或 User Plane PASS。整體 RF Gate 為 NO VERIFIED PASS。',
+  reference: 'PROGRESS.md · RF Evidence Navigation 2026-10-29；labs/lab03-urllc/README.md · 系統架構；docs/known-limitations.md · Phase 4C B210 OTA 範圍'
 };
 const conceptNodes = [
   { id: 'reliability-source', label: 'Source', detail: '概念封包', x: 82, y: 665, kind: 'unverified', layers: ['reliability'] },
@@ -80,7 +80,7 @@ export const lab03Scenes = [
   reliabilityScene({
     id: 'L3-S1', title: 'Lab03 · Normal Path', shortTitle: '單一路徑',
     change: '在既有網路下方增加 Path A／Path B 的教學區；先看一個封包沿 Path A 抵達。',
-    description: '概念封包 P1 只走 Path A；Path B 尚未參與。RF Gate 與路徑結果均 NOT_TESTED。',
+    description: '概念封包 P1 只走 Path A；Path B 尚未參與。整體 RF Gate：NO VERIFIED PASS；Lab03 單一路徑模式與量測為 NOT_TESTED。',
     sourceDetail: '一個封包 · P1', destDetail: 'P1 抵達 · 概念',
     links: branchA, activeLinks: branchA.map(link => link.id),
     step: { title: 'Normal：一個封包走一條路', summary: '先以 P1 沿 Path A 前往目的地作基準。Path B 的節點保留在圖上供比較；線條只是預計的資料方向。' },

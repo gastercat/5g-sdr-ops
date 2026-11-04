@@ -31,7 +31,7 @@ export const packetPlans = {
     { id: 'playback', label: '資料', routes: [...serviceRoutes(['embms-radio', 'ue-tun', 'app-tun']), ...serviceRoutes(['embms-radio'])], durationMs: 4400 }
   ] },
   'RF-S1': { caption: '歷史 ZeroMQ samples 路徑示意', packets: samplePackets },
-  'RF-S2': { caption: 'B210／OTA 目標路徑 · NOT_TESTED', packets: [
+  'RF-S2': { caption: '完整 B210／OTA E2E 目標測試 · NOT_TESTED', packets: [
     { id: 'radio-samples', label: 'samples', routes: [['enb-b210', 'ota-rf', 'b210-ue-host']], durationMs: 4100 }
   ] },
   'L3-S1': { caption: 'Normal：P1 只走 Path A · 概念', packets: [
