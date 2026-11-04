@@ -32,6 +32,49 @@ jobs:
         with:
           node-version: '24.19.0'
           package-manager-cache: false
+      - name: Validate Interactive Lab release scope and package
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "${CI_BASE_SHA}...${CI_HEAD_SHA}")"
+          if ! printf '%s\n' "$changed" | grep -Eq '^(\.github/workflows/(interactive-lab-pages|docs-ci)\.yml|exploration/5g-sdr-interactive-lab/)'; then
+            echo 'No Interactive Lab Pages changes; package check skipped.'
+            exit 0
+          fi
+          site=exploration/5g-sdr-interactive-lab
+          test -f "$site/index.html"
+          test -f "$site/evidence.html"
+          test -d "$site/css"
+          test -d "$site/js"
+          test -d "$site/assets"
+          find "$site/js" -type f -name '*.js' -print0 | xargs -0 -r -n 1 node --check
+          artifact="$RUNNER_TEMP/interactive-lab-site-pr-check"
+          mkdir -p "$artifact"
+          cp "$site/index.html" "$site/evidence.html" "$artifact/"
+          cp -R "$site/css" "$site/js" "$site/assets" "$artifact/"
+          find "$artifact" -type f -name '.DS_Store' -delete
+          touch "$artifact/.nojekyll"
+          test ! -e "$artifact/README.md"
+          test ! -e "$artifact/review"
+          for entry in "$artifact"/* "$artifact"/.[!.]*; do
+            [[ -e "$entry" ]] || continue
+            case "${entry##*/}" in
+              .nojekyll|assets|css|evidence.html|index.html|js)
+                ;;
+              *)
+                echo "Unexpected item in Pages artifact: ${entry##*/}" >&2
+                exit 1
+                ;;
+            esac
+          done
+          for entry in .nojekyll assets css evidence.html index.html js; do
+            test -e "$artifact/$entry"
+          done
+          if find "$artifact" -type f -name '.DS_Store' -print -quit | grep -q .; then
+            echo 'Unexpected .DS_Store in Pages artifact' >&2
+            exit 1
+          fi
       - name: Install locked linters
         run: |
           npm ci --prefix .github/ci --ignore-scripts --no-audit --no-fund
@@ -44,7 +87,9 @@ jobs:
           python3 .github/ci/install_tools.py gitleaks "$RUNNER_TEMP/docs-ci-bin"
           echo "$RUNNER_TEMP/docs-ci-bin" >> "$GITHUB_PATH"
       - name: Verify failure detection in temporary repositories
-        run: python3 .github/ci/test_checks.py
+        run: |
+          python3 .github/ci/test_checks.py
+          python3 .github/ci/test_interactive_lab_pages.py
       - name: Check documentation and PR whitespace
         run: python3 .github/ci/checks.py docs-quality
 

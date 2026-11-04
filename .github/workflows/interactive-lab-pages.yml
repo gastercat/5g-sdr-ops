@@ -1,0 +1,99 @@
+name: Interactive Lab Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/interactive-lab-pages.yml'
+      - 'exploration/5g-sdr-interactive-lab/index.html'
+      - 'exploration/5g-sdr-interactive-lab/evidence.html'
+      - 'exploration/5g-sdr-interactive-lab/css/**'
+      - 'exploration/5g-sdr-interactive-lab/js/**'
+      - 'exploration/5g-sdr-interactive-lab/assets/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interactive-lab-pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Validate and package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.19.0'
+          package-manager-cache: false
+      - name: Validate JavaScript and stage Pages artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          site=exploration/5g-sdr-interactive-lab
+          test -f "$site/index.html"
+          test -f "$site/evidence.html"
+          test -d "$site/css"
+          test -d "$site/js"
+          test -d "$site/assets"
+          find "$site/js" -type f -name '*.js' -print0 | xargs -0 -r -n 1 node --check
+          artifact="$RUNNER_TEMP/interactive-lab-site"
+          mkdir -p "$artifact"
+          cp "$site/index.html" "$site/evidence.html" "$artifact/"
+          cp -R "$site/css" "$site/js" "$site/assets" "$artifact/"
+          find "$artifact" -type f -name '.DS_Store' -delete
+          touch "$artifact/.nojekyll"
+          test ! -e "$artifact/README.md"
+          test ! -e "$artifact/review"
+          for entry in "$artifact"/* "$artifact"/.[!.]*; do
+            [[ -e "$entry" ]] || continue
+            case "${entry##*/}" in
+              .nojekyll|assets|css|evidence.html|index.html|js)
+                ;;
+              *)
+                echo "Unexpected item in Pages artifact: ${entry##*/}" >&2
+                exit 1
+                ;;
+            esac
+          done
+          for entry in .nojekyll assets css evidence.html index.html js; do
+            test -e "$artifact/$entry"
+          done
+          if find "$artifact" -type f -name '.DS_Store' -print -quit | grep -q .; then
+            echo 'Unexpected .DS_Store in Pages artifact' >&2
+            exit 1
+          fi
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: ${{ runner.temp }}/interactive-lab-site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: package
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # Administrator must first select Settings → Pages → GitHub Actions.
+      # Default GITHUB_TOKEN does not create a disabled Pages site.
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Deploy site
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
