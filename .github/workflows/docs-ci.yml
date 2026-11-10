@@ -39,9 +39,15 @@ jobs:
           set -euo pipefail
           changed="$(git diff --name-only "${CI_BASE_SHA}...${CI_HEAD_SHA}")"
           # Here-string, not a pipe: with pipefail an early grep -q exit would SIGPIPE the writer and skip the check.
-          if ! grep -Eq '^(\.github/workflows/(interactive-lab-pages|docs-ci)\.yml|exploration/5g-sdr-interactive-lab/)' <<<"$changed"; then
+          scope=0
+          grep -Eq '^(\.github/workflows/(interactive-lab-pages|docs-ci)\.yml|exploration/5g-sdr-interactive-lab/)' <<<"$changed" || scope=$?
+          # Fail closed: only grep's "no match" (1) may skip; any other status is an error.
+          if [[ "$scope" -eq 1 ]]; then
             echo 'No Interactive Lab Pages changes; package check skipped.'
             exit 0
+          elif [[ "$scope" -ne 0 ]]; then
+            echo "Could not determine Interactive Lab change scope (grep exit $scope)." >&2
+            exit 1
           fi
           site=exploration/5g-sdr-interactive-lab
           test -f "$site/index.html"
