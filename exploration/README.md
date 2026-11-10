@@ -26,6 +26,12 @@
 | Starlink Direct to Cell | [外部參考案例](../docs/research/6g-ntn-handover/starlink-direct-to-cell-reference.md) | 保存 2026-09-09 來源查核及研究問題；不是本 Repo 的 NTN implementation 或 prototype validation |
 | 其他 future architecture | [Historical candidate directions](../docs/project-direction.md) | O-RAN、FPGA、AI／ML、RIS 等舊候選未因列出而採納 |
 
+## 教學視覺化
+
+| 主題 | 入口 | 用途與 lifecycle |
+| --- | --- | --- |
+| 5G SDR Interactive Lab | [網站來源](5g-sdr-interactive-lab/index.html)、[PR 40 remediation 記錄](5g-sdr-interactive-lab/review/pr40-remediation.md) | 靜態教學視覺化，由 `Interactive Lab Pages` workflow 封裝；不是網路模擬器、即時 telemetry 或 Runtime evidence。Lab04／Tailcat 視角為 `PROPOSED`，各場景狀態以其證據頁標示的範圍為限 |
+
 ## Control Plane 與尚未收錄的材料
 
 「Control Plane」需依上下文辨識：學生理解 LTE signalling 是

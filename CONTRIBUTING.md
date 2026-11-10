@@ -127,7 +127,9 @@ AI / Agent 不應自動：
 Review 提示，不會由 CI 自動判定內容真實性，也不代表取得 Runtime 操作授權。
 
 `Documentation CI` 對所有指向 `main` 的 PR、`main` 的 push 與手動觸發執行三項檢查。
-沒有 path filters；純附件 PR 也應產生全部 checks。
+沒有 path filters；純附件 PR 也應產生全部 checks。PR 若變更 Interactive Lab 網站、`docs-ci.yml` 或
+`interactive-lab-pages.yml`，`docs-quality` 另檢查網站 JavaScript 語法與 Pages 封裝內容；其回歸測試為
+`test_interactive_lab_pages.py`，需要 Node.js，不需要其他已安裝的工具。
 
 | Check 名稱 | 檢查內容 | 限制 |
 | --- | --- | --- |
@@ -157,6 +159,7 @@ python3 .github/ci/checks.py docs-quality
 python3 .github/ci/checks.py local-links
 python3 .github/ci/checks.py secret-scan
 python3 .github/ci/test_checks.py
+python3 .github/ci/test_interactive_lab_pages.py
 ```
 
 本機檢查包含 Git 追蹤檔案及尚未追蹤、未被忽略的新檔案；刪除中的檔案不再當作輸入，

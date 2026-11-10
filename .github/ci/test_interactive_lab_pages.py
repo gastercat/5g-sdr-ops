@@ -13,7 +13,7 @@ SCRIPT = textwrap.dedent(step.split('        run: |\n', 1)[1].split('      - nam
 
 
 class PackageTest(unittest.TestCase):
-    def run_case(self, site_change, manual_change, unexpected=False):
+    def run_case(self, site_change, manual_change, unexpected=False, broken_js=False, bulk=0):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             def git(*args):
@@ -35,6 +35,11 @@ class PackageTest(unittest.TestCase):
                 (site / 'index.html').write_text('<!doctype html><title>Changed</title>')
             if manual_change:
                 (root / 'student-manual.md').write_text('# Synthetic manual fixture\n')
+            if broken_js:
+                (site / 'js/app.js').write_text('const fixture = ;')
+            for number in range(bulk):
+                (root / 'zz').mkdir(exist_ok=True)
+                (root / f'zz/synthetic-documentation-file-name-for-pipe-buffer-{number}.md').write_text('x\n')
             git('add', '.')
             git('commit', '-qm', 'change')
             runner = root / 'runner'
@@ -43,7 +48,7 @@ class PackageTest(unittest.TestCase):
                 artifact.mkdir(parents=True)
                 (artifact / 'unexpected.txt').write_text('must reject')
             result = subprocess.run(['bash', '-c', SCRIPT], cwd=root, env={**os.environ, 'CI_BASE_SHA': base, 'CI_HEAD_SHA': git('rev-parse', 'HEAD'), 'RUNNER_TEMP': str(runner)}, capture_output=True, text=True)
-            self.assertEqual(result.returncode == 0, not unexpected, result.stdout + result.stderr)
+            self.assertEqual(result.returncode == 0, not (unexpected or broken_js), result.stdout + result.stderr)
 
     def test_a_website_only(self):
         self.run_case(True, False)
@@ -56,6 +61,13 @@ class PackageTest(unittest.TestCase):
 
     def test_d_unexpected_artifact_rejected(self):
         self.run_case(True, False, True)
+
+    def test_e_invalid_site_script_rejected(self):
+        self.run_case(True, False, broken_js=True)
+
+    def test_f_large_pr_does_not_skip_site_check(self):
+        # A changed-path list beyond the pipe buffer must not hide the site change.
+        self.run_case(True, False, broken_js=True, bulk=3000)
 
 
 if __name__ == '__main__':

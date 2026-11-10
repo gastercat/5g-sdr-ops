@@ -38,7 +38,8 @@ jobs:
         run: |
           set -euo pipefail
           changed="$(git diff --name-only "${CI_BASE_SHA}...${CI_HEAD_SHA}")"
-          if ! printf '%s\n' "$changed" | grep -Eq '^(\.github/workflows/(interactive-lab-pages|docs-ci)\.yml|exploration/5g-sdr-interactive-lab/)'; then
+          # Here-string, not a pipe: with pipefail an early grep -q exit would SIGPIPE the writer and skip the check.
+          if ! grep -Eq '^(\.github/workflows/(interactive-lab-pages|docs-ci)\.yml|exploration/5g-sdr-interactive-lab/)' <<<"$changed"; then
             echo 'No Interactive Lab Pages changes; package check skipped.'
             exit 0
           fi

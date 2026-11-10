@@ -21,7 +21,7 @@ export function createPlaybackController({ canvas, advance, onStateChange }) {
     return { playing, reducedMotion: reducedMotion.matches, finished,
       caption: scene?.animation && !scene.animation.packets.some(flow => flow.routes.some(routeVisible))
         ? '此示意路徑已隱藏；可由「顯示圖層」開啟'
-        : scene?.animation?.caption || '本步聚焦架構／證據，沒有封包移動', packetCount: packets.length };
+        : scene?.animation?.caption || '本步聚焦架構／證據，沒有封包移動' };
   }
   function notify() {
     canvas.dataset.playbackState = playing ? 'playing' : 'paused';
