@@ -102,3 +102,9 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 - [`2026-09-26-lab02-sample-plane-usb-incident.yaml`](2026-09-26-lab02-sample-plane-usb-incident.yaml)：
   Human-supplied Sample Plane loss/recovery 與 Linux2 USB Ethernet disconnect/re-enumeration
   evidence；NetworkManager 為後續 reactivation，底層 USB disconnect cause 未定位。
+- [`2026-10-22-pre-lab03-track-a-evidence.yaml`](2026-10-22-pre-lab03-track-a-evidence.yaml)：
+  10/22 取證、保存 IQ 的離線重算、LTE detector 合成測試的停止點，以及 Track A DSP
+  Candidate 的跨平台驗證與限制。
+- [`2026-10-29-g3-3h-preflight-rx-mock.yaml`](2026-10-29-g3-3h-preflight-rx-mock.yaml)：
+  Non-TX 預檢與 OTA 設定來源更正、RX-only 歷史摘要來源、B0.6 負向測試及後續
+  集中式 Mock Candidate 的驗證範圍。

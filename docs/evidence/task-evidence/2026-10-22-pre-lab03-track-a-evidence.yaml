@@ -1,0 +1,80 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "PRE-LAB03-2026-10-22-TRACK-A"
+  source_thread: "Codex 01a1635e-e09d-71e3-ad02-4e2b0cacbc0d"
+  date_or_range: "2026-10-22 至 2026-11-04（Asia/Taipei）"
+  executor: "Codex agent"
+  historical_or_current: "歷史取證、離線分析與 DSP Candidate 測試"
+
+authorization:
+  scope:
+    - "10/22 既有 RF session 唯讀取證，後續在各自核准範圍內離線分析與驗證。"
+  allowed_mutations:
+    - "在核准的 Repo 外目錄保存證據、建立隔離候選與測試產物；跨平台測試限核准範圍。"
+  forbidden:
+    - "新增 RF 發射或重跑歷史 session；改寫歷史資料、提升 RF Gate 或直接整合 Candidate。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "main（A4-0）"
+  start_head: "UNKNOWN"
+  end_head: "2d80a002aed07be2b6e114769383fc7bcbebae3d（A4-0 唯讀稽核時）"
+
+evidence:
+  - evidence_id: "PRE03-01"
+    claim: "10/22 取證保存了後續可重算的 IQ 與去識別化文字證據。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "保存報告列出 10 份 IQ 共 92,160,000 bytes、13 份文字來源。報告記載來源與副本核對，以及收集前後來源 SHA-256、大小、mtime 未變。"
+    directness: "REPORTED"
+    confidence: "中；已核對保存報告，原始 23 份來源未重新驗證。"
+    source_location: "Repo 外 2026-10-22-pre-lab03-rf-phase-a-01a1635e/shareable/PRESERVATION_REPORT.md；同包 manifest.json"
+    limitations:
+      - "完整 UHD probe、controlled TX startup／applied parameters 與原始 FFT 輸出未取得。去識別化分享副本曾待人工核閱。"
+  - evidence_id: "PRE03-02"
+    claim: "保存 IQ 的離線頻譜分析保留原本的 RF 判讀限制。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "Phase A Supplement 重算保存 IQ；Phase 1 判定 LTE 身分 INCONCLUSIVE、預期 tone 為 NOT_DETECTED_UNDER_TESTED_METHOD。"
+    directness: "PRIMARY"
+    confidence: "高；限保存的離線分析輸出。"
+    source_location: "Repo 外 2026-10-22-pre-lab03-rf-phase-a-supplement-01a1635e/SUPPLEMENT_REPORT.md；2026-10-29-pre-lab03-phase1-iq-characterization-01a1635e/PHASE1_REPORT.md"
+    limitations:
+      - "未建立訊號不存在、TX 硬體故障或 Physical RF Path PASS。"
+  - evidence_id: "PRE03-03"
+    claim: "修正 PSS reference 後，LTE detector 的合成驗證仍停在 Stage 1。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "2B-0R 修正的 reference 比較為 18/18 PASS；2B-0C 最終 baseline 6/6、advanced 14/15，同 PSS 的三小區案例失敗，Stage 1 FAIL。"
+    directness: "PRIMARY"
+    confidence: "高；限保存的數值與合成測試結果。"
+    source_location: "Repo 外 2026-10-29-pre-lab03-phase2b0r-pss-numeric-audit-01a1635e/PSS_NUMERICAL_DIFFERENCE_REPORT.md；2026-10-29-pre-lab03-phase2b0c-lte-detector-synthetic-validation-01a1635e/REPORT.md"
+    limitations:
+      - "Stage 2 門檻測試 NOT TESTED；Stage 3 未凍結；Phase 2B-1 BLOCKED。"
+  - evidence_id: "PRE03-04"
+    claim: "DSP Foundation 與 Frequency／Phase Candidate 通過所列跨平台驗證。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "A2.1 的 0.1.0 在 Ubuntu 因 NumPy 需求受阻；A2.1-P 的 0.1.1 在 macOS／NumPy 2.3.5 和 Ubuntu／NumPy 1.26.4 各 31/31 PASS；A2.2 的 0.2.0 兩環境各 53/53 PASS。"
+    directness: "PRIMARY"
+    confidence: "高；限保存的測試結果與所列環境。"
+    source_location: "Repo 外 2026-10-29-track-a-a21-ubuntu-validation-01a1635e/REPORT.md；2026-10-29-track-a-a21p-compatibility-01a1635e/REPORT.md；2026-10-29-track-a-a22-frequency-phase-01a1635e/REPORT.md"
+    limitations:
+      - "0.2.0 維持 Candidate。合成／模型測試未解決歷史 LTE 三小區案例或驗證 RF 路徑。"
+
+mutations:
+  - "歷史工作將取證、重算、合成驗證、候選程式及測試結果保存在 Repo 外的核准目錄。"
+
+recovered_or_observed_claims:
+  - claim: "10/22 保存範圍與缺件可由保存報告追溯。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["PRE03-01"]
+  - claim: "離線重算及合成驗證支持各自的有限結果，Track A 0.2.0 維持 Candidate。"
+    status: "OBSERVED"
+    supporting_evidence: ["PRE03-02", "PRE03-03", "PRE03-04"]
+
+provenance_gaps:
+  - "Repo 外包名為定位線索；可攜共享位置 UNKNOWN。"
+  - "10/22 完整硬體 probe、controlled TX 啟動及原始 FFT 輸出仍未取得。"
+
+stop_point:
+  result: "Physical RF Path 仍未驗證；Phase 2B-1 BLOCKED；A4-0 整合評估 CONDITIONAL。"
+  next_authority_required: "A4-1 Repo 整合或新的實驗執行均需另行授權。"

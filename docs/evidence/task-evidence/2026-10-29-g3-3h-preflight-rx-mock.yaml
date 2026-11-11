@@ -1,0 +1,85 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "G3-3H-2026-10-29-PREFLIGHT-RX-MOCK"
+  source_thread: "Codex 01a186a0-7df5-76c0-bcaa-61678fc27d50"
+  date_or_range: "2026-10-29（Asia/Taipei）"
+  executor: "Codex agent"
+  historical_or_current: "歷史 Non-TX 預檢、RX-only 與 Mock 驗證"
+
+authorization:
+  scope:
+    - "分段核准的 Non-TX 預檢、一次 Independent RX-only baseline、離線 Mock 與指定 Linux 非 RF Mock。"
+  allowed_mutations:
+    - "指定 RX-only 證據目錄；隔離 B0.5／B0.6 保存與測試產物；指定的非 RF Mock 測試工作區。"
+  forbidden:
+    - "任何 TX、RX capture 重試、設定調整或 Repo 整合。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "main"
+  start_head: "b6da5017099ee1b857550ffd254da9cf4f2da32c"
+  end_head: "b6da5017099ee1b857550ffd254da9cf4f2da32c"
+
+evidence:
+  - evidence_id: "G3H-01"
+    claim: "Non-TX 硬體預檢與 OTA 設定來源核對完成。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Linux1／Linux2 各一台 B210，韌體載入後均為 USB 5000 Mb/s，UHD 4.6 probe 與 register loopback 通過。後續以兩台 pre-lab03-rf/config/ 的來源和歷史啟動紀錄更正判讀，撤回引用 /etc/srsran/ 所得的 ZeroMQ／80 dB 阻塞。Linux1 設定 TX gain 30 dB；getter 推得的候選上限為 44.75 dB。"
+    directness: "PRIMARY"
+    confidence: "高；限對話中保存的命令輸出與靜態設定核對。"
+    source_location: "Codex turns 01a186ac-1a86-78e3-ac02-a18252862d3e、01a186b4-dfe8-7782-803d-2f0783e1bf1c；10/22 保存包歷史 eNB／UE log"
+    limitations:
+      - "天線、接線與屏蔽狀況由 Owner 目視回報。設定比較未量測發射功率，也未證明 RF path。"
+  - evidence_id: "G3H-02"
+    claim: "保存的驗證摘要記錄一次 RX-only capture 的歷史 PASS。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "歷史驗證輸出記錄 2680 MHz、11.52 MS/s、9,216,000 bytes、1,152,000 complex64 samples 與驗證 PASS。結案回報單次執行，未重試或啟動 TX。"
+    directness: "PRIMARY"
+    confidence: "高；限歷史命令驗證摘要的字面值。"
+    source_location: "Codex turn 01a186ca-437b-7b81-85a6-c4b6acd4bcf5，exec-061b381e-d553-4b09-8980-98ac1e9b49b0；Linux2 原證據目錄名 g3-3h-a1-rx-off-20261029-RlbFMN"
+    limitations:
+      - "本次整理未查核當次原始 IQ、完整日誌及 Readback 檔。獨立原始證據核對仍為 NOT_VERIFIED；無 RF 靜默、實體路徑或 LTE OTA PASS。"
+  - evidence_id: "G3H-03"
+    claim: "早期 B0.6 Mock 信任邊界失敗後停止，並隔離後續候選。"
+    evidence_type: "CODEX_REPORT"
+    exact_observation: "Linux Mock 負向案例回報未認證 RX READY／PROGRESS 可使既有 Coordinator 進入 TX_START；暫時圍堵改為預設拒絕，也擋住合法通道。"
+    directness: "REPORTED"
+    confidence: "中；限歷史結案對 Mock 的說明。"
+    source_location: "Codex turns 01a18700-c25a-73f0-bfc6-fad40f2b9870、01a18705-4015-7bb1-80a0-3aaf19608ac9"
+    limitations:
+      - "Mock 狀態轉移未涉及實體發射，也未建立已部署 Runtime 的外部利用證據。"
+  - evidence_id: "G3H-04"
+    claim: "集中式候選的本機回歸及跨主機 Mock 案例均有保存結果。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "B0.5 保存摘要 90/90 PASS；後續集中式 B0.6 Candidate 本機回歸 90/90、跨主機 13/13。集中式候選由控制端以兩條 SSH 工作階段協調兩個 Mock worker。"
+    directness: "PRIMARY"
+    confidence: "高；限保存的 Mock 測試計數。"
+    source_location: "Repo 外 2026-10-29-g3-3h-b05-b06：b05-baseline/evidence/mock-run-mqnraem0/summary.json；b06-work/centralized-mock-candidate-01/integrated-01/evidence/ 下 mock-run-6lcdl57y/summary.json 與 integration-rerun-03/integration-summary.json；Codex turn 01a1871d-586c-7310-9b35-2e9e06ebdb5c"
+    limitations:
+      - "該輪未在 Linux 重跑修訂候選的完整 90 項。真實 UHD/B210 串流、TX 時序與硬體緩衝行為未驗證；B0.6 維持 PARTIAL。"
+
+mutations:
+  - "歷史工作保存單次 RX-only 證據、B0.5 保存副本及獨立 B0.6 Mock 候選和測試紀錄。"
+
+recovered_or_observed_claims:
+  - claim: "Non-TX 預檢和靜態設定來源核對有保存輸出。"
+    status: "OBSERVED"
+    supporting_evidence: ["G3H-01"]
+  - claim: "對話保有 RX-only 歷史驗證摘要，當次原始資料仍待獨立核對。"
+    status: "OBSERVED"
+    supporting_evidence: ["G3H-02"]
+  - claim: "原 B0.6 負向測試及暫時圍堵的範圍可由結案追溯。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["G3H-03"]
+  - claim: "保存的 Mock 測試結果支持部分整合驗證。"
+    status: "OBSERVED"
+    supporting_evidence: ["G3H-04"]
+
+provenance_gaps:
+  - "當次 RX 原始資料未在本輪查核。Repo 外包名為定位線索；可攜共享位置 UNKNOWN。"
+
+stop_point:
+  result: "歷史 B0.6 結果 PARTIAL；G3-3H-B1 BLOCKED。"
+  next_authority_required: "任何新的 UHD 串流、RF 操作或 B1 執行需另行授權。"
