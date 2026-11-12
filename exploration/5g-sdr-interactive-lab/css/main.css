@@ -272,7 +272,7 @@ main { padding-top: 24px; }
 .security-questions ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--space-2) var(--space-5); margin: 0; padding-left: 22px; font-size: 14px; }
 .security-questions li { padding-right: var(--space-2); }
 .pinned-header .timeline-step.is-current.is-proposed { border-bottom-style: dashed; }
-.pinned-header .timeline-step.is-current.is-proposed small { display: block; color: var(--muted); }
+.pinned-header .timeline-step.is-current.is-proposed small { display: block; }
 @media (max-width: 800px) { .pinned-header .timeline-step.is-current.is-proposed small { display: none; } }
 
 .link-path--plain { stroke: var(--control); stroke-width: 2.4px; }
