@@ -7,6 +7,7 @@ on:
       - '.github/workflows/interactive-lab-pages.yml'
       - 'exploration/5g-sdr-interactive-lab/index.html'
       - 'exploration/5g-sdr-interactive-lab/evidence.html'
+      - 'exploration/5g-sdr-interactive-lab/lab03-ota.html'
       - 'exploration/5g-sdr-interactive-lab/css/**'
       - 'exploration/5g-sdr-interactive-lab/js/**'
       - 'exploration/5g-sdr-interactive-lab/assets/**'
@@ -41,13 +42,14 @@ jobs:
           site=exploration/5g-sdr-interactive-lab
           test -f "$site/index.html"
           test -f "$site/evidence.html"
+          test -f "$site/lab03-ota.html"
           test -d "$site/css"
           test -d "$site/js"
           test -d "$site/assets"
           find "$site/js" -type f -name '*.js' -print0 | xargs -0 -r -n 1 node --check
           artifact="$RUNNER_TEMP/interactive-lab-site"
           mkdir -p "$artifact"
-          cp "$site/index.html" "$site/evidence.html" "$artifact/"
+          cp "$site/index.html" "$site/evidence.html" "$site/lab03-ota.html" "$artifact/"
           cp -R "$site/css" "$site/js" "$site/assets" "$artifact/"
           find "$artifact" -type f -name '.DS_Store' -delete
           touch "$artifact/.nojekyll"
@@ -56,7 +58,7 @@ jobs:
           for entry in "$artifact"/* "$artifact"/.[!.]*; do
             [[ -e "$entry" ]] || continue
             case "${entry##*/}" in
-              .nojekyll|assets|css|evidence.html|index.html|js)
+              .nojekyll|assets|css|evidence.html|index.html|js|lab03-ota.html)
                 ;;
               *)
                 echo "Unexpected item in Pages artifact: ${entry##*/}" >&2
@@ -64,7 +66,7 @@ jobs:
                 ;;
             esac
           done
-          for entry in .nojekyll assets css evidence.html index.html js; do
+          for entry in .nojekyll assets css evidence.html index.html js lab03-ota.html; do
             test -e "$artifact/$entry"
           done
           if find "$artifact" -type f -name '.DS_Store' -print -quit | grep -q .; then

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="2026-11-12 Lab03 B210 OTA 單次實測：下行訊號與 Baseline、Split、Duplication 的封包路徑。">
+  <title>Lab03 OTA 實測 · 5G SDR Interactive Lab</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <script src="./js/theme.js"></script>
+  <link rel="stylesheet" href="./css/main.css"><link rel="stylesheet" href="./css/lab03-ota.css">
+  <script type="module" src="./js/lab03-ota-page.js"></script>
+</head>
+<body class="evidence-page lab03-ota-page">
+  <a class="skip-link" href="#main-content">跳到主要內容</a>
+  <div class="pinned-header"><header class="site-header"><div>
+    <h1>5G SDR Interactive Lab</h1>
+    <nav class="page-tabs" aria-label="頁面"><a href="./index.html">← 返回架構</a><a href="./evidence.html">證據與範圍</a><a href="./lab03-ota.html" aria-current="page">Lab03 OTA 實測</a><button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">玻璃主題</button></nav>
+  </div></header><p class="proposal-note">單次實測（2026-11-12），Owner 驗收待定；不是 performance、reliability 或 URLLC validation。</p></div>
+  <main id="main-content" tabindex="-1">
+    <section>
+      <p class="ota-eyebrow">USRP B210 OTA · Band 7 · DL 2680 MHz · 50 PRB · 2026-11-12</p>
+      <h2>Lab03 OTA 實測</h2>
+      <p class="lead">這一頁把 2026-11-12 保存的量測畫出來：先看 eNB 的下行訊號有沒有到達接收端，再看封包在 OTA 與有線兩條路徑上怎麼走。每個項目都只有一次試次。</p>
+    </section>
+
+    <section aria-labelledby="dl-title">
+      <h2 id="dl-title">下行訊號：發射增益 30 與 50 的差別</h2>
+      <p>接收端的 B210 在 2680 MHz 以 11.52 Msps 各擷取 0.2 秒。LTE 基地台每 5 ms 送一次主同步訊號（PSS）。把收到的訊號和 PSS 做相關、再把 30 個週期疊起來，訊號存在時會在固定位置出現一根尖峰。</p>
+      <div class="ota-panel">
+        <h3>PSS 相關（疊加 30 個 5 ms 週期，N_id_2 = 1）</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-b"></i>tx_gain 50（峰值 161.6 倍）</span><span><i class="ota-swatch is-off"></i>tx_gain 30（峰值 2.2 倍，等同雜訊）</span></div>
+        <div class="ota-chart"><canvas id="chart-pss" role="img" aria-label="PSS 相關折線圖：tx_gain 50 在 5 ms 週期內有一根約 162 倍中位數的尖峰，tx_gain 30 全程貼近 1 到 2 倍"></canvas></div>
+        <p class="ota-caption">橫軸是 5 ms 週期內的位置，縱軸是相關能量除以中位數。為了畫圖，57,600 個位置每 96 個取最大值。</p>
+      </div>
+      <div class="ota-panel">
+        <h3>接收頻譜</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-b"></i>tx_gain 50</span><span><i class="ota-swatch is-off"></i>tx_gain 30</span></div>
+        <div class="ota-chart"><canvas id="chart-psd" role="img" aria-label="接收頻譜折線圖：兩次擷取的功率譜密度對頻率偏移"></canvas></div>
+        <p class="ota-caption">縱軸為 dBFS／bin，接收增益皆為 40 dB。10 MHz LTE 訊號佔中心 ±4.5 MHz。增益 50 時訊號仍接近雜訊底（當時解碼 SNR 約 +4.5 dB），所以頻譜上的差異不大，PSS 相關才看得清楚。增益 30 那筆在中心右側有一段較強的成分，來源沒有查。</p>
+      </div>
+      <div class="ota-table-wrap"><table class="ota-table">
+        <thead><tr><th>eNB 發射增益</th><th>PSS 峰值／中位數</th><th>下行 SNR</th><th>PDSCH BLER</th><th>結果</th></tr></thead>
+        <tbody>
+          <tr><td>30（設定檔值）</td><td>2.2</td><td>—</td><td>—</td><td>未偵測到 cell</td></tr>
+          <tr><td>50</td><td>161.6</td><td>+4.5 dB</td><td>33.6%</td><td>解出 MIB</td></tr>
+          <tr><td>70</td><td>未擷取 IQ</td><td>+20.6 dB</td><td>0.00%</td><td>Attach 成功一次</td></tr>
+        </tbody></table></div>
+      <p class="ota-note">增益 70 當時只做了即時解碼，沒有另存 IQ，所以上面兩張圖沒有 70 的曲線。增益以命令列覆寫，設定檔仍為 eNB 30／UE 20。實際輻射功率沒有用儀器量過。</p>
+    </section>
+
+    <section aria-labelledby="path-title">
+      <h2 id="path-title">封包路徑：Baseline、Split、Duplication</h2>
+      <p>每個模式送 1000 個帶編號的 UDP 封包（128 bytes，間隔 20 ms），由 UE 端送出、EPC 端回送。路徑 A 是 B210 OTA，路徑 B 是兩台主機間的有線網路。</p>
+      <div class="ota-tabs" id="mode-tabs" role="group" aria-label="選擇模式"></div>
+      <div class="ota-facts" id="mode-facts"></div>
+      <div class="ota-panel">
+        <h3 id="lanes-title">前 60 個 Packet ID 走哪條路</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-a"></i>A　OTA</span><span><i class="ota-swatch is-box is-b"></i>B　有線</span></div>
+        <div class="ota-chart"><canvas id="chart-lanes" class="is-lanes" role="img" aria-label="路徑分佈圖：每個 Packet ID 在 A、B 兩條路徑上是否出現"></canvas></div>
+        <p class="ota-caption" id="lanes-caption"></p>
+      </div>
+      <div class="ota-panel">
+        <h3>來回延遲（對數刻度）</h3>
+        <div class="ota-legend"><span>細線：最小到最大</span><span>粗線：中位數到 p95</span><span>圓點：中位數</span></div>
+        <div class="ota-chart"><canvas id="chart-rtt" role="img" aria-label="各路徑來回延遲範圍圖"></canvas></div>
+        <p class="ota-caption">有線路徑約 0.2 ms，OTA 約 20 ms，相差近百倍，所以用對數刻度。延遲是傳送端量到的來回時間，不是單向延遲。</p>
+      </div>
+      <div class="ota-panel" id="per-packet-panel" hidden>
+        <h3>逐封包來回延遲</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-a"></i>A　OTA</span><span><i class="ota-swatch is-box is-b"></i>B　有線</span></div>
+        <div class="ota-chart"><canvas id="chart-per-packet" role="img" aria-label="逐封包來回延遲散佈圖"></canvas></div>
+        <p class="ota-caption">每個點是一個封包；縱軸為對數刻度。只有載入的新結果才有這張圖。</p>
+      </div>
+      <div class="ota-table-wrap"><table class="ota-table" id="mode-stats"></table></div>
+      <p class="ota-note" id="mode-note"></p>
+    </section>
+
+    <section aria-labelledby="load-title">
+      <h2 id="load-title">載入新一輪的結果</h2>
+      <p>用 Repo 裡的雙路徑工具加 <code>--json</code> 跑完一輪，可以把輸出載進來換掉上面的圖。檔案只在這個瀏覽器裡讀取，不會上傳。載入的結果不屬於 2026-11-12 保存的證據。</p>
+      <pre class="ota-code">ssh &lt;UE 主機&gt; "python3 - send --mode dup --dst-a &lt;EPC SGi 位址&gt; --dst-b &lt;EPC 有線位址&gt; --count 200 --json" &lt; dualpath_demo.py &gt; run.jsonl</pre>
+      <div class="ota-load">
+        <label for="run-file">選擇剛才存下的 <code>run.jsonl</code></label>
+        <input type="file" id="run-file" accept=".json,.jsonl,.txt">
+        <p class="ota-load-message" id="run-message" aria-live="polite"></p>
+      </div>
+    </section>
+    <a class="return-link" href="./index.html">← 返回架構</a>
+  </main>
+  <footer class="site-footer"><p>教學視覺化 · Lab03 OTA 單次實測。分流與複製在應用層 UDP，不是 PDCP 層，也不是 nukxURLLC；Duplication 未注入路徑劣化，可靠度效益未展示。</p></footer>
+</body>
+</html>

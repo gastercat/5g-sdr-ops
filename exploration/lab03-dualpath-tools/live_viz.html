@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab03 即時雙路徑</title>
+<style>
+:root{--bg:#f3f5f7;--panel:#fcfcfb;--ink:#10161c;--ink2:#4a545e;--ink3:#77818b;--rule:#d9dee3;--grid:#e6eaee;--a:#2a78d6;--b:#eb6834;--lost:#c62f3a;--chip:#e8edf2;--warnbg:#fff3d6;--warnink:#6b4a00;
+ --body:system-ui,-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#12161a;--panel:#1a1f24;--ink:#eef1f3;--ink2:#b9c1c8;--ink3:#8a949d;--rule:#2c343b;--grid:#252c32;--a:#3987e5;--b:#d95926;--lost:#e66767;--chip:#232a30;--warnbg:#3a2f12;--warnink:#f1d48a;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--body)}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px;display:flex;flex-direction:column;gap:18px}
+h1{font-size:26px;line-height:1.2;margin:0;font-weight:650}
+h2{font-size:15px;margin:0;font-weight:600}
+.sub{color:var(--ink2);font-size:14px;max-width:70ch}
+.sim{background:var(--warnbg);color:var(--warnink);border-radius:6px;padding:10px 14px;font-size:14px;font-weight:500}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end}
+.modes{display:flex;gap:6px;flex-wrap:wrap}
+button{font:500 14px var(--body);border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--ink2);padding:7px 15px;cursor:pointer}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.go{background:var(--a);color:#fff;border-color:var(--a);font-weight:600}
+button.go[disabled]{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink3)}
+input{font:14px var(--mono);width:92px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--panel);color:var(--ink)}
+#status{font-size:14px;color:var(--ink2);min-height:1.6em}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.facts div{background:var(--panel);padding:10px 14px;display:flex;flex-direction:column;min-width:0}
+.facts b{font-size:24px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.25}
+.facts span{font-size:12.5px;color:var(--ink3)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend i.o{background:transparent!important;border:1.5px solid var(--ink3)}
+canvas{display:block;width:100%}
+#lanes{height:126px}#rtt{height:240px}
+.cap{font-size:12.5px;color:var(--ink3)}
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+#feed{font:12.5px/1.55 var(--mono);height:240px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;color:var(--ink2)}
+#feed div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#feed .A b{color:var(--a)}#feed .B b{color:var(--b)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:6px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}th{color:var(--ink3);font-weight:500;font-size:12.5px}td{font-family:var(--mono)}td:first-child{font-family:var(--body)}
+.tw{overflow-x:auto}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+[hidden]{display:none!important}
+</style></head><body><div class="wrap">
+<div><h1>Lab03 即時雙路徑</h1><div class="sub" id="sub">封包一送出就畫出來：哪個編號走哪條路、來回花了多久。路徑 A 是 B210 OTA，路徑 B 是有線網路。</div></div>
+<div class="sim" id="sim" hidden></div>
+<div class="bar">
+  <div class="modes" id="modes" role="group" aria-label="模式">
+    <button type="button" data-m="baseline" aria-pressed="true">Baseline</button>
+    <button type="button" data-m="split" aria-pressed="false">Split</button>
+    <button type="button" data-m="dup" aria-pressed="false">Duplication</button>
+  </div>
+  <label for="count">封包數<input id="count" type="number" min="10" max="2000" value="300"></label>
+  <label for="interval">間隔 ms<input id="interval" type="number" min="5" max="1000" value="20"></label>
+  <label for="ratio" id="ratio-l">分流比 A:B<input id="ratio" type="text" value="2:3"></label>
+  <button type="button" class="go" id="go">開始</button>
+  <button type="button" id="stop" hidden>停止</button>
+</div>
+<div id="status" aria-live="polite">尚未開始。</div>
+<div class="facts" id="facts"></div>
+<div class="panel">
+  <h2>最近 60 個 Packet ID 走哪條路</h2>
+  <div class="legend"><span><i style="background:var(--a)"></i>A　OTA 已回送</span><span><i style="background:var(--b)"></i>B　有線 已回送</span><span><i class="o"></i>已送出、等待回送</span><span><i style="background:var(--lost)"></i>逾時未回送</span></div>
+  <canvas id="lanes" role="img" aria-label="即時路徑分佈：最近 60 個 Packet ID 在 A、B 兩條路徑上的狀態"></canvas>
+</div>
+<div class="two">
+  <div class="panel">
+    <h2>逐封包來回延遲（對數刻度）</h2>
+    <div class="legend"><span><i style="background:var(--a)"></i>A　OTA</span><span><i style="background:var(--b)"></i>B　有線</span></div>
+    <canvas id="rtt" role="img" aria-label="即時逐封包來回延遲散佈圖"></canvas>
+    <div class="cap">來回時間，由傳送端量測；不是單向延遲。</div>
+  </div>
+  <div class="panel">
+    <h2>接收端即時訊息</h2>
+    <div id="feed" aria-live="off"></div>
+    <div class="cap">EPC 主機收到的每個封包：編號、路徑、進入的介面。</div>
+  </div>
+</div>
+<div class="tw"><table id="stats"></table></div>
+<div class="cap" id="foot">分流與複製在應用層 UDP，不是 PDCP 層，也不是 nukxURLLC。</div>
+</div>
+<script>
+const $=id=>document.getElementById(id),css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const NAME={A:'A　OTA',B:'B　有線'},COL={A:'--a',B:'--b'};
+let mode='baseline',cfg={},running=false,S=null,dirty=true;
+function reset(m,count){S={mode:m,count:count,tx:{A:new Map(),B:new Map()},rtt:{A:new Map(),B:new Map()},maxId:-1,echoRx:0,summary:null,t0:performance.now(),interval:20};$('feed').innerHTML='';dirty=true;}
+reset('baseline',0);
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(running)return;mode=b.dataset.m;document.querySelectorAll('#modes button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('ratio-l').hidden=mode!=='split';});
+$('ratio-l').hidden=true;
+function setRunning(v){running=v;$('go').disabled=v;$('stop').hidden=!v;}
+$('go').onclick=async()=>{const c=+$('count').value||300,i=(+$('interval').value||20)/1000;reset(mode,c);S.interval=i*1000;setRunning(true);$('status').textContent='啟動中…';
+  try{const r=await fetch('/start?mode='+mode+'&count='+c+'&interval='+i+'&ratio='+encodeURIComponent($('ratio').value),{method:'POST'});if(!r.ok){const e=await r.json().catch(()=>({}));$('status').textContent=r.status===409?'上一輪還在跑，請等它結束或按停止。':'無法開始：參數不正確（'+(e.error||r.status)+'）。';setRunning(r.status===409);}}catch(e){$('status').textContent='連不上本機伺服器。請確認 live_viz.py 還在執行。';setRunning(false);}};
+$('stop').onclick=()=>fetch('/stop',{method:'POST'});
+fetch('/config').then(r=>r.json()).then(c=>{cfg=c;if(c.local){$('sim').hidden=false;$('sim').textContent='預演模式（SIMULATED）：兩條路徑都在這台 Mac 上，路徑 A 的延遲'+(c.sim.loss>0?'與 '+c.sim.loss+'% 遺失':'')+'是人為加上的（約 '+c.sim.ms+' ms）。畫面上的數字不是 OTA 實測。';}else{$('sub').textContent+=' 接收端 '+c.host_echo+'，傳送端 '+c.host_send+'。';}setRunning(!!c.running);});
+function feed(o){const f=$('feed'),d=document.createElement('div');d.className=o.path;d.innerHTML='ID '+String(o.id).padStart(5,' ').replace(/ /g,'&nbsp;')+'　<b>'+(o.path==='A'?'A OTA':'B 有線')+'</b>　'+o.local+' ← '+o.src;f.appendChild(d);while(f.children.length>14)f.removeChild(f.firstChild);}
+function onEvent(o){
+  if(o.event==='run_start'){$('status').textContent='進行中：'+({baseline:'Baseline',split:'Split '+o.ratio,dup:'Duplication'}[o.mode])+'，'+o.count+' 個封包。';S.mode=o.mode;S.count=o.count;S.interval=o.interval_s*1000;}
+  else if(o.event==='tx'){S.tx[o.path].set(o.id,performance.now());if(o.id>S.maxId)S.maxId=o.id;}
+  else if(o.event==='rtt'){S.rtt[o.path].set(o.id,o.rtt_ms);}
+  else if(o.event==='rx'&&o.from==='echo'){S.echoRx++;feed(o);}
+  else if(o.event==='summary'){S.summary=o;}
+  else if(o.event==='error'){$('status').textContent='發生問題：'+o.text;}
+  else if(o.event==='log'){$('status').textContent='主機訊息：'+o.text;}
+  else if(o.event==='run_end'){setRunning(false);if(S.summary)$('status').textContent='完成。'+(cfg.local?'（預演，模擬資料）':'');else if(!/問題|訊息/.test($('status').textContent))$('status').textContent='已結束，沒有收到摘要。';}
+  dirty=true;}
+function connect(){const es=new EventSource('/events');es.onmessage=e=>{try{onEvent(JSON.parse(e.data));}catch(_){}};es.onerror=()=>{if(!running)return;$('status').textContent='與本機伺服器的連線中斷，正在重連…';};}
+connect();
+const LIM=()=>Math.max(1500,S.interval*4+1000);
+function med(a){if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y);return s[Math.floor((s.length-1)/2)];}
+function f2(v){return v==null?'—':v.toFixed(2);}
+function compute(){const now=performance.now(),ids=new Set([...S.tx.A.keys(),...S.tx.B.keys()]);let deliv=0,lost=0,copies=S.rtt.A.size+S.rtt.B.size;
+  ids.forEach(i=>{if(S.rtt.A.has(i)||S.rtt.B.has(i))deliv++;else{const t=Math.max(S.tx.A.get(i)||0,S.tx.B.get(i)||0);if(S.summary||now-t>LIM())lost++;}});
+  return {sent:ids.size,deliv,lost,dups:copies-deliv,mA:med([...S.rtt.A.values()]),mB:med([...S.rtt.B.values()])};}
+function setup(cv){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);}const g=cv.getContext('2d');g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,r.width,r.height);return [g,r.width,r.height];}
+function drawFacts(c){const loss=c.sent?(100*c.lost/c.sent):0;const f=[[c.sent,'送出的 Packet ID'],[c.deliv,'已送達（去重後）'],[loss.toFixed(1)+'%','遺失率'],[f2(c.mA)+' ms','A　OTA 延遲中位'],[f2(c.mB)+' ms','B　有線 延遲中位']];if(S.mode==='dup')f.splice(3,0,[c.dups,'丟棄的重複副本']);
+  $('facts').innerHTML=f.map(x=>'<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>').join('');}
+function drawLanes(){const [g,W,H]=setup($('lanes')),L=66,R=8,n=60,cw=(W-L-R)/n,now=performance.now(),hi=Math.max(n-1,S.maxId),lo=hi-n+1;
+  g.textBaseline='middle';['A','B'].forEach((t,ri)=>{const y=12+ri*40;g.fillStyle=css('--ink2');g.font='12px '+css('--body');g.textAlign='left';g.fillText(NAME[t],0,y+14);
+    for(let k=0;k<n;k++){const id=lo+k,x=L+k*cw+1,w=Math.max(1.5,cw-2);g.beginPath();g.roundRect?g.roundRect(x,y,w,28,Math.min(3,w/2)):g.rect(x,y,w,28);
+      if(S.rtt[t].has(id)){g.fillStyle=css(COL[t]);g.fill();}
+      else if(S.tx[t].has(id)){if(S.summary||now-S.tx[t].get(id)>LIM()){g.fillStyle=css('--lost');g.fill();}else{g.strokeStyle=css('--ink3');g.lineWidth=1.5;g.stroke();}}
+      else{g.fillStyle=css('--grid');g.fill();}}});
+  g.fillStyle=css('--ink3');g.font='11px '+css('--mono');g.textAlign='center';g.textBaseline='top';for(let k=0;k<n;k+=(W<560?10:5)){const id=lo+k;if(id>=0)g.fillText(id,L+k*cw+cw/2,98);}}
+const L0=Math.log10(0.1),L1=Math.log10(1000);
+function drawRtt(){const [g,W,H]=setup($('rtt')),L=54,R=10,T=8,B=30,pw=W-L-R,ph=H-T-B,n=Math.max(60,S.count||60,S.maxId+1);
+  const X=i=>L+i/(n-1)*pw,Y=v=>T+ph-(Math.log10(Math.min(1000,Math.max(0.1,v)))-L0)/(L1-L0)*ph;
+  g.font='11px '+css('--mono');[0.1,1,10,100,1000].forEach(v=>{g.strokeStyle=css('--grid');g.lineWidth=1;g.beginPath();g.moveTo(L,Y(v));g.lineTo(W-R,Y(v));g.stroke();g.fillStyle=css('--ink3');g.textAlign='right';g.textBaseline='middle';g.fillText(v+' ms',L-6,Y(v));});
+  g.textAlign='center';g.textBaseline='top';g.fillStyle=css('--ink3');const step=Math.pow(10,Math.floor(Math.log10(n)))/(n<200?2:1);for(let v=0;v<n;v+=step)g.fillText(v,X(v),T+ph+6);g.fillText('Packet ID',L+pw/2,H-12);
+  ['A','B'].forEach(t=>{g.fillStyle=css(COL[t]);S.rtt[t].forEach((v,i)=>{g.beginPath();g.arc(X(i),Y(v),2.4,0,7);g.fill();});});}
+function drawStats(c){const rows=['A','B'].filter(t=>S.tx[t].size).map(t=>{const v=[...S.rtt[t].values()].sort((a,b)=>a-b),p=q=>v.length?v[Math.min(v.length-1,Math.round(q*(v.length-1)))]:null;return '<tr><td><i class="dot" style="background:var('+COL[t]+')"></i>'+NAME[t]+'</td><td>'+S.tx[t].size+'</td><td>'+v.length+'</td><td>'+f2(v[0])+'</td><td>'+f2(p(.5))+'</td><td>'+f2(p(.95))+'</td><td>'+f2(v[v.length-1])+'</td></tr>';}).join('');
+  $('stats').innerHTML=rows?'<thead><tr><th>路徑</th><th>送出</th><th>回送</th><th>最小 ms</th><th>中位 ms</th><th>p95 ms</th><th>最大 ms</th></tr></thead><tbody>'+rows+'</tbody>':'';}
+let lastFacts=0;
+function frame(){const now=performance.now();if(dirty||running){drawLanes();drawRtt();if(now-lastFacts>200||!running){const c=compute();drawFacts(c);drawStats(c);lastFacts=now;}dirty=false;}requestAnimationFrame(frame);}
+addEventListener('resize',()=>dirty=true);matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>dirty=true);
+requestAnimationFrame(frame);
+</script></body></html>

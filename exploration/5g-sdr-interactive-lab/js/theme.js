@@ -1,4 +1,4 @@
-// Shared by both pages. Apply the saved theme before the first paint.
+// Shared by every page. Apply the saved theme before the first paint.
 (() => {
   const storageKey = 'sdr-lab-theme';
   const root = document.documentElement;
@@ -37,7 +37,7 @@
     const link = event.target.closest?.('a[href]');
     if (!link) return;
     const url = new URL(link.href, location.href);
-    if (url.origin === location.origin && /\/(index|evidence)\.html$/.test(url.pathname)) {
+    if (url.origin === location.origin && /\/(index|evidence|lab03-ota)\.html$/.test(url.pathname)) {
       url.searchParams.set('theme', current);
       link.href = url.href;
     }
