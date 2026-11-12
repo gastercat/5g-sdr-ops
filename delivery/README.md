@@ -13,7 +13,7 @@ Security**；Lab01 完成與實驗手冊完成仍是兩個分開的交付面向�
 | Lab01 Small Cell | [學生實驗手冊](../labs/lab01-small-cell/student-manual.md)、[教學設定與 TA provisioning gate](../labs/lab01-small-cell/student-config/README.md) | 手冊為 `DRAFT / HUMAN REVIEW REQUIRED`；設定只有 static consistency review，尚未 isolated Runtime validate |
 | Lab01 可重現流程與學生紀錄 | [Lab01 導覽](../labs/lab01-small-cell/README.md) | 手冊已有 core bring-up、DL／UL ICMP、protocol observation、Security Lens、troubleshooting、shutdown 與提交 checklist；這是程序與預期結果，不是完成證據 |
 | Lab02 eMBB／eMBMS | [Lab02 材料與交付缺口](../labs/lab02-embb/README.md) | `NOT ACTIVE / NOT AUTHORIZED`；未來需交代建立目標、學生操作、成功辨識與最小 multicast／eMBMS result；現有文件主要為歷史技術待確認清單 |
-| Lab03 uRLLC／PRP | [Lab03 材料與交付缺口](../labs/lab03-urllc/README.md) | `NEEDS_CONFIRMATION`；教學方向是 baseline、Split Mode、Duplication Mode 與 reliability／latency trade-off；尚缺可重現學生流程與最小結果定義 |
+| Lab03 uRLLC／PRP | [Lab03 材料與交付缺口](../labs/lab03-urllc/README.md) | `OTA BASELINE OBSERVED ONCE / PDCP-LAYER NEEDS_CONFIRMATION`；教學方向是 baseline、Split Mode、Duplication Mode 與 reliability／latency trade-off。2026-11-12 有一次 B210 OTA Attach 與單路量測，Split／Duplication 僅有應用層量測，Owner 驗收 `PENDING`；尚缺可重現學生流程與最小結果定義 |
 | Security cross-cutting | [Lab01 手冊 Security Lens](../labs/lab01-small-cell/student-manual.md#8-security-lens)、[PD-02 決策](../docs/decisions/2026-08-18-professor-meeting.md#pd-02security-改為-lab0103-cross-cutting-direction) | Lab01 已有段落；Lab01～03 整體 topic mapping／exercise 仍為 `PENDING`；[舊 Lab04](../labs/lab04-security/README.md) 只作 historical／future mapping input |
 | 最終成果／成果報告 | [歷史 Lab01 簡報與 supporting reports](../docs/history/README.md) | 已有歷史成果展示；最終課程成果包的指定檔案與驗收仍待確認，不以舊簡報代替 final deliverable |
 
