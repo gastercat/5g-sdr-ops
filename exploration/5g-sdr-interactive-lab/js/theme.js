@@ -5,15 +5,18 @@
   const requested = new URLSearchParams(location.search).get('theme');
   let saved;
   try { saved = localStorage.getItem(storageKey); } catch { /* Storage is optional. */ }
-  let current = (requested === 'glass' || requested === 'light') ? requested : (saved === 'glass' ? 'glass' : 'light');
+  // No saved or requested choice: follow the system setting. 'glass' is the stored name of the dark theme.
+  const systemDark = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
+  let current = (requested === 'glass' || requested === 'light') ? requested
+    : (saved === 'glass' || saved === 'light') ? saved : (systemDark ? 'glass' : 'light');
 
   function applyTheme(theme) {
     current = theme;
     root.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'glass' ? '#0b1322' : '#ffffff');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'glass' ? '#12161a' : '#f3f5f7');
     document.querySelectorAll('[data-theme-toggle]').forEach(button => {
       button.setAttribute('aria-pressed', String(theme === 'glass'));
-      button.title = theme === 'glass' ? '切換回白底主題' : '切換到霧面玻璃主題';
+      button.title = theme === 'glass' ? '切換回淺色主題' : '切換到深色主題';
     });
   }
   applyTheme(current);
