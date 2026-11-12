@@ -10,18 +10,61 @@ UE host) and streams every packet event to the page as it happens.
 
 The server listens on 127.0.0.1 only. It never uses sudo and creates no files on the hosts.
 """
-import argparse, json, os, queue, subprocess, sys, threading, time
+import argparse, json, os, queue, shlex, subprocess, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOOL = os.path.join(HERE, "dualpath_demo.py")
 PAGE = os.path.join(HERE, "live_viz.html")
+MODES = ("baseline", "split", "dup")
 clients = []
 clients_lock = threading.Lock()
-run_lock = threading.Lock()
-procs = []
-state = {"running": False}
+run_lock = threading.Lock()      # held for the whole of one run; only one run at a time
+
+
+class Cancelled(Exception):
+    pass
+
+
+class Run:
+    """One run's processes and its cancel flag, guarded by a single lock.
+
+    cancel() and start() take the same lock, so once cancel() has returned no further
+    process can be started for this run, and every process already started is terminated.
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.cancelled = False
+        self.procs = []
+
+    def start(self, factory):
+        with self.lock:
+            if self.cancelled:
+                raise Cancelled()
+            proc = factory()
+            self.procs.append(proc)
+            return proc
+
+    def cancel(self):
+        with self.lock:
+            self.cancelled = True
+            self._terminate()
+
+    def finish(self):
+        with self.lock:
+            self._terminate()
+
+    def _terminate(self):
+        while self.procs:
+            proc = self.procs.pop()
+            if proc.poll() is None:
+                proc.terminate()
+
+
+state_lock = threading.Lock()
+state = {"run": None}
 
 
 def emit(obj):
@@ -31,12 +74,18 @@ def emit(obj):
             q.put(data)
 
 
-def spawn(args_local, host, remote_cmd):
+def remote_command(args):
+    """Shell-quoted command line for the remote host; no value is ever spliced in unquoted."""
+    return "python3 - " + shlex.join(args)
+
+
+def spawn(args, host):
     if host is None:
-        return subprocess.Popen([sys.executable, TOOL] + args_local, stdout=subprocess.PIPE,
+        return subprocess.Popen([sys.executable, TOOL] + args, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, text=True, bufsize=1)
-    return subprocess.Popen(["ssh", host, "python3 - " + remote_cmd], stdin=open(TOOL, "rb"),
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+    with open(TOOL, "rb") as tool:
+        return subprocess.Popen(["ssh", host, remote_command(args)], stdin=tool,
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
 
 
 def pump(proc, src, ready=None):
@@ -47,6 +96,8 @@ def pump(proc, src, ready=None):
         try:
             obj = json.loads(line)
         except ValueError:
+            obj = None
+        if not isinstance(obj, dict):
             obj = {"event": "log", "text": line[:300]}
         obj["from"] = src
         if ready is not None and obj.get("event") == "echo_start":
@@ -54,7 +105,31 @@ def pump(proc, src, ready=None):
         emit(obj)
 
 
-def run(cfg, mode, count, interval, ratio):
+def parse_start(query):
+    """Validate /start parameters. Returns (mode, count, interval, ratio) or None.
+
+    Uses explicit checks, not assert, so the result is the same under python3 -O.
+    """
+    mode = query.get("mode", ["baseline"])[0]
+    if mode not in MODES:
+        return None
+    try:
+        count = int(query.get("count", ["200"])[0])
+        interval = float(query.get("interval", ["0.02"])[0])
+        parts = query.get("ratio", ["2:3"])[0].split(":")
+        if len(parts) != 2:
+            return None
+        m, s = int(parts[0]), int(parts[1])
+    except ValueError:
+        return None
+    if interval != interval or not (0 < m < 20 and 0 < s < 20):   # interval != interval is NaN
+        return None
+    count = max(10, min(2000, count))
+    interval = max(0.005, min(1.0, interval))
+    return mode, count, interval, "%d:%d" % (m, s)
+
+
+def run(cfg, job, mode, count, interval, ratio):
     try:
         dur = count * interval + 12
         local = cfg.local
@@ -72,30 +147,44 @@ def run(cfg, mode, count, interval, ratio):
         emit({"event": "run_start", "mode": mode, "count": count, "interval_s": interval, "ratio": ratio,
               "simulated": local, "utc": time.time()})
         ready = threading.Event()
-        pe = spawn(echo, None if local else cfg.host_echo, " ".join(echo))
-        procs.append(pe)
+        pe = job.start(lambda: spawn(echo, None if local else cfg.host_echo))
         threading.Thread(target=pump, args=(pe, "echo", ready), daemon=True).start()
-        if not ready.wait(15):
-            emit({"event": "error", "text": "接收端沒有在 15 秒內啟動。請確認主機可連線，且 EPC 已啟動。"})
+        if not ready.wait(cfg.ready_timeout):
+            emit({"event": "error", "text": "接收端沒有在時限內啟動。請確認主機可連線，且 EPC 已啟動。"})
             return
-        ps = spawn(send, None if local else cfg.host_send, " ".join(send))
-        procs.append(ps)
+        ps = job.start(lambda: spawn(send, None if local else cfg.host_send))
         pump(ps, "send")
         ps.wait()
+    except Cancelled:
+        emit({"event": "cancelled"})
     except Exception as e:  # surfaced to the page, not swallowed
         emit({"event": "error", "text": "%s: %s" % (type(e).__name__, e)})
     finally:
-        stop_procs()
-        state["running"] = False
+        job.finish()
+        with state_lock:
+            if state["run"] is job:
+                state["run"] = None
         emit({"event": "run_end", "utc": time.time()})
         run_lock.release()
 
 
-def stop_procs():
-    while procs:
-        p = procs.pop()
-        if p.poll() is None:
-            p.terminate()
+def begin(cfg, params):
+    """Start one run. Returns the Run, or None when a run is already in progress."""
+    if not run_lock.acquire(blocking=False):
+        return None
+    job = Run()
+    with state_lock:
+        state["run"] = job
+    threading.Thread(target=run, args=(cfg, job) + tuple(params), daemon=True).start()
+    return job
+
+
+def stop():
+    """Cancel the current run, if any. After this returns it starts no further process."""
+    with state_lock:
+        job = state["run"]
+    if job is not None:
+        job.cancel()
 
 
 class H(BaseHTTPRequestHandler):
@@ -118,7 +207,7 @@ class H(BaseHTTPRequestHandler):
             self._send(200, open(PAGE, "rb").read(), "text/html; charset=utf-8")
         elif u.path == "/config":
             c = self.cfg
-            self._send(200, json.dumps({"local": c.local, "running": state["running"],
+            self._send(200, json.dumps({"local": c.local, "running": state["run"] is not None,
                                         "host_echo": c.host_echo, "host_send": c.host_send,
                                         "dst_a": c.dst_a, "dst_b": c.dst_b,
                                         "sim": {"ms": c.sim_a_ms, "jitter": c.sim_a_jitter, "loss": c.sim_a_loss}}).encode())
@@ -155,23 +244,14 @@ class H(BaseHTTPRequestHandler):
                                                "http://localhost:%d" % self.cfg.port):
             return self._send(403, b'{"error":"origin"}')
         if u.path == "/start":
-            q = parse_qs(u.query)
-            mode = q.get("mode", ["baseline"])[0]
-            ratio = q.get("ratio", ["2:3"])[0]
-            try:
-                count = max(10, min(2000, int(q.get("count", ["200"])[0])))
-                interval = max(0.005, min(1.0, float(q.get("interval", ["0.02"])[0])))
-                m, s = (int(x) for x in ratio.split(":"))
-                assert mode in ("baseline", "split", "dup") and 0 < m < 20 and 0 < s < 20
-            except Exception:
+            params = parse_start(parse_qs(u.query))
+            if params is None:
                 return self._send(400, b'{"error":"bad parameters"}')
-            if not run_lock.acquire(blocking=False):
+            if begin(self.cfg, params) is None:
                 return self._send(409, b'{"error":"already running"}')
-            state["running"] = True
-            threading.Thread(target=run, args=(self.cfg, mode, count, interval, "%d:%d" % (m, s)), daemon=True).start()
             self._send(200, b'{"ok":true}')
         elif u.path == "/stop":
-            stop_procs()
+            stop()
             self._send(200, b'{"ok":true}')
         else:
             self._send(404, b"{}")
@@ -188,6 +268,7 @@ def main():
     p.add_argument("--sim-a-ms", type=float, default=18.0)
     p.add_argument("--sim-a-jitter", type=float, default=4.0)
     p.add_argument("--sim-a-loss", type=float, default=0.0)
+    p.add_argument("--ready-timeout", type=float, default=15.0, help="seconds to wait for the receiver to start")
     cfg = p.parse_args()
     H.cfg = cfg
     srv = ThreadingHTTPServer(("127.0.0.1", cfg.port), H)
@@ -197,7 +278,7 @@ def main():
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
-        stop_procs()
+        stop()
 
 
 if __name__ == "__main__":

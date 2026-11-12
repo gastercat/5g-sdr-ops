@@ -45,7 +45,7 @@ th:first-child,td:first-child{text-align:left}th{color:var(--ink3);font-weight:5
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
 [hidden]{display:none!important}
 </style></head><body><div class="wrap">
-<div><h1>Lab03 即時雙路徑</h1><div class="sub" id="sub">封包一送出就畫出來：哪個編號走哪條路、來回花了多久。路徑 A 是 B210 OTA，路徑 B 是有線網路。</div></div>
+<div><h1>Lab03 即時雙路徑</h1><div class="sub" id="sub">封包一送出就畫出來：哪個編號走哪條路、來回花了多久。</div></div>
 <div class="sim" id="sim" hidden></div>
 <div class="bar">
   <div class="modes" id="modes" role="group" aria-label="模式">
@@ -63,13 +63,13 @@ th:first-child,td:first-child{text-align:left}th{color:var(--ink3);font-weight:5
 <div class="facts" id="facts"></div>
 <div class="panel">
   <h2>最近 60 個 Packet ID 走哪條路</h2>
-  <div class="legend"><span><i style="background:var(--a)"></i>A　OTA 已回送</span><span><i style="background:var(--b)"></i>B　有線 已回送</span><span><i class="o"></i>已送出、等待回送</span><span><i style="background:var(--lost)"></i>逾時未回送</span></div>
+  <div class="legend"><span><i style="background:var(--a)"></i><span data-name="A" data-suffix=" 已回送">路徑 A 已回送</span></span><span><i style="background:var(--b)"></i><span data-name="B" data-suffix=" 已回送">路徑 B 已回送</span></span><span><i class="o"></i>已送出、等待回送</span><span><i style="background:var(--lost)"></i>逾時未回送</span></div>
   <canvas id="lanes" role="img" aria-label="即時路徑分佈：最近 60 個 Packet ID 在 A、B 兩條路徑上的狀態"></canvas>
 </div>
 <div class="two">
   <div class="panel">
     <h2>逐封包來回延遲（對數刻度）</h2>
-    <div class="legend"><span><i style="background:var(--a)"></i>A　OTA</span><span><i style="background:var(--b)"></i>B　有線</span></div>
+    <div class="legend"><span><i style="background:var(--a)"></i><span data-name="A">路徑 A</span></span><span><i style="background:var(--b)"></i><span data-name="B">路徑 B</span></span></div>
     <canvas id="rtt" role="img" aria-label="即時逐封包來回延遲散佈圖"></canvas>
     <div class="cap">來回時間，由傳送端量測；不是單向延遲。</div>
   </div>
@@ -84,27 +84,30 @@ th:first-child,td:first-child{text-align:left}th{color:var(--ink3);font-weight:5
 </div>
 <script>
 const $=id=>document.getElementById(id),css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const NAME={A:'A　OTA',B:'B　有線'},COL={A:'--a',B:'--b'};
+// OTA／有線 apply only when the server was started against the lab hosts; a local rehearsal gets neutral names.
+let NAME={A:'路徑 A',B:'路徑 B'};const COL={A:'--a',B:'--b'};
 let mode='baseline',cfg={},running=false,S=null,dirty=true;
 function reset(m,count){S={mode:m,count:count,tx:{A:new Map(),B:new Map()},rtt:{A:new Map(),B:new Map()},maxId:-1,echoRx:0,summary:null,t0:performance.now(),interval:20};$('feed').innerHTML='';dirty=true;}
 reset('baseline',0);
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(running)return;mode=b.dataset.m;document.querySelectorAll('#modes button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('ratio-l').hidden=mode!=='split';});
 $('ratio-l').hidden=true;
 function setRunning(v){running=v;$('go').disabled=v;$('stop').hidden=!v;}
-$('go').onclick=async()=>{const c=+$('count').value||300,i=(+$('interval').value||20)/1000;reset(mode,c);S.interval=i*1000;setRunning(true);$('status').textContent='啟動中…';
+$('go').onclick=async()=>{stopRequested=false;const c=+$('count').value||300,i=(+$('interval').value||20)/1000;reset(mode,c);S.interval=i*1000;setRunning(true);$('status').textContent='啟動中…';
   try{const r=await fetch('/start?mode='+mode+'&count='+c+'&interval='+i+'&ratio='+encodeURIComponent($('ratio').value),{method:'POST'});if(!r.ok){const e=await r.json().catch(()=>({}));$('status').textContent=r.status===409?'上一輪還在跑，請等它結束或按停止。':'無法開始：參數不正確（'+(e.error||r.status)+'）。';setRunning(r.status===409);}}catch(e){$('status').textContent='連不上本機伺服器。請確認 live_viz.py 還在執行。';setRunning(false);}};
-$('stop').onclick=()=>fetch('/stop',{method:'POST'});
-fetch('/config').then(r=>r.json()).then(c=>{cfg=c;if(c.local){$('sim').hidden=false;$('sim').textContent='預演模式（SIMULATED）：兩條路徑都在這台 Mac 上，路徑 A 的延遲'+(c.sim.loss>0?'與 '+c.sim.loss+'% 遺失':'')+'是人為加上的（約 '+c.sim.ms+' ms）。畫面上的數字不是 OTA 實測。';}else{$('sub').textContent+=' 接收端 '+c.host_echo+'，傳送端 '+c.host_send+'。';}setRunning(!!c.running);});
-function feed(o){const f=$('feed'),d=document.createElement('div');d.className=o.path;d.innerHTML='ID '+String(o.id).padStart(5,' ').replace(/ /g,'&nbsp;')+'　<b>'+(o.path==='A'?'A OTA':'B 有線')+'</b>　'+o.local+' ← '+o.src;f.appendChild(d);while(f.children.length>14)f.removeChild(f.firstChild);}
+let stopRequested=false;
+$('stop').onclick=()=>{stopRequested=true;fetch('/stop',{method:'POST'});};
+fetch('/config').then(r=>r.json()).then(c=>{cfg=c;NAME=c.local?{A:'A　模擬',B:'B　本機'}:{A:'A　OTA',B:'B　有線'};document.querySelectorAll('[data-name]').forEach(n=>n.textContent=NAME[n.dataset.name]+(n.dataset.suffix||''));dirty=true;if(c.local){$('sim').hidden=false;$('sim').textContent='預演模式（SIMULATED）：兩條路徑都在這台 Mac 上，路徑 A 的延遲'+(c.sim.loss>0?'與 '+c.sim.loss+'% 遺失':'')+'是人為加上的（約 '+c.sim.ms+' ms）。畫面上的數字不是 OTA 實測。';}else{$('sub').textContent+='路徑 A 是 B210 OTA，路徑 B 是有線網路。接收端 '+c.host_echo+'，傳送端 '+c.host_send+'。';}setRunning(!!c.running);});
+function feed(o){const f=$('feed'),d=document.createElement('div'),b=document.createElement('b'),k=o.path==='B'?'B':'A';d.className=k;b.textContent=NAME[k].replace('　',' ');d.append('ID '+String(Number(o.id)).padStart(5,'\u00a0')+'　',b,'　'+String(o.local)+' ← '+String(o.src));f.appendChild(d);while(f.children.length>14)f.removeChild(f.firstChild);}
 function onEvent(o){
   if(o.event==='run_start'){$('status').textContent='進行中：'+({baseline:'Baseline',split:'Split '+o.ratio,dup:'Duplication'}[o.mode])+'，'+o.count+' 個封包。';S.mode=o.mode;S.count=o.count;S.interval=o.interval_s*1000;}
-  else if(o.event==='tx'){S.tx[o.path].set(o.id,performance.now());if(o.id>S.maxId)S.maxId=o.id;}
-  else if(o.event==='rtt'){S.rtt[o.path].set(o.id,o.rtt_ms);}
+  else if(o.event==='tx'&&S.tx[o.path]&&Number.isInteger(o.id)){S.tx[o.path].set(o.id,performance.now());if(o.id>S.maxId)S.maxId=o.id;}
+  else if(o.event==='rtt'&&S.rtt[o.path]&&Number.isInteger(o.id)&&Number.isFinite(o.rtt_ms)){S.rtt[o.path].set(o.id,o.rtt_ms);}
   else if(o.event==='rx'&&o.from==='echo'){S.echoRx++;feed(o);}
   else if(o.event==='summary'){S.summary=o;}
   else if(o.event==='error'){$('status').textContent='發生問題：'+o.text;}
   else if(o.event==='log'){$('status').textContent='主機訊息：'+o.text;}
-  else if(o.event==='run_end'){setRunning(false);if(S.summary)$('status').textContent='完成。'+(cfg.local?'（預演，模擬資料）':'');else if(!/問題|訊息/.test($('status').textContent))$('status').textContent='已結束，沒有收到摘要。';}
+  else if(o.event==='cancelled'){$('status').textContent='已停止，沒有再啟動新的程序。';}
+  else if(o.event==='run_end'){setRunning(false);if(S.summary)$('status').textContent='完成。'+(cfg.local?'（預演，模擬資料）':'');else if(stopRequested)$('status').textContent='已停止。這一輪沒有完成，數字只涵蓋停止前的封包。';else if(!/問題|訊息|已停止/.test($('status').textContent))$('status').textContent='已結束，沒有收到摘要。';}
   dirty=true;}
 function connect(){const es=new EventSource('/events');es.onmessage=e=>{try{onEvent(JSON.parse(e.data));}catch(_){}};es.onerror=()=>{if(!running)return;$('status').textContent='與本機伺服器的連線中斷，正在重連…';};}
 connect();
@@ -115,7 +118,7 @@ function compute(){const now=performance.now(),ids=new Set([...S.tx.A.keys(),...
   ids.forEach(i=>{if(S.rtt.A.has(i)||S.rtt.B.has(i))deliv++;else{const t=Math.max(S.tx.A.get(i)||0,S.tx.B.get(i)||0);if(S.summary||now-t>LIM())lost++;}});
   return {sent:ids.size,deliv,lost,dups:copies-deliv,mA:med([...S.rtt.A.values()]),mB:med([...S.rtt.B.values()])};}
 function setup(cv){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);}const g=cv.getContext('2d');g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,r.width,r.height);return [g,r.width,r.height];}
-function drawFacts(c){const loss=c.sent?(100*c.lost/c.sent):0;const f=[[c.sent,'送出的 Packet ID'],[c.deliv,'已送達（去重後）'],[loss.toFixed(1)+'%','遺失率'],[f2(c.mA)+' ms','A　OTA 延遲中位'],[f2(c.mB)+' ms','B　有線 延遲中位']];if(S.mode==='dup')f.splice(3,0,[c.dups,'丟棄的重複副本']);
+function drawFacts(c){const loss=c.sent?(100*c.lost/c.sent):0;const f=[[c.sent,'送出的 Packet ID'],[c.deliv,'已送達（去重後）'],[loss.toFixed(1)+'%','遺失率'],[f2(c.mA)+' ms',NAME.A+' 延遲中位'],[f2(c.mB)+' ms',NAME.B+' 延遲中位']];if(S.mode==='dup')f.splice(3,0,[c.dups,'丟棄的重複副本']);
   $('facts').innerHTML=f.map(x=>'<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>').join('');}
 function drawLanes(){const [g,W,H]=setup($('lanes')),L=66,R=8,n=60,cw=(W-L-R)/n,now=performance.now(),hi=Math.max(n-1,S.maxId),lo=hi-n+1;
   g.textBaseline='middle';['A','B'].forEach((t,ri)=>{const y=12+ri*40;g.fillStyle=css('--ink2');g.font='12px '+css('--body');g.textAlign='left';g.fillText(NAME[t],0,y+14);

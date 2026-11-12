@@ -19,7 +19,8 @@ nukxURLLC；不構成 Lab03 的學生流程或驗收標準。
 | `dualpath_probe.py` | 帶 Packet ID 的 UDP 探測，支援 baseline／split／dup，輸出 JSON | 2026-11-12 的 Baseline、Split、Duplication 量測由它產生 |
 | `dl_iq_check.py` | 對 11.52 Msps 的 complex64 IQ 做頻譜與 PSS 折疊偵測 | 2026-11-12 的下行偵測由它產生；合成資料自測 |
 | `dualpath_demo.py` | 與 `dualpath_probe.py` 相同的量測邏輯，改為易讀輸出；`--json --stream` 逐封包輸出 | 於本機 loopback 測試；Owner 回報曾用於一次現場 Demo，Repo 內無該次輸出 |
-| `live_viz.py`、`live_viz.html` | 在本機 `127.0.0.1` 提供即時頁面，經 SSH 在兩台主機執行 `dualpath_demo.py` | 同上 |
+| `live_viz.py`、`live_viz.html` | 在本機 `127.0.0.1` 提供即時頁面，經 SSH 在兩台主機執行 `dualpath_demo.py` | 同上；另有 `test_live_viz.py` |
+| `test_live_viz.py` | `live_viz.py` 的單元測試：停止與啟動的時序、`/start` 參數驗證、遠端命令的引號 | 以替身程序執行，不連線；未納入 CI |
 
 `dualpath_demo.py` 的 `--sim-a-ms`、`--sim-a-jitter`、`--sim-a-loss` 只供預演，會在路徑 A
 加上人為延遲與遺失；以這些選項得到的數字是 `SIMULATED_PROOF_OF_CONCEPT`，不是 OTA 實測。
@@ -53,6 +54,14 @@ ssh <UE 主機> "python3 - send --mode dup --dst-a <EPC SGi 位址> --dst-b <EPC
 `run.jsonl` 可載入 Interactive Lab 的
 [Lab03 OTA 實測頁](../5g-sdr-interactive-lab/lab03-ota.html)。
 
+## 測試
+
+```bash
+python3 test_live_viz.py && python3 -O test_live_viz.py
+```
+
+兩種直譯器模式都要跑：參數驗證不得依賴 `assert`。測試不使用網路、SSH 或實驗主機。
+
 ## 限制
 
 - 延遲是傳送端單調時鐘量到的來回時間，不是單向延遲。
@@ -60,4 +69,7 @@ ssh <UE 主機> "python3 - send --mode dup --dst-a <EPC SGi 位址> --dst-b <EPC
   `first_arrival_by_path` 即此統計。
 - 去重在傳送端對回送封包進行，接收端只回送。
 - 即時頁面只顯示封包；UE 佔用 B210 期間無法同時擷取 IQ，沒有即時波形。
-- `live_viz.py` 只監聽 `127.0.0.1`；按下停止後，主機上的接收端可能要等自身時限到才結束。
+- `live_viz.py` 只監聽 `127.0.0.1`。停止回應成功後不會再啟動新的程序，已啟動的本機 SSH 程序會被終止；
+  主機上的接收端仍可能要等自身時限到才結束。
+- 即時頁面在預演模式以中性名稱標示路徑；只有對實驗主機執行時才標示 OTA／有線，而這取決於啟動時
+  給的位址，工具本身無法驗證路徑。
