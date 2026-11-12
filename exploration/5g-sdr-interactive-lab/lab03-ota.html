@@ -55,7 +55,7 @@
       <div class="ota-facts" id="mode-facts"></div>
       <div class="ota-panel">
         <h3 id="lanes-title">前 60 個 Packet ID 走哪條路</h3>
-        <div class="ota-legend"><span><i class="ota-swatch is-box is-a"></i>A　OTA</span><span><i class="ota-swatch is-box is-b"></i>B　有線</span></div>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-a"></i><span data-path-name="A">A　OTA</span></span><span><i class="ota-swatch is-box is-b"></i><span data-path-name="B">B　有線</span></span></div>
         <div class="ota-chart"><canvas id="chart-lanes" class="is-lanes" role="img" aria-label="路徑分佈圖：每個 Packet ID 在 A、B 兩條路徑上是否出現"></canvas></div>
         <p class="ota-caption" id="lanes-caption"></p>
       </div>
@@ -63,11 +63,11 @@
         <h3>來回延遲（對數刻度）</h3>
         <div class="ota-legend"><span>細線：最小到最大</span><span>粗線：中位數到 p95</span><span>圓點：中位數</span></div>
         <div class="ota-chart"><canvas id="chart-rtt" role="img" aria-label="各路徑來回延遲範圍圖"></canvas></div>
-        <p class="ota-caption">有線路徑約 0.2 ms，OTA 約 20 ms，相差近百倍，所以用對數刻度。延遲是傳送端量到的來回時間，不是單向延遲。</p>
+        <p class="ota-caption" id="rtt-caption">有線路徑約 0.2 ms，OTA 約 20 ms，相差近百倍，所以用對數刻度。延遲是傳送端量到的來回時間，不是單向延遲。</p>
       </div>
       <div class="ota-panel" id="per-packet-panel" hidden>
         <h3>逐封包來回延遲</h3>
-        <div class="ota-legend"><span><i class="ota-swatch is-box is-a"></i>A　OTA</span><span><i class="ota-swatch is-box is-b"></i>B　有線</span></div>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-a"></i><span data-path-name="A">A　OTA</span></span><span><i class="ota-swatch is-box is-b"></i><span data-path-name="B">B　有線</span></span></div>
         <div class="ota-chart"><canvas id="chart-per-packet" role="img" aria-label="逐封包來回延遲散佈圖"></canvas></div>
         <p class="ota-caption">每個點是一個封包；縱軸為對數刻度。只有載入的新結果才有這張圖。</p>
       </div>
@@ -77,7 +77,7 @@
 
     <section aria-labelledby="load-title">
       <h2 id="load-title">載入新一輪的結果</h2>
-      <p>用 Repo 裡的雙路徑工具加 <code>--json</code> 跑完一輪，可以把輸出載進來換掉上面的圖。檔案只在這個瀏覽器裡讀取，不會上傳。載入的結果不屬於 2026-11-12 保存的證據。</p>
+      <p>用 Repo 裡的雙路徑工具加 <code>--json</code> 跑完一輪，可以把輸出載進來換掉上面的圖。檔案只在這個瀏覽器裡讀取，不會上傳。載入的結果不屬於 2026-11-12 保存的證據，圖上只會標示為路徑 A 與路徑 B。</p>
       <pre class="ota-code">ssh &lt;UE 主機&gt; "python3 - send --mode dup --dst-a &lt;EPC SGi 位址&gt; --dst-b &lt;EPC 有線位址&gt; --count 200 --json" &lt; dualpath_demo.py &gt; run.jsonl</pre>
       <div class="ota-load">
         <label for="run-file">選擇剛才存下的 <code>run.jsonl</code></label>

@@ -1,6 +1,7 @@
 // Lab03 OTA results page: draws the saved 2026-11-12 measurements and, optionally, a run the
 // viewer loads from the dual-path tool's --json output. Nothing here talks to a network.
 import { measured } from './data/lab03-ota-measured.js';
+import { parseRun } from './lab03-ota-run.js';
 
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const $ = id => document.getElementById(id);
@@ -106,7 +107,11 @@ lineChart('chart-psd', {
   series: [{ color: '--series-off', xs: iq30.psd_f, ys: iq30.psd_db, name: 'tx_gain 30' }, { color: '--path-b', xs: iq50.psd_f, ys: iq50.psd_db, name: 'tx_gain 50' }],
 });
 
-const NAMES = { A: 'A　OTA', B: 'B　有線' };
+// Only the saved 2026-11-12 trial is known to be OTA and wired. A loaded file cannot prove which
+// paths it used, so loaded runs get neutral names.
+const SAVED_NAMES = { A: 'A　OTA', B: 'B　有線' };
+const NEUTRAL_NAMES = { A: '路徑 A', B: '路徑 B' };
+const namesFor = run => (run.imported ? NEUTRAL_NAMES : SAVED_NAMES);
 const COLORS = { A: '--path-a', B: '--path-b' };
 const TITLES = { baseline: 'Baseline', split: 'Split 2:3', dup: 'Duplication' };
 const NOTES = {
@@ -151,7 +156,7 @@ function renderStats(run) {
   for (const key of pathKeys(run)) {
     const p = run.paths[key], q = p.rtt || {}, row = body.insertRow();
     const first = row.insertCell(), dot = document.createElement('i');
-    dot.className = 'ota-dot'; dot.style.background = `var(${COLORS[key]})`; first.append(dot, NAMES[key]);
+    dot.className = 'ota-dot'; dot.style.background = `var(${COLORS[key]})`; first.append(dot, namesFor(run)[key]);
     for (const text of [fmt(p.sent, 0), fmt(p.echoed, 0), fmt(p.loss_pct, 1) + '%', fmt(q.min_ms), fmt(q.p50_ms), fmt(q.p95_ms), fmt(q.max_ms), fmt(p.jitter_ms)]) row.insertCell().textContent = text;
   }
 }
@@ -165,7 +170,7 @@ function drawLanes(run) {
   ['A', 'B'].forEach((key, rowIndex) => {
     const ids = new Set(run.paths[key] ? run.paths[key].ids : []);
     const y = 14 + rowIndex * 36;
-    g.font = SANS; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = css('--muted'); g.fillText(NAMES[key], 0, y + 13);
+    g.font = SANS; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = css('--muted'); g.fillText(namesFor(run)[key], 0, y + 13);
     for (let i = 0; i < count; i++) {
       const x = L + i * cell, w = Math.max(1.5, cell - 2);
       g.fillStyle = ids.has(i) ? css(COLORS[key]) : css('--grid');
@@ -184,7 +189,7 @@ $('chart-lanes').addEventListener('pointermove', event => {
   const hit = laneHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y - 5 && y < q.y + 31);
   if (!hit) { hideTip(canvas); return; }
   const run = runs[current];
-  const on = pathKeys(run).filter(key => run.paths[key].ids.includes(hit.id)).map(key => (key === 'A' ? 'A OTA' : 'B 有線'));
+  const on = pathKeys(run).filter(key => run.paths[key].ids.includes(hit.id)).map(key => namesFor(run)[key].replace('　', ' '));
   showTip(canvas, x, y, ['Packet ID ' + hit.id, on.join(' ＋ ') || '未送出']);
 });
 $('chart-lanes').addEventListener('pointerleave', event => hideTip(event.currentTarget));
@@ -206,7 +211,7 @@ function drawRtt(run) {
   }
   keys.forEach((key, index) => {
     const q = run.paths[key].rtt, y = T + (index + 0.5) * ph / keys.length;
-    g.fillStyle = css('--muted'); g.font = SANS; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(NAMES[key], 0, y);
+    g.fillStyle = css('--muted'); g.font = SANS; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(namesFor(run)[key], 0, y);
     if (!q) return;
     g.strokeStyle = css(COLORS[key]); g.lineCap = 'round';
     g.lineWidth = 2; g.beginPath(); g.moveTo(X(q.min_ms), y); g.lineTo(X(q.max_ms), y); g.stroke();
@@ -215,7 +220,7 @@ function drawRtt(run) {
     g.beginPath(); g.arc(X(q.p50_ms), y, 7, 0, 7); g.fill(); g.stroke();
     g.fillStyle = css('--ink'); g.font = MONO; g.textAlign = 'left'; g.textBaseline = 'bottom';
     g.fillText('中位 ' + fmt(q.p50_ms) + ' ms', Math.min(X(q.p50_ms) + 2, W - 110), y - 11);
-    rttHits.push({ y, key, q });
+    rttHits.push({ y, key, q, name: namesFor(run)[key] });
   });
 }
 $('chart-rtt').addEventListener('pointermove', event => {
@@ -223,7 +228,7 @@ $('chart-rtt').addEventListener('pointermove', event => {
   const hit = rttHits.find(q => Math.abs(q.y - y) < 20);
   if (!hit) { hideTip(canvas); return; }
   const q = hit.q;
-  showTip(canvas, event.clientX - box.left, y, [NAMES[hit.key], `最小 ${fmt(q.min_ms)} ms`, `中位 ${fmt(q.p50_ms)} ms`, `p95　${fmt(q.p95_ms)} ms`, `最大 ${fmt(q.max_ms)} ms`]);
+  showTip(canvas, event.clientX - box.left, y, [hit.name, `最小 ${fmt(q.min_ms)} ms`, `中位 ${fmt(q.p50_ms)} ms`, `p95　${fmt(q.p95_ms)} ms`, `最大 ${fmt(q.max_ms)} ms`]);
 });
 $('chart-rtt').addEventListener('pointerleave', event => hideTip(event.currentTarget));
 
@@ -249,7 +254,7 @@ function drawPerPacket(run) {
     for (const [id, value] of run.per_packet[key] || []) {
       const x = X(id), y = Y(value);
       g.beginPath(); g.arc(x, y, 2.2, 0, 7); g.fill();
-      packetHits.push({ x, y, id, value, key });
+      packetHits.push({ x, y, id, value, name: namesFor(run)[key] });
     }
   }
 }
@@ -259,7 +264,7 @@ $('chart-per-packet').addEventListener('pointermove', event => {
   let best = null, distance = 400;
   for (const q of packetHits) { const d = (q.x - x) ** 2 + (q.y - y) ** 2; if (d < distance) { distance = d; best = q; } }
   if (!best) { hideTip(canvas); return; }
-  showTip(canvas, x, y, ['Packet ID ' + best.id, `${NAMES[best.key]}　${fmt(best.value)} ms`]);
+  showTip(canvas, x, y, ['Packet ID ' + best.id, `${best.name}　${fmt(best.value)} ms`]);
 });
 $('chart-per-packet').addEventListener('pointerleave', event => hideTip(event.currentTarget));
 
@@ -267,48 +272,15 @@ function render() {
   const run = runs[current];
   renderTabs(); renderFacts(run); drawLanes(run); drawRtt(run); drawPerPacket(run); renderStats(run);
   $('mode-note').textContent = run.note || NOTES[run.mode] || '';
+  const names = namesFor(run);
+  for (const node of document.querySelectorAll('[data-path-name]')) node.textContent = names[node.dataset.pathName];
+  $('rtt-caption').textContent = run.imported
+    ? '載入的結果：檔案無法證明兩條路徑實際是什麼，因此只標示為路徑 A 與路徑 B。延遲是傳送端量到的來回時間，不是單向延遲。'
+    : '有線路徑約 0.2 ms，OTA 約 20 ms，相差近百倍，所以用對數刻度。延遲是傳送端量到的來回時間，不是單向延遲。';
 }
 redraws.push(() => { const run = runs[current]; drawLanes(run); drawRtt(run); drawPerPacket(run); });
 render();
 
-// Loaded files are untrusted input: keep only numbers and numeric ID lists, and render them as text.
-function cleanStats(q) {
-  if (!q || typeof q !== 'object') return null;
-  const out = {};
-  for (const key of ['min_ms', 'p50_ms', 'mean_ms', 'p95_ms', 'max_ms']) out[key] = num(q[key]);
-  return out.p50_ms == null ? null : out;
-}
-function parseRun(text) {
-  let summary = null;
-  for (const line of text.split(/\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith('{')) continue;
-    try { const item = JSON.parse(trimmed); if (item && item.event === 'summary') summary = item; } catch { /* Skip lines that are not JSON. */ }
-  }
-  if (!summary || typeof summary.paths !== 'object') return null;
-  const mode = ['baseline', 'split', 'dup'].includes(summary.mode) ? summary.mode : 'baseline';
-  const dedup = summary.dedup || {};
-  const run = {
-    mode, unique: num(summary.unique_ids_sent) || 0, paths: {}, per_packet: null,
-    label: '新載入：' + TITLES[mode].replace(' 2:3', ''), note: '這一輪是剛載入的結果，不屬於 2026-11-12 保存的證據。',
-    dedup: { delivered_unique: num(dedup.delivered_unique), loss_pct: num(dedup.loss_pct), duplicates_discarded: num(dedup.duplicates_discarded), rtt: cleanStats(dedup.rtt) },
-  };
-  for (const key of ['A', 'B']) {
-    const p = summary.paths[key];
-    if (!p || typeof p !== 'object') continue;
-    run.paths[key] = { sent: num(p.sent), echoed: num(p.echoed), loss_pct: num(p.loss_pct), jitter_ms: num(p.jitter_ms), rtt: cleanStats(p.rtt),
-      ids: Array.isArray(p.sent_ids) ? p.sent_ids.map(Number).filter(Number.isInteger) : [] };
-  }
-  if (!Object.keys(run.paths).length) return null;
-  if (summary.per_packet && typeof summary.per_packet === 'object') {
-    run.per_packet = {};
-    for (const key of Object.keys(run.paths)) {
-      const rows = Array.isArray(summary.per_packet[key]) ? summary.per_packet[key] : [];
-      run.per_packet[key] = rows.filter(row => Array.isArray(row) && Number.isFinite(Number(row[0])) && Number.isFinite(Number(row[1]))).map(row => [Number(row[0]), Number(row[1])]);
-    }
-  }
-  return run;
-}
 $('run-file').addEventListener('change', event => {
   const file = event.target.files[0], message = $('run-message');
   if (!file) return;
