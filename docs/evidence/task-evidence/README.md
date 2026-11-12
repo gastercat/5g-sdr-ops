@@ -108,3 +108,6 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 - [`2026-10-29-g3-3h-preflight-rx-mock.yaml`](2026-10-29-g3-3h-preflight-rx-mock.yaml)：
   Non-TX 預檢與 OTA 設定來源更正、RX-only 歷史摘要來源、B0.6 負向測試及後續
   集中式 Mock Candidate 的驗證範圍。
+- [`2026-11-12-lab03-b210-ota-baseline-split-dup.yaml`](2026-11-12-lab03-b210-ota-baseline-split-dup.yaml)：
+  Lab03 B210 OTA 下行隨發射增益的分段觀察、一次 Attach 與雙向 ICMP、OTA 單路 Baseline，
+  以及應用層 Split／Duplication 量測；不含 PDCP 層實作，不建立 Owner 驗收或後續 Runtime 授權。
