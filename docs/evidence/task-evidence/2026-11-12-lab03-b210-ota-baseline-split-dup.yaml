@@ -1,0 +1,134 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "LAB03-2026-11-12-B210-OTA-BASELINE-SPLIT-DUP"
+  source_thread: "Claude Code session f59d633a-592c-4cd3-b0aa-3ac2dd0920df"
+  date_or_range: "2026-11-12 06:58Z–07:39Z（14:58–15:39 Asia/Taipei）"
+  executor: "Claude agent（遠端唯讀、非 root 命令與分析）；Owner 於現場以 root 啟動及停止 EPC／eNB／UE"
+  historical_or_current: "當日 Runtime 與 RF 觀察；結束時 Runtime 已停止，不代表之後的狀態"
+
+authorization:
+  scope:
+    - "Owner 於本輪確認採用 Delivery Closeout Contract v0.1，Lab03 最低交付以 USRP B210／OTA 實測為準，並同意在現場監督下執行分派範圍內的遠端存取與 RF 實驗。"
+    - "Owner 於對話中逐步同意：法拉第籠內 eNB 發射增益分段提高至 50、70；UE 發射增益以命令列用 70；以應用層工具執行 Split 與 Duplication；將結果寫入 Repo 分支。"
+  allowed_mutations:
+    - "Linux2 pre-lab03-rf/captures/2026-11-12/ 下的新 IQ capture。"
+    - "Repo 外本機證據目錄；本 TER、TER 索引與 PROGRESS.md 的文件更新。"
+  forbidden:
+    - "Agent 不輸入或接收密碼、不使用 sudo；不修改設定檔、/etc/srsran/、網路設定、套件或服務；不在未經 Owner 同意下提高發射增益。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "main（執行期間）；本紀錄寫於 docs/lab03-ota-closeout-ter"
+  start_head: "f2933ca882a0ee62eeec9c2c7ab81ecbac861cec"
+  end_head: "f2933ca882a0ee62eeec9c2c7ab81ecbac861cec"
+
+evidence:
+  - evidence_id: "L3-01"
+    claim: "預檢時兩台主機可達、無 Runtime 程序，兩台 B210 可被偵測。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "06:58Z Linux1／Linux2 無 srsepc、srsenb、srsue。06:59Z uhd_find_devices 各找到一台 B210，載入韌體後 USB 5000 Mb/s，serial 與 11/05 保存紀錄相同。兩台 srsRAN_4G HEAD 6bcbd9e5，工作樹僅 conf.example 有修改。兩台均無 nukxURLLC 原始碼。NTP 未同步，CPU governor 為 powersave。"
+    directness: "PRIMARY"
+    confidence: "高；限當次命令輸出。"
+    source_location: "Repo 外 2026-11-12-Delivery-Closeout/lab03-ota/00-preflight/ 與 STATUS.md"
+    limitations:
+      - "天線接法、籠體關閉與 USRP 間距由 Owner 現場回報，未由 Agent 觀察。"
+  - evidence_id: "L3-02"
+    claim: "eNB 以一般使用者啟動會崩潰。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "07:13Z 兩次非 root、無 EPC 的 srsenb 啟動：第一次在建立執行緒時 Resource temporarily unavailable；第二次加 ulimit -s 1024 後出現約 2 秒 Sending to radio，隨後 fftw alloc assertion 失敗。使用者 memlock 上限約 953 MB、rtprio 0。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；鎖定記憶體上限為原因屬推論。"
+    source_location: "lab03-ota/01-dl-check-run1/、01-dl-check-run2/"
+    limitations:
+      - "第二次嘗試留下的 /tmp/enb.log 其後擋住 root 啟動的 eNB 寫 log（fs.protected_regular=2），該檔已複製後移除；07:16–07:24Z 該次 eNB 執行沒有 log。"
+  - evidence_id: "L3-03"
+    claim: "eNB 發射增益 30 時，接收端未偵測到 LTE 下行；與 11/05 保存 IQ 的重算結果一致。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "eNB 由 Owner 以 root 啟動，S1 SCTP association 存在。Linux2 cell_search（RX gain 40／60／76）皆 Found 0 cells。Linux2 IQ（2680 MHz、11.52 Msps、0.2 s）PSS 折疊偵測 peak/median 2.20 與 2.38。同一偵測器離線重算 11/05 的 12 筆 controlled capture 為 2.47–2.78，ON 與 OFF 無差異。偵測器在合成資料上：純雜訊約 2.1，SNR −15 dB 的 PSS 為 27.4。"
+    directness: "PRIMARY"
+    confidence: "高；限所述偵測方法。"
+    source_location: "lab03-ota/02-dl-cell-search/、03-dl-iq-enb-on/、04-compare-1105/、tools/dl_iq_check.py"
+    limitations:
+      - "判定為 LTE_DL_NOT_DETECTED_UNDER_TESTED_METHOD，不證明沒有發射。偵測器為本輪新寫，不是 11/05 G1／G2 的方法。"
+  - evidence_id: "L3-04"
+    claim: "eNB 發射增益以命令列提高後，Linux2 唯收可同步並解出 MIB。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "--rf.tx_gain=50：PSS 偵測 peak/median 161.6（N_id_2=1）；pdsch_ue 找到 Cell ID 1、Decoded MIB（PCI 1、50 PRB、1 port），SNR 約 +4.5 dB、PDSCH-BLER 33.6%。--rf.tx_gain=70：SNR +20.6 dB、PDSCH-BLER 0.00%、PDCCH-Miss 0.00%。gain 50 時 cell_search 範例程式仍回報 0 cells。"
+    directness: "PRIMARY"
+    confidence: "高；限唯收解碼輸出。"
+    source_location: "lab03-ota/05-dl-txgain50/、06-dl-txgain70/"
+    limitations:
+      - "未以功率計或頻譜儀量測輻射功率。『11/05 下行問題主要為發射增益過低』為推論。cell_search 與 pdsch_ue 結果不一致的原因未查。"
+      - "10/29 Mock harness 內有 TX_GAIN_CEILING = 44.75 的候選上限；本輪 50 與 70 超過該候選值，依 Owner 當場同意執行，Agent 於執行後才比對到該值。"
+  - evidence_id: "L3-05"
+    claim: "B210 OTA Attach 成功，UE user plane 雙向 ICMP 可達。"
+    evidence_type: "LOG"
+    exact_observation: "eNB 與 UE 皆 --rf.tx_gain=70。ue.log：07:31:46Z Cell Search 找到 PCI 1／50 PRB；07:31:49Z Network attach successful，APN srsapn，IP 172.16.0.2；RSRP 約 −76 dBm；一次 RA response not received 後成功。tun_srsue 172.16.0.2/24，srs_spgw_sgi 172.16.0.1/24。ICMP 各 10 封包：UE→EPC 0% loss、avg 22.7 ms；EPC→UE 0% loss、avg 24.1 ms。"
+    directness: "PRIMARY"
+    confidence: "高；限單次 Attach 與短時間 ICMP。"
+    source_location: "lab03-ota/07-attach/；Runtime log 副本在 lab03-ota/restricted/（僅擁有者存取）"
+    limitations:
+      - "root 程序由 Owner 啟動，啟動命令由 Agent 以 ps 觀察。設定檔仍為 eNB 30／UE 20，增益 70 僅為命令列覆寫。"
+  - evidence_id: "L3-06"
+    claim: "OTA 單路 Baseline 的 UDP 探測量測。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "1000 個 Packet ID、128 bytes、間隔 20 ms，Linux2 送、Linux1 echo。路徑 A（OTA，172.16.0.1）：1000／1000、loss 0%、RTT min 9.1／p50 18.0／mean 17.5／p95 26.2／max 37.9 ms、jitter 4.2 ms；echo 端 1000 個不重複 ID。路徑 B 參考（有線，192.168.250.11）：1000／1000、loss 0%、RTT p50 0.26／p95 0.33／max 0.62 ms、jitter 0.03 ms。"
+    directness: "PRIMARY"
+    confidence: "高；限單一試次。"
+    source_location: "lab03-ota/08-baseline/、tools/dualpath_probe.py"
+    limitations:
+      - "RTT 為傳送端單調時鐘的來回時間，不是單向延遲。約 20 秒、低速率；不代表穩定度、吞吐或 URLLC 效能。"
+  - evidence_id: "L3-07"
+    claim: "應用層 Split 與 Duplication 在 OTA＋有線雙路徑上的量測。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "同一流量條件。Split 2:3：A 400／400、B 600／600，loss 0%；echo 端 A 的 ID 只出現在 172.16.0.1、B 的只出現在 192.168.250.11，交集 0、聯集 1000；A RTT p50 22.0／p95 36.0／max 219.9 ms、jitter 10.5 ms。Duplication：A 1000／1000、B 1000／1000，echo 端兩位址 ID 交集 1000；傳送端去重收 2000 份、保留 1000、丟棄 1000，先到者 A 0／B 1000；A RTT p50 17.2 ms，去重後 p50 0.23 ms。tun_srsue 封包計數 1020→2420。"
+    directness: "PRIMARY"
+    confidence: "高；限單一試次與所述工具。"
+    source_location: "lab03-ota/09-split-dup/"
+    limitations:
+      - "分流與複製在應用層 UDP，不是 PDCP 層，也不是 nukxURLLC；方向為 UE 端發起的來回流量。"
+      - "去重在傳送端對回送封包進行。兩路徑皆無遺失且未注入劣化，Duplication 的可靠度效益未展示。Split 中一筆 219.9 ms 離群值原因未查。"
+  - evidence_id: "L3-08"
+    claim: "結束時 Runtime 已停止，設定檔未變動。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "07:39Z 兩台無 srs 程序，tun_srsue 與 srs_spgw_sgi 不存在，僅剩管理網段位址與路由。ue.log 07:38:33Z Switching off、Sending detach request。enb.conf、rr.conf、epc.conf、ue.conf 的 SHA-256 與預檢時相同。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點的唯讀觀察。"
+    source_location: "lab03-ota/10-shutdown/"
+    limitations:
+      - "UE → eNB → EPC 的停機順序由 Owner 回報，未逐步獨立驗證。"
+
+mutations:
+  - "Linux2 新增 pre-lab03-rf/captures/2026-11-12/ 與三筆 IQ capture。"
+  - "Linux1 移除本輪非 root 嘗試留下的 /tmp/enb.log（先複製並核對 SHA-256）。"
+  - "兩台 B210 載入韌體與 FPGA image。"
+  - "Repo 外新增 2026-11-12-Delivery-Closeout/lab03-ota/ 證據目錄；Runtime log 副本置於其 restricted/。"
+  - "Repo：新增本 TER，更新 TER 索引與 PROGRESS.md。"
+
+recovered_or_observed_claims:
+  - claim: "發射增益 30 時下行未被偵測；提高至 50 可解 MIB，70 時 SNR 約 20 dB。"
+    status: "OBSERVED"
+    supporting_evidence: ["L3-03", "L3-04"]
+  - claim: "B210 OTA Attach 與雙向 user plane 於本輪觀察到一次。"
+    status: "OBSERVED"
+    supporting_evidence: ["L3-05"]
+  - claim: "OTA 單路 Baseline、應用層 Split 與 Duplication 各有一次保存的量測。"
+    status: "OBSERVED"
+    supporting_evidence: ["L3-06", "L3-07"]
+  - claim: "天線接法、籠體關閉、USRP 間距 50 公分以上及停機順序。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["L3-01", "L3-08"]
+  - claim: "PDCP 層（nukxURLLC）Split／Duplication。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+
+provenance_gaps:
+  - "Repo 外證據目錄為本機路徑，可攜共享位置 UNKNOWN；其 SHA256SUMS.txt 為本機完整性索引，不是獨立簽章。"
+  - "07:16–07:24Z 增益 30 的 root eNB 執行沒有 eNB 端 log。保存的 enb.log 只涵蓋最後一次（增益 70）執行。"
+  - "實際輻射功率未量測；11/05 根因未以儀器驗證。"
+
+stop_point:
+  result: "OTA Baseline 觀察到一次 Attach 與單路量測；Split／Duplication 僅有應用層量測。Owner 驗收 PENDING。Runtime 已停止。"
+  next_authority_required: "Baseline 驗收、nukxURLLC／PDCP 層做法、是否將發射增益寫入設定檔，以及任何新的 Runtime 或 RF 執行，均需 Owner 另行決定或授權。"

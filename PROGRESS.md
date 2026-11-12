@@ -1,6 +1,6 @@
 # 5G SDR Operations Progress
 
-更新日期：2026-10-29（priority／documentation navigation；Runtime evidence 日期維持原紀錄）
+更新日期：2026-11-12（Lab03 OTA delta；其餘段落的 Runtime evidence 日期維持原紀錄）
 文件角色：`CURRENT STATE / DELTA-ONLY NAVIGATION`
 
 ## Documentation Navigation Delta
@@ -14,6 +14,27 @@
 - `KNOWN / DOCUMENTATION-ONLY`：本次 split 已建立 Delivery／Exploration navigation；
   未修改 Runtime、engineering claims 或 implementation authority。後續內容修訂與 validation
   仍需另立 Work Unit。
+
+## Lab03 B210／OTA Delta｜2026-11-12
+
+Owner 於本輪採用 Delivery Closeout Contract v0.1，Lab03 最低交付以 USRP B210／OTA 實測為準，
+並在現場監督下同意當次遠端存取與 RF 實驗。Execution provenance 見
+[Lab03 OTA TER](docs/evidence/task-evidence/2026-11-12-lab03-b210-ota-baseline-split-dup.yaml)；
+原始證據在 Repo 外，尚無可攜共享 locator。
+
+- `OBSERVED`：eNB 發射增益 30 時 Linux2 未偵測到 LTE 下行，與 11/05 保存 IQ 的重算一致；
+  以命令列提高至 50 可解 MIB，70 時下行 SNR 約 20 dB。發射增益過低為 11/05 下行問題的主因
+  屬推論，未以儀器驗證。
+- `OBSERVED / BOUNDED`：eNB 與 UE 皆以命令列使用發射增益 70 時，B210 OTA Attach 成功一次，
+  雙向 ICMP 0% loss；OTA 單路 UDP 探測 1000／1000，來回延遲中位數約 18 ms。延遲為來回時間，
+  單一短試次，不是 performance、reliability 或 URLLC validation。
+- `OBSERVED / APPLICATION_LAYER_ONLY`：以 OTA 與有線管理網段為雙路徑的 Split（2:3）與
+  Duplication 各量測一次，皆 0% loss，Packet ID 分佈與去重結果已保存。這不是 PDCP 層或
+  nukxURLLC 實作；未注入路徑劣化，Duplication 的可靠度效益未展示。
+- `KNOWN`：兩台主機沒有 nukxURLLC；設定檔仍為 eNB 30／UE 20，增益 70 僅為命令列覆寫。
+- `CLEAN_STOP`：07:39Z 兩台無 Runtime 程序，TUN 介面不存在，設定檔雜湊未變。
+- `PENDING / OWNER_DECISION_REQUIRED`：Baseline 驗收、PDCP 層 Split／Duplication 的做法、
+  發射增益是否寫入設定檔。本紀錄不授權新的 Runtime 或 RF 執行。
 
 ## RF Evidence Navigation｜2026-10-29 inventory
 
