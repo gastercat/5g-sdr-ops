@@ -325,6 +325,83 @@ class StartParameters(unittest.TestCase):
         self.assertIn(__debug__, (True, False))
 
 
+@unittest.skipUnless(live_viz.POLICIES, "../ai-dualpath is not present")
+class AdaptiveMode(unittest.TestCase):
+    def q(self, **kw):
+        return {k: [v] for k, v in kw.items()}
+
+    def test_defaults_and_clamping(self):
+        self.assertEqual(live_viz.parse_adaptive({}), ("linucb+guard", 30.0, True))
+        self.assertEqual(live_viz.parse_adaptive(self.q(policy="dup", deadline="9999", leo="0")), ("dup", 150.0, False))
+
+    def test_rejects_unknown_policy_and_bad_values(self):
+        for bad in (self.q(policy="linucb; id"), self.q(policy="$(id)"), self.q(policy=""), self.q(deadline="soon"),
+                    self.q(deadline="nan"), self.q(leo="yes"), self.q(leo="1; id")):
+            self.assertIsNone(live_viz.parse_adaptive(bad), bad)
+
+    def test_run_uses_the_adaptive_sender(self):
+        real = live_viz.spawn, live_viz.spawn_adaptive, live_viz.emit
+        seen, events = {}, []
+
+        def fake_spawn(args, host):
+            seen["echo"] = args
+            return FakeProc(['{"event": "echo_start"}'])
+
+        def fake_adaptive(args, host):
+            seen["send"] = args
+            proc = FakeProc(['{"event": "decision", "id": 0, "action": "AB", "veto": "probe"}', '{"event": "summary"}'])
+            proc._done.set()
+            return proc
+
+        live_viz.spawn, live_viz.spawn_adaptive, live_viz.emit = fake_spawn, fake_adaptive, events.append
+        try:
+            job = live_viz.begin(config(), ("adaptive", 10, 0.02, "2:3", ("threshold+guard", 25.0, True)))
+            self.assertIsInstance(job, live_viz.Run)
+            self.assertTrue(live_viz.run_lock.acquire(timeout=5), "run did not finish")
+            live_viz.run_lock.release()
+        finally:
+            live_viz.spawn, live_viz.spawn_adaptive, live_viz.emit = real
+        self.assertEqual(seen["echo"][0], "echo")
+        self.assertEqual(seen["send"], ["--json", "--policy", "threshold+guard", "--dst-a", "127.0.0.1", "--dst-b",
+                                        "127.0.0.1", "--count", "10", "--interval", "0.02", "--wait", "2",
+                                        "--deadline", "25.0", "--leo-b"])
+        start = events[0]
+        self.assertEqual((start["event"], start["policy"], start["deadline_ms"], start["leo"]),
+                         ("run_start", "threshold+guard", 25.0, True))
+        self.assertIn("decision", [e.get("event") for e in events])
+
+    def test_bundle_runs_from_stdin_like_on_a_host(self):
+        import json, socket, subprocess, sys
+        echo = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        echo.bind(("127.0.0.1", 0))
+        echo.settimeout(0.05)
+        stop = threading.Event()
+
+        def serve():
+            while not stop.is_set():
+                try:
+                    data, src = echo.recvfrom(2048)
+                except OSError:
+                    continue
+                echo.sendto(data, src)
+
+        thread = threading.Thread(target=serve, daemon=True)
+        thread.start()
+        try:
+            args = shlex.split(live_viz.remote_command(
+                ["--json", "--policy", "dup", "--dst-a", "127.0.0.1", "--dst-b", "127.0.0.1", "--port",
+                 str(echo.getsockname()[1]), "--count", "20", "--interval", "0.004", "--wait", "0.1"]))[1:]
+            out = subprocess.run([sys.executable] + args, input=live_viz.bundle(), capture_output=True, text=True,
+                                 timeout=30, cwd="/")   # cwd elsewhere: nothing may be imported from this directory
+        finally:
+            stop.set()
+            thread.join(2)
+            echo.close()
+        self.assertEqual(out.returncode, 0, out.stderr)
+        summary = json.loads(out.stdout.strip().splitlines()[-1])
+        self.assertEqual((summary["event"], summary["dedup"]["delivered_unique"]), ("summary", 20))
+
+
 class RemoteCommand(unittest.TestCase):
     def test_arguments_are_shell_quoted(self):
         hostile = ["send", "--mode", "dup; touch /tmp/x", "--dst-a", "$(id)", "--ratio", "2:3 && id", "it's"]

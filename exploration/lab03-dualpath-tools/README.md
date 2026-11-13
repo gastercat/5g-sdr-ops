@@ -20,7 +20,7 @@ nukxURLLC；不構成 Lab03 的學生流程或驗收標準。
 | `dl_iq_check.py` | 對 11.52 Msps 的 complex64 IQ 做頻譜與 PSS 折疊偵測 | 2026-11-12 的下行偵測由它產生；合成資料自測 |
 | `dualpath_demo.py` | 與 `dualpath_probe.py` 相同的量測邏輯，改為易讀輸出；`--json --stream` 逐封包輸出 | 於本機 loopback 測試；Owner 回報曾用於一次現場 Demo，Repo 內無該次輸出 |
 | `live_viz.py`、`live_viz.html` | 在本機 `127.0.0.1` 提供即時頁面，經 SSH 在兩台主機執行 `dualpath_demo.py` | 同上；另有 `test_live_viz.py` |
-| `test_live_viz.py` | `live_viz.py` 的單元測試：停止與啟動的時序（含停止早於啟動登記的請求順序）、`/start` 參數驗證、遠端命令的引號 | 以替身程序與本機 loopback HTTP 執行，不連實驗主機；由 `docs-ci` 執行 |
+| `test_live_viz.py` | `live_viz.py` 的單元測試：停止與啟動的時序（含停止早於啟動登記的請求順序）、`/start` 參數驗證、遠端命令的引號、自適應策略模式的參數與合併腳本 | 以替身程序與本機 loopback HTTP 執行，不連實驗主機；由 `docs-ci` 執行 |
 | `test_lab03_ota_run.mjs` | Interactive Lab 結果頁匯入解析器的測試：有效檔案可載入，無效數值與結構一律拒絕且不拋例外 | Node 執行；由 `docs-ci` 執行 |
 
 `dualpath_demo.py` 的 `--sim-a-ms`、`--sim-a-jitter`、`--sim-a-loss` 只供預演，會在路徑 A
@@ -33,6 +33,20 @@ python3 live_viz.py --local --sim-a-loss 8
 ```
 
 用瀏覽器開啟 `http://127.0.0.1:8770/`。兩條路徑都在同一台電腦上，頁面頂端會標示預演模式。
+
+### 自適應策略模式
+
+[`../ai-dualpath/`](../ai-dualpath/README.md) 存在時，頁面多一個「自適應策略」模式：傳送端改用
+`adaptive_send.py`，由策略決定每個封包走路徑 A、路徑 B 或兩路都送。頁面會多顯示：
+
+- 路徑圖下方的「決策」列：單色表示只走那條路，上下兩色表示兩路都送，上方短線表示規則層把提議改成兩路都送。
+- 期限內送達的比例（尚未回送也尚未逾時的封包不計入）、每個 Packet ID 送出的副本數、規則層改寫次數。
+- 延遲圖上的期限線。
+
+勾選「模擬 LEO」時，路徑 B 的延遲與遺失由傳送端模擬，頁面頂端會標示；不論路徑 B 實際是什麼網路，
+這些數字都不是實測。對實驗主機執行時，`live_viz.py` 會把 `adaptive_send.py` 與它用到的模組合成一份
+腳本經 SSH 的標準輸入送出，主機上不留檔；LinUCB 需要傳送端主機有 NumPy。這條 SSH 路徑只在本機以
+標準輸入執行測試過，尚未在實驗主機上執行。
 
 ## 在實驗主機上使用
 

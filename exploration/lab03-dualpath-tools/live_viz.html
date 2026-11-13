@@ -18,9 +18,10 @@ button{font:500 14px var(--body);border-radius:999px;border:1px solid var(--rule
 button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 button.go{background:var(--a);color:#fff;border-color:var(--a);font-weight:600}
 button[disabled]{opacity:.45;cursor:default}
-button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink3)}
-input{font:14px var(--mono);width:92px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--panel);color:var(--ink)}
+input,select{font:14px var(--mono);width:92px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--panel);color:var(--ink)}
+select{width:auto}input[type=checkbox]{width:auto;margin:0 6px 0 0}.chk span+span{font-size:14px;color:var(--ink2);padding:6px 0;display:flex;align-items:center}
 #status{font-size:14px;color:var(--ink2);min-height:1.6em}
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
 .facts div{background:var(--panel);padding:10px 14px;display:flex;flex-direction:column;min-width:0}
@@ -52,10 +53,14 @@ th:first-child,td:first-child{text-align:left}th{color:var(--ink3);font-weight:5
     <button type="button" data-m="baseline" aria-pressed="true">Baseline</button>
     <button type="button" data-m="split" aria-pressed="false">Split</button>
     <button type="button" data-m="dup" aria-pressed="false">Duplication</button>
+    <button type="button" data-m="adaptive" aria-pressed="false" id="m-adaptive" hidden>自適應策略</button>
   </div>
   <label for="count">封包數<input id="count" type="number" min="10" max="2000" value="300"></label>
   <label for="interval">間隔 ms<input id="interval" type="number" min="5" max="1000" value="20"></label>
   <label for="ratio" id="ratio-l">分流比 A:B<input id="ratio" type="text" value="2:3"></label>
+  <label for="policy" id="policy-l" hidden>策略<select id="policy"></select></label>
+  <label for="deadline" id="deadline-l" hidden>期限 ms<input id="deadline" type="number" min="1" max="150" value="30"></label>
+  <label for="leo" id="leo-l" class="chk" hidden><span>路徑 B</span><span><input id="leo" type="checkbox" checked>模擬 LEO</span></label>
   <button type="button" class="go" id="go">開始</button>
   <button type="button" id="stop" hidden>停止</button>
 </div>
@@ -63,8 +68,8 @@ th:first-child,td:first-child{text-align:left}th{color:var(--ink3);font-weight:5
 <div class="facts" id="facts"></div>
 <div class="panel">
   <h2>最近 60 個 Packet ID 走哪條路</h2>
-  <div class="legend"><span><i style="background:var(--a)"></i><span data-name="A" data-suffix=" 已回送">路徑 A 已回送</span></span><span><i style="background:var(--b)"></i><span data-name="B" data-suffix=" 已回送">路徑 B 已回送</span></span><span><i class="o"></i>已送出、等待回送</span><span><i style="background:var(--lost)"></i>逾時未回送</span></div>
-  <canvas id="lanes" role="img" aria-label="即時路徑分佈：最近 60 個 Packet ID 在 A、B 兩條路徑上的狀態"></canvas>
+  <div class="legend"><span><i style="background:var(--a)"></i><span data-name="A" data-suffix=" 已回送">路徑 A 已回送</span></span><span><i style="background:var(--b)"></i><span data-name="B" data-suffix=" 已回送">路徑 B 已回送</span></span><span><i class="o"></i>已送出、等待回送</span><span><i style="background:var(--lost)"></i>逾時未回送</span><span id="lg-act" hidden>決策列：單色是只走那條路，上下兩色是兩路都送；上方短線是規則層改成兩路都送</span></div>
+  <canvas id="lanes" role="img" aria-label="即時路徑分佈：最近 60 個 Packet ID 在 A、B 兩條路徑上的狀態，自適應模式另有一列顯示每個封包的決策"></canvas>
 </div>
 <div class="two">
   <div class="panel">
@@ -87,14 +92,19 @@ const $=id=>document.getElementById(id),css=n=>getComputedStyle(document.documen
 // OTA／有線 apply only when the server was started against the lab hosts; a local rehearsal gets neutral names.
 let NAME={A:'路徑 A',B:'路徑 B'};const COL={A:'--a',B:'--b'};
 let mode='baseline',cfg={},running=false,S=null,dirty=true;
-function reset(m,count){S={mode:m,count:count,tx:{A:new Map(),B:new Map()},rtt:{A:new Map(),B:new Map()},maxId:-1,echoRx:0,summary:null,t0:performance.now(),interval:20};$('feed').innerHTML='';dirty=true;}
+function reset(m,count){S={mode:m,count:count,tx:{A:new Map(),B:new Map()},rtt:{A:new Map(),B:new Map()},act:new Map(),veto:new Map(),deadline:null,leo:false,maxId:-1,echoRx:0,summary:null,t0:performance.now(),interval:20};$('feed').innerHTML='';layout();dirty=true;}
+// Adaptive mode adds a decision row to the lanes and a notice whenever path B is emulated.
+function layout(){const ad=S.mode==='adaptive';$('lanes').style.height=ad?'166px':'126px';$('lg-act').hidden=!ad;const t=[];
+  if(cfg.local)t.push('預演模式（SIMULATED）：兩條路徑都在這台 Mac 上，路徑 A 的延遲'+(cfg.sim.loss>0?'與 '+cfg.sim.loss+'% 遺失':'')+'是人為加上的（約 '+cfg.sim.ms+' ms）。畫面上的數字不是 OTA 實測。');
+  if(S.leo)t.push('路徑 B 的延遲與遺失是傳送端模擬的類 LEO 特性（SIMULATED），不是實測。');
+  $('sim').hidden=!t.length;$('sim').textContent=t.join('　');}
 reset('baseline',0);
-document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(running)return;mode=b.dataset.m;document.querySelectorAll('#modes button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('ratio-l').hidden=mode!=='split';});
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(running)return;mode=b.dataset.m;document.querySelectorAll('#modes button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('ratio-l').hidden=mode!=='split';['policy-l','deadline-l','leo-l'].forEach(i=>$(i).hidden=mode!=='adaptive');});
 $('ratio-l').hidden=true;
 // starting: the start request is still in flight, so Stop stays unavailable until the server has answered.
 function setRunning(v,starting){running=v;$('go').disabled=v;$('stop').hidden=!v;$('stop').disabled=!!starting;}
-$('go').onclick=async()=>{stopRequested=false;liveRun=true;runToken=newToken();const c=+$('count').value||300,i=(+$('interval').value||20)/1000;reset(mode,c);S.interval=i*1000;setRunning(true,true);$('status').textContent='啟動中…';
-  try{const r=await fetch('/start?mode='+mode+'&count='+c+'&interval='+i+'&ratio='+encodeURIComponent($('ratio').value)+'&token='+runToken,{method:'POST'});const e=r.ok?{}:await r.json().catch(()=>({}));
+$('go').onclick=async()=>{stopRequested=false;liveRun=true;runToken=newToken();const c=+$('count').value||300,i=(+$('interval').value||20)/1000;reset(mode,c);S.interval=i*1000;if(mode==='adaptive'){S.deadline=+$('deadline').value||30;S.leo=$('leo').checked;layout();}setRunning(true,true);$('status').textContent='啟動中…';
+  try{const r=await fetch('/start?mode='+mode+'&count='+c+'&interval='+i+'&ratio='+encodeURIComponent($('ratio').value)+(mode==='adaptive'?'&policy='+encodeURIComponent($('policy').value)+'&deadline='+(+$('deadline').value||30)+'&leo='+($('leo').checked?1:0):'')+'&token='+runToken,{method:'POST'});const e=r.ok?{}:await r.json().catch(()=>({}));
     if(r.ok){if(liveRun)setRunning(true,false);}  // the run may already have ended before this answer arrived
     else if(e.error==='cancelled'){$('status').textContent='已停止，這一輪沒有開始。';setRunning(false);}
     else if(r.status===409){runToken=null;$('status').textContent='上一輪還在跑，請等它結束或按停止。';setRunning(true,false);}
@@ -104,10 +114,11 @@ function newToken(){const a=new Uint8Array(12);crypto.getRandomValues(a);return 
 // Stop names the run it is for. If it reaches the server before that run's start is registered,
 // the server refuses the start instead of running it.
 $('stop').onclick=()=>{stopRequested=true;$('stop').disabled=true;fetch('/stop'+(runToken?'?token='+runToken:''),{method:'POST'});};
-fetch('/config').then(r=>r.json()).then(c=>{cfg=c;NAME=c.local?{A:'A　模擬',B:'B　本機'}:{A:'A　OTA',B:'B　有線'};document.querySelectorAll('[data-name]').forEach(n=>n.textContent=NAME[n.dataset.name]+(n.dataset.suffix||''));dirty=true;if(c.local){$('sim').hidden=false;$('sim').textContent='預演模式（SIMULATED）：兩條路徑都在這台 Mac 上，路徑 A 的延遲'+(c.sim.loss>0?'與 '+c.sim.loss+'% 遺失':'')+'是人為加上的（約 '+c.sim.ms+' ms）。畫面上的數字不是 OTA 實測。';}else{$('sub').textContent+='路徑 A 是 B210 OTA，路徑 B 是有線網路。接收端 '+c.host_echo+'，傳送端 '+c.host_send+'。';}setRunning(!!c.running);});
+fetch('/config').then(r=>r.json()).then(c=>{cfg=c;NAME=c.local?{A:'A　模擬',B:'B　本機'}:{A:'A　OTA',B:'B　有線'};document.querySelectorAll('[data-name]').forEach(n=>n.textContent=NAME[n.dataset.name]+(n.dataset.suffix||''));dirty=true;(c.policies||[]).forEach(n=>{const o=document.createElement('option');o.textContent=n;o.selected=n==='linucb+guard';$('policy').appendChild(o);});$('m-adaptive').hidden=!(c.policies||[]).length;layout();if(!c.local){$('sub').textContent+='路徑 A 是 B210 OTA，路徑 B 是有線網路。接收端 '+c.host_echo+'，傳送端 '+c.host_send+'。';}setRunning(!!c.running);});
 function feed(o){const f=$('feed'),d=document.createElement('div'),b=document.createElement('b'),k=o.path==='B'?'B':'A';d.className=k;b.textContent=NAME[k].replace('　',' ');d.append('ID '+String(Number(o.id)).padStart(5,'\u00a0')+'　',b,'　'+String(o.local)+' ← '+String(o.src));f.appendChild(d);while(f.children.length>14)f.removeChild(f.firstChild);}
 function onEvent(o){
-  if(o.event==='run_start'){$('status').textContent='進行中：'+({baseline:'Baseline',split:'Split '+o.ratio,dup:'Duplication'}[o.mode])+'，'+o.count+' 個封包。';S.mode=o.mode;S.count=o.count;S.interval=o.interval_s*1000;}
+  if(o.event==='run_start'){$('status').textContent='進行中：'+({baseline:'Baseline',split:'Split '+o.ratio,dup:'Duplication',adaptive:'自適應策略 '+o.policy+'，期限 '+o.deadline_ms+' ms'}[o.mode])+'，'+o.count+' 個封包。';S.mode=o.mode;S.count=o.count;S.interval=o.interval_s*1000;S.deadline=o.mode==='adaptive'&&Number.isFinite(o.deadline_ms)?o.deadline_ms:null;S.leo=o.leo===true;layout();}
+  else if(o.event==='decision'&&Number.isInteger(o.id)&&['A','B','AB'].includes(o.action)){S.act.set(o.id,o.action);if(o.veto==='dead'||o.veto==='probe')S.veto.set(o.id,o.veto);if(o.id>S.maxId)S.maxId=o.id;}
   else if(o.event==='tx'&&S.tx[o.path]&&Number.isInteger(o.id)){S.tx[o.path].set(o.id,performance.now());if(o.id>S.maxId)S.maxId=o.id;}
   else if(o.event==='rtt'&&S.rtt[o.path]&&Number.isInteger(o.id)&&Number.isFinite(o.rtt_ms)){S.rtt[o.path].set(o.id,o.rtt_ms);}
   else if(o.event==='rx'&&o.from==='echo'){S.echoRx++;feed(o);}
@@ -122,11 +133,13 @@ connect();
 const LIM=()=>Math.max(1500,S.interval*4+1000);
 function med(a){if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y);return s[Math.floor((s.length-1)/2)];}
 function f2(v){return v==null?'—':v.toFixed(2);}
-function compute(){const now=performance.now(),ids=new Set([...S.tx.A.keys(),...S.tx.B.keys()]);let deliv=0,lost=0,copies=S.rtt.A.size+S.rtt.B.size;
-  ids.forEach(i=>{if(S.rtt.A.has(i)||S.rtt.B.has(i))deliv++;else{const t=Math.max(S.tx.A.get(i)||0,S.tx.B.get(i)||0);if(S.summary||now-t>LIM())lost++;}});
-  return {sent:ids.size,deliv,lost,dups:copies-deliv,mA:med([...S.rtt.A.values()]),mB:med([...S.rtt.B.values()])};}
+function compute(){const now=performance.now(),ids=new Set([...S.tx.A.keys(),...S.tx.B.keys()]);let deliv=0,lost=0,hit=0,copies=S.rtt.A.size+S.rtt.B.size;
+  ids.forEach(i=>{if(S.rtt.A.has(i)||S.rtt.B.has(i)){deliv++;if(S.deadline!=null&&Math.min(S.rtt.A.has(i)?S.rtt.A.get(i):Infinity,S.rtt.B.has(i)?S.rtt.B.get(i):Infinity)<=S.deadline)hit++;}else{const t=Math.max(S.tx.A.get(i)||0,S.tx.B.get(i)||0);if(S.summary||now-t>LIM())lost++;}});
+  return {sent:ids.size,deliv,lost,hit,txCopies:S.tx.A.size+S.tx.B.size,dups:copies-deliv,mA:med([...S.rtt.A.values()]),mB:med([...S.rtt.B.values()])};}
 function setup(cv){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);}const g=cv.getContext('2d');g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,r.width,r.height);return [g,r.width,r.height];}
 function drawFacts(c){const loss=c.sent?(100*c.lost/c.sent):0;const f=[[c.sent,'送出的 Packet ID'],[c.deliv,'已送達（去重後）'],[loss.toFixed(1)+'%','遺失率'],[f2(c.mA)+' ms',NAME.A+' 延遲中位'],[f2(c.mB)+' ms',NAME.B+' 延遲中位']];if(S.mode==='dup')f.splice(3,0,[c.dups,'丟棄的重複副本']);
+  // Packets still in flight are left out of the within-deadline share until they are echoed or time out.
+  if(S.mode==='adaptive'){const done=c.deliv+c.lost;f.splice(1,2,[done?(100*c.hit/done).toFixed(1)+'%':'—','期限 '+S.deadline+' ms 內送達'],[c.sent?(c.txCopies/c.sent).toFixed(2):'—','每個 ID 送出的副本數'],[S.veto.size,'規則層改成兩路都送']);}
   $('facts').innerHTML=f.map(x=>'<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>').join('');}
 function drawLanes(){const [g,W,H]=setup($('lanes')),L=66,R=8,n=60,cw=(W-L-R)/n,now=performance.now(),hi=Math.max(n-1,S.maxId),lo=hi-n+1;
   g.textBaseline='middle';['A','B'].forEach((t,ri)=>{const y=12+ri*40;g.fillStyle=css('--ink2');g.font='12px '+css('--body');g.textAlign='left';g.fillText(NAME[t],0,y+14);
@@ -134,13 +147,20 @@ function drawLanes(){const [g,W,H]=setup($('lanes')),L=66,R=8,n=60,cw=(W-L-R)/n,
       if(S.rtt[t].has(id)){g.fillStyle=css(COL[t]);g.fill();}
       else if(S.tx[t].has(id)){if(S.summary||now-S.tx[t].get(id)>LIM()){g.fillStyle=css('--lost');g.fill();}else{g.strokeStyle=css('--ink3');g.lineWidth=1.5;g.stroke();}}
       else{g.fillStyle=css('--grid');g.fill();}}});
-  g.fillStyle=css('--ink3');g.font='11px '+css('--mono');g.textAlign='center';g.textBaseline='top';for(let k=0;k<n;k+=(W<560?10:5)){const id=lo+k;if(id>=0)g.fillText(id,L+k*cw+cw/2,98);}}
+  const ad=S.mode==='adaptive';
+  if(ad){const y=92;g.fillStyle=css('--ink2');g.font='12px '+css('--body');g.textAlign='left';g.textBaseline='middle';g.fillText('決策',0,y+14);
+    for(let k=0;k<n;k++){const id=lo+k,x=L+k*cw+1,w=Math.max(1.5,cw-2),a=S.act.get(id);
+      if(!a){g.fillStyle=css('--grid');g.fillRect(x,y,w,28);continue;}
+      g.fillStyle=css(a==='B'?'--b':'--a');g.fillRect(x,y,w,a==='AB'?14:28);if(a==='AB'){g.fillStyle=css('--b');g.fillRect(x,y+14,w,14);}
+      if(S.veto.has(id)){g.fillStyle=css('--ink');g.fillRect(x,y-6,w,3);}}}
+  g.fillStyle=css('--ink3');g.font='11px '+css('--mono');g.textAlign='center';g.textBaseline='top';for(let k=0;k<n;k+=(W<560?10:5)){const id=lo+k;if(id>=0)g.fillText(id,L+k*cw+cw/2,ad?138:98);}}
 const L0=Math.log10(0.1),L1=Math.log10(1000);
 function drawRtt(){const [g,W,H]=setup($('rtt')),L=54,R=10,T=8,B=30,pw=W-L-R,ph=H-T-B,n=Math.max(60,S.count||60,S.maxId+1);
   const X=i=>L+i/(n-1)*pw,Y=v=>T+ph-(Math.log10(Math.min(1000,Math.max(0.1,v)))-L0)/(L1-L0)*ph;
   g.font='11px '+css('--mono');[0.1,1,10,100,1000].forEach(v=>{g.strokeStyle=css('--grid');g.lineWidth=1;g.beginPath();g.moveTo(L,Y(v));g.lineTo(W-R,Y(v));g.stroke();g.fillStyle=css('--ink3');g.textAlign='right';g.textBaseline='middle';g.fillText(v+' ms',L-6,Y(v));});
   g.textAlign='center';g.textBaseline='top';g.fillStyle=css('--ink3');const step=Math.pow(10,Math.floor(Math.log10(n)))/(n<200?2:1);for(let v=0;v<n;v+=step)g.fillText(v,X(v),T+ph+6);g.fillText('Packet ID',L+pw/2,H-12);
-  ['A','B'].forEach(t=>{g.fillStyle=css(COL[t]);S.rtt[t].forEach((v,i)=>{g.beginPath();g.arc(X(i),Y(v),2.4,0,7);g.fill();});});}
+  ['A','B'].forEach(t=>{g.fillStyle=css(COL[t]);S.rtt[t].forEach((v,i)=>{g.beginPath();g.arc(X(i),Y(v),2.4,0,7);g.fill();});});
+  if(S.deadline!=null){const y=Y(S.deadline);g.strokeStyle=css('--ink2');g.lineWidth=1;g.setLineDash([5,4]);g.beginPath();g.moveTo(L,y);g.lineTo(W-R,y);g.stroke();g.setLineDash([]);const lab='期限 '+S.deadline+' ms',tw=g.measureText(lab).width;g.fillStyle=css('--panel');g.fillRect(W-R-tw-6,y-17,tw+6,14);g.fillStyle=css('--ink2');g.textAlign='right';g.textBaseline='bottom';g.fillText(lab,W-R-3,y-4);}}
 function drawStats(c){const rows=['A','B'].filter(t=>S.tx[t].size).map(t=>{const v=[...S.rtt[t].values()].sort((a,b)=>a-b),p=q=>v.length?v[Math.min(v.length-1,Math.round(q*(v.length-1)))]:null;return '<tr><td><i class="dot" style="background:var('+COL[t]+')"></i>'+NAME[t]+'</td><td>'+S.tx[t].size+'</td><td>'+v.length+'</td><td>'+f2(v[0])+'</td><td>'+f2(p(.5))+'</td><td>'+f2(p(.95))+'</td><td>'+f2(v[v.length-1])+'</td></tr>';}).join('');
   $('stats').innerHTML=rows?'<thead><tr><th>路徑</th><th>送出</th><th>回送</th><th>最小 ms</th><th>中位 ms</th><th>p95 ms</th><th>最大 ms</th></tr></thead><tbody>'+rows+'</tbody>':'';}
 let lastFacts=0;

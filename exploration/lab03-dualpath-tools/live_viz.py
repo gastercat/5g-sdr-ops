@@ -8,16 +8,30 @@ UE host) and streams every packet event to the page as it happens.
   python3 live_viz.py            # lab hosts over SSH (needs EPC/eNB/UE already running)
   python3 live_viz.py --local    # rehearsal on this Mac only; path A is SIMULATED
 
+When ../ai-dualpath is present the page also offers an adaptive mode: the sender is
+adaptive_send.py, which picks the path of every packet with a policy, and the page shows
+each decision. Its optional LEO-like behaviour on path B is SIMULATED at the sender.
+
 The server listens on 127.0.0.1 only. It never uses sudo and creates no files on the hosts.
 """
-import argparse, collections, json, os, queue, re, shlex, subprocess, sys, threading, time
+import argparse, collections, json, os, queue, re, shlex, subprocess, sys, tempfile, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOOL = os.path.join(HERE, "dualpath_demo.py")
 PAGE = os.path.join(HERE, "live_viz.html")
-MODES = ("baseline", "split", "dup")
+MODES = ("baseline", "split", "dup", "adaptive")
+# "adaptive" runs ../ai-dualpath/adaptive_send.py as the sender; it is offered only when that directory is present.
+AI_DIR = os.path.join(HERE, "..", "ai-dualpath")
+ADAPTIVE = os.path.join(AI_DIR, "adaptive_send.py")
+BUNDLE = (("dualpath_demo", TOOL), ("leo_profile", os.path.join(AI_DIR, "leo_profile.py")),
+          ("policies", os.path.join(AI_DIR, "policies.py")), ("adaptive_send", ADAPTIVE))
+try:
+    sys.path.insert(0, AI_DIR)
+    from policies import NAMES as POLICIES
+except ImportError:
+    POLICIES = ()
 clients = []
 clients_lock = threading.Lock()
 run_lock = threading.Lock()      # held for the whole of one run; only one run at a time
@@ -88,6 +102,29 @@ def spawn(args, host):
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
 
 
+def bundle():
+    """adaptive_send.py and the modules it imports as one script, so a host can run it from stdin."""
+    src = {}
+    for name, path in BUNDLE:
+        with open(path, encoding="utf-8") as f:
+            src[name] = f.read()
+    return ("import sys, types\nSRC = %r\nfor name in %r:\n    m = types.ModuleType(name)\n"
+            "    m.__file__ = name + '.py'\n    sys.modules[name] = m\n"
+            "    exec(compile(SRC[name], m.__file__, 'exec'), m.__dict__)\n"
+            "sys.modules['adaptive_send'].main()\n" % (src, [name for name, _ in BUNDLE]))
+
+
+def spawn_adaptive(args, host):
+    if host is None:
+        return subprocess.Popen([sys.executable, ADAPTIVE] + args, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, text=True, bufsize=1)
+    with tempfile.TemporaryFile() as script:
+        script.write(bundle().encode())
+        script.seek(0)
+        return subprocess.Popen(["ssh", host, remote_command(args)], stdin=script,
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+
+
 def pump(proc, src, ready=None):
     for line in proc.stdout:
         line = line.strip()
@@ -129,7 +166,22 @@ def parse_start(query):
     return mode, count, interval, "%d:%d" % (m, s)
 
 
-def run(cfg, job, mode, count, interval, ratio):
+def parse_adaptive(query):
+    """Validate the extra /start parameters of adaptive mode. Returns (policy, deadline_ms, leo) or None."""
+    policy = query.get("policy", ["linucb+guard"])[0]
+    leo = query.get("leo", ["1"])[0]
+    if policy not in POLICIES or leo not in ("0", "1"):
+        return None
+    try:
+        deadline = float(query.get("deadline", ["30"])[0])
+    except ValueError:
+        return None
+    if deadline != deadline:   # NaN
+        return None
+    return policy, max(1.0, min(150.0, deadline)), leo == "1"
+
+
+def run(cfg, job, mode, count, interval, ratio, adaptive=None):
     try:
         dur = count * interval + 12
         local = cfg.local
@@ -144,15 +196,23 @@ def run(cfg, job, mode, count, interval, ratio):
                 "--count", str(count), "--interval", str(interval), "--wait", "2"]
         if mode != "baseline":
             send += ["--dst-b", bind_b]
-        emit({"event": "run_start", "mode": mode, "count": count, "interval_s": interval, "ratio": ratio,
-              "simulated": local, "utc": time.time()})
+        start = {"event": "run_start", "mode": mode, "count": count, "interval_s": interval, "ratio": ratio,
+                 "simulated": local, "utc": time.time()}
+        sender = spawn
+        if mode == "adaptive":
+            policy, deadline, leo = adaptive
+            send = ["--json", "--policy", policy, "--dst-a", bind_a, "--dst-b", bind_b, "--count", str(count),
+                    "--interval", str(interval), "--wait", "2", "--deadline", str(deadline)] + (["--leo-b"] if leo else [])
+            start.update(policy=policy, deadline_ms=deadline, leo=leo)
+            sender = spawn_adaptive
+        emit(start)
         ready = threading.Event()
         pe = job.start(lambda: spawn(echo, None if local else cfg.host_echo))
         threading.Thread(target=pump, args=(pe, "echo", ready), daemon=True).start()
         if not ready.wait(cfg.ready_timeout):
             emit({"event": "error", "text": "接收端沒有在時限內啟動。請確認主機可連線，且 EPC 已啟動。"})
             return
-        ps = job.start(lambda: spawn(send, None if local else cfg.host_send))
+        ps = job.start(lambda: sender(send, None if local else cfg.host_send))
         pump(ps, "send")
         ps.wait()
     except Cancelled:
@@ -247,7 +307,7 @@ class H(BaseHTTPRequestHandler):
             c = self.cfg
             self._send(200, json.dumps({"local": c.local, "running": state["run"] is not None,
                                         "host_echo": c.host_echo, "host_send": c.host_send,
-                                        "dst_a": c.dst_a, "dst_b": c.dst_b,
+                                        "dst_a": c.dst_a, "dst_b": c.dst_b, "policies": list(POLICIES),
                                         "sim": {"ms": c.sim_a_ms, "jitter": c.sim_a_jitter, "loss": c.sim_a_loss}}).encode())
         elif u.path == "/events":
             q = queue.Queue()
@@ -287,6 +347,9 @@ class H(BaseHTTPRequestHandler):
             return self._send(400, b'{"error":"bad token"}')
         if u.path == "/start":
             params = parse_start(query)
+            if params is not None and params[0] == "adaptive":
+                extra = parse_adaptive(query)
+                params = None if extra is None else params + (extra,)
             if params is None:
                 return self._send(400, b'{"error":"bad parameters"}')
             result = begin(self.cfg, params, token)
