@@ -98,6 +98,12 @@ jobs:
         run: |
           python3 .github/ci/test_checks.py
           python3 .github/ci/test_interactive_lab_pages.py
+      - name: Test Lab03 dual-path tools and results-page loader
+        run: |
+          # Both interpreter modes: parameter validation must not depend on assert.
+          python3 -B exploration/lab03-dualpath-tools/test_live_viz.py
+          python3 -B -O exploration/lab03-dualpath-tools/test_live_viz.py
+          node exploration/lab03-dualpath-tools/test_lab03_ota_run.mjs
       - name: Check documentation and PR whitespace
         run: python3 .github/ci/checks.py docs-quality
 
