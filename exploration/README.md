@@ -24,6 +24,7 @@
 | 6G／LEO／NTN | [Research Parking](../docs/research/6g-ntn-handover/README.md) | `RESEARCH_PARKING / CONCEPT_PROTOTYPE / NOT_INTEGRATED` |
 | Neuro-Symbolic RRM／Handover Supervisor | [候選架構](../docs/research/6g-ntn-handover/neuro_symbolic_rrm_handoff.md) | Pipeline、constraints、概念性 pseudocode 與候選 roadmap；不是 Runtime implementation |
 | Starlink Direct to Cell | [外部參考案例](../docs/research/6g-ntn-handover/starlink-direct-to-cell-reference.md) | 保存 2026-09-09 來源查核及研究問題；不是本 Repo 的 NTN implementation 或 prototype validation |
+| 期限感知的雙路徑傳送策略 | [工具與說明](ai-dualpath/README.md) | `EXPLORATION / APPLICATION_LAYER_ONLY / SIMULATED_PROOF_OF_CONCEPT`；離線比較固定策略、門檻規則與 LinUCB，路徑 B 的類 LEO 特性為模擬。尚無 OTA 上的策略比較，不是 PDCP 層或 NTN 實作 |
 | 其他 future architecture | [Historical candidate directions](../docs/project-direction.md) | O-RAN、FPGA、AI／ML、RIS 等舊候選未因列出而採納 |
 
 ## 教學視覺化
