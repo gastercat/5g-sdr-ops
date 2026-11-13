@@ -20,8 +20,8 @@ nukxURLLC；不構成 Lab03 的學生流程或驗收標準。
 | `dl_iq_check.py` | 對 11.52 Msps 的 complex64 IQ 做頻譜與 PSS 折疊偵測 | 2026-11-12 的下行偵測由它產生；合成資料自測 |
 | `dualpath_demo.py` | 與 `dualpath_probe.py` 相同的量測邏輯，改為易讀輸出；`--json --stream` 逐封包輸出 | 於本機 loopback 測試；Owner 回報曾用於一次現場 Demo，Repo 內無該次輸出 |
 | `live_viz.py`、`live_viz.html` | 在本機 `127.0.0.1` 提供即時頁面，經 SSH 在兩台主機執行 `dualpath_demo.py` | 同上；另有 `test_live_viz.py` |
-| `test_live_viz.py` | `live_viz.py` 的單元測試：停止與啟動的時序（含停止早於啟動登記的請求順序）、`/start` 參數驗證、遠端命令的引號 | 以替身程序與本機 loopback HTTP 執行，不連實驗主機；未納入 CI |
-| `test_lab03_ota_run.mjs` | Interactive Lab 結果頁匯入解析器的測試：有效檔案可載入，無效數值與結構一律拒絕且不拋例外 | Node 執行；未納入 CI |
+| `test_live_viz.py` | `live_viz.py` 的單元測試：停止與啟動的時序（含停止早於啟動登記的請求順序）、`/start` 參數驗證、遠端命令的引號 | 以替身程序與本機 loopback HTTP 執行，不連實驗主機；由 `docs-ci` 執行 |
+| `test_lab03_ota_run.mjs` | Interactive Lab 結果頁匯入解析器的測試：有效檔案可載入，無效數值與結構一律拒絕且不拋例外 | Node 執行；由 `docs-ci` 執行 |
 
 `dualpath_demo.py` 的 `--sim-a-ms`、`--sim-a-jitter`、`--sim-a-loss` 只供預演，會在路徑 A
 加上人為延遲與遺失；以這些選項得到的數字是 `SIMULATED_PROOF_OF_CONCEPT`，不是 OTA 實測。
@@ -65,7 +65,7 @@ python3 test_live_viz.py && python3 -O test_live_viz.py
 node test_lab03_ota_run.mjs
 ```
 
-Python 測試兩種直譯器模式都要跑：參數驗證不得依賴 `assert`。測試只用本機 loopback，不使用 SSH 或實驗主機。
+Python 測試兩種直譯器模式都要跑：參數驗證不得依賴 `assert`。測試只用本機 loopback，不使用 SSH 或實驗主機。`docs-ci` workflow 會在每個 PR 執行這三行。
 
 ## 限制
 
