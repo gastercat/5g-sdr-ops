@@ -10,7 +10,7 @@ UE host) and streams every packet event to the page as it happens.
 
 The server listens on 127.0.0.1 only. It never uses sudo and creates no files on the hosts.
 """
-import argparse, json, os, queue, shlex, subprocess, sys, threading, time
+import argparse, collections, json, os, queue, re, shlex, subprocess, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -168,23 +168,61 @@ def run(cfg, job, mode, count, interval, ratio):
         run_lock.release()
 
 
-def begin(cfg, params):
-    """Start one run. Returns the Run, or None when a run is already in progress."""
-    if not run_lock.acquire(blocking=False):
-        return None
-    job = Run()
+TOKEN = re.compile(r"[A-Za-z0-9_-]{1,64}\Z")
+# Tokens whose stop arrived before their start was registered. Bounded so it cannot grow.
+cancelled_tokens = collections.OrderedDict()
+CANCELLED_TOKENS_MAX = 64
+
+
+def valid_token(token):
+    return isinstance(token, str) and TOKEN.match(token) is not None
+
+
+def begin(cfg, params, token=None):
+    """Register and start one run.
+
+    Returns the Run; None when a run is already in progress; or the string "cancelled" when a
+    stop carrying the same token was received first. Checking the token, taking the run slot
+    and registering the Run all happen under state_lock, the lock stop() also takes, so a stop
+    is either seen here (no run is started) or sees the registered Run (and cancels it).
+    """
     with state_lock:
+        if token is not None and cancelled_tokens.pop(token, None):
+            return "cancelled"
+        if not run_lock.acquire(blocking=False):
+            return None
+        job = Run()
+        job.token = token
         state["run"] = job
     threading.Thread(target=run, args=(cfg, job) + tuple(params), daemon=True).start()
     return job
 
 
-def stop():
-    """Cancel the current run, if any. After this returns it starts no further process."""
+def stop(token=None):
+    """Cancel a run. After this returns, that run starts no further process.
+
+    Without a token: cancel the registered run, if any.
+    With a token: cancel the registered run only if it carries that token; if that run has not
+    been registered yet, remember the token so its start is refused when it arrives.
+    """
     with state_lock:
         job = state["run"]
+        if token is not None:
+            if job is None or getattr(job, "token", None) != token:
+                cancelled_tokens[token] = True
+                while len(cancelled_tokens) > CANCELLED_TOKENS_MAX:
+                    cancelled_tokens.popitem(last=False)
+                return
     if job is not None:
         job.cancel()
+
+
+def request_token(query):
+    """Token from a query string: (token or None, ok). A present but malformed token is an error."""
+    values = query.get("token")
+    if not values:
+        return None, True
+    return (values[0], True) if valid_token(values[0]) else (None, False)
 
 
 class H(BaseHTTPRequestHandler):
@@ -243,15 +281,22 @@ class H(BaseHTTPRequestHandler):
         if self.headers.get("Origin") not in (None, "http://127.0.0.1:%d" % self.cfg.port,
                                                "http://localhost:%d" % self.cfg.port):
             return self._send(403, b'{"error":"origin"}')
+        query = parse_qs(u.query)
+        token, token_ok = request_token(query)
+        if not token_ok:
+            return self._send(400, b'{"error":"bad token"}')
         if u.path == "/start":
-            params = parse_start(parse_qs(u.query))
+            params = parse_start(query)
             if params is None:
                 return self._send(400, b'{"error":"bad parameters"}')
-            if begin(self.cfg, params) is None:
+            result = begin(self.cfg, params, token)
+            if result == "cancelled":
+                return self._send(409, b'{"error":"cancelled"}')
+            if result is None:
                 return self._send(409, b'{"error":"already running"}')
             self._send(200, b'{"ok":true}')
         elif u.path == "/stop":
-            stop()
+            stop(token)
             self._send(200, b'{"ok":true}')
         else:
             self._send(404, b"{}")

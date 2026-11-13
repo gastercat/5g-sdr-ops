@@ -20,7 +20,8 @@ nukxURLLC；不構成 Lab03 的學生流程或驗收標準。
 | `dl_iq_check.py` | 對 11.52 Msps 的 complex64 IQ 做頻譜與 PSS 折疊偵測 | 2026-11-12 的下行偵測由它產生；合成資料自測 |
 | `dualpath_demo.py` | 與 `dualpath_probe.py` 相同的量測邏輯，改為易讀輸出；`--json --stream` 逐封包輸出 | 於本機 loopback 測試；Owner 回報曾用於一次現場 Demo，Repo 內無該次輸出 |
 | `live_viz.py`、`live_viz.html` | 在本機 `127.0.0.1` 提供即時頁面，經 SSH 在兩台主機執行 `dualpath_demo.py` | 同上；另有 `test_live_viz.py` |
-| `test_live_viz.py` | `live_viz.py` 的單元測試：停止與啟動的時序、`/start` 參數驗證、遠端命令的引號 | 以替身程序執行，不連線；未納入 CI |
+| `test_live_viz.py` | `live_viz.py` 的單元測試：停止與啟動的時序（含停止早於啟動登記的請求順序）、`/start` 參數驗證、遠端命令的引號 | 以替身程序與本機 loopback HTTP 執行，不連實驗主機；未納入 CI |
+| `test_lab03_ota_run.mjs` | Interactive Lab 結果頁匯入解析器的測試：有效檔案可載入，無效數值與結構一律拒絕且不拋例外 | Node 執行；未納入 CI |
 
 `dualpath_demo.py` 的 `--sim-a-ms`、`--sim-a-jitter`、`--sim-a-loss` 只供預演，會在路徑 A
 加上人為延遲與遺失；以這些選項得到的數字是 `SIMULATED_PROOF_OF_CONCEPT`，不是 OTA 實測。
@@ -60,7 +61,11 @@ ssh <UE 主機> "python3 - send --mode dup --dst-a <EPC SGi 位址> --dst-b <EPC
 python3 test_live_viz.py && python3 -O test_live_viz.py
 ```
 
-兩種直譯器模式都要跑：參數驗證不得依賴 `assert`。測試不使用網路、SSH 或實驗主機。
+```bash
+node test_lab03_ota_run.mjs
+```
+
+Python 測試兩種直譯器模式都要跑：參數驗證不得依賴 `assert`。測試只用本機 loopback，不使用 SSH 或實驗主機。
 
 ## 限制
 
@@ -70,6 +75,7 @@ python3 test_live_viz.py && python3 -O test_live_viz.py
 - 去重在傳送端對回送封包進行，接收端只回送。
 - 即時頁面只顯示封包；UE 佔用 B210 期間無法同時擷取 IQ，沒有即時波形。
 - `live_viz.py` 只監聽 `127.0.0.1`。停止回應成功後不會再啟動新的程序，已啟動的本機 SSH 程序會被終止；
+  頁面的停止請求帶有該輪的識別碼，若比啟動請求先完成登記，伺服器會拒絕那次啟動。
   主機上的接收端仍可能要等自身時限到才結束。
 - 即時頁面在預演模式以中性名稱標示路徑；只有對實驗主機執行時才標示 OTA／有線，而這取決於啟動時
   給的位址，工具本身無法驗證路徑。

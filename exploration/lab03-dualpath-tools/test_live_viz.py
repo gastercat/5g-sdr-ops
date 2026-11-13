@@ -58,33 +58,41 @@ class StopOrdering(unittest.TestCase):
         live_viz.run_lock.release()
 
     def test_stop_between_receiver_ready_and_sender_spawn(self):
-        """echo -> stop -> (no send): a stop that has returned must prevent the sender from starting."""
+        """echo -> stop -> (no send): a stop that has returned must prevent the sender from starting.
+
+        The worker thread is held at the exact point where it is about to call Run.start for the
+        sender, and released only after stop() has returned. Holding a different thread (for
+        example the receiver's reader) would not pin this ordering.
+        """
         spawned = []
-        echo_ready = threading.Event()
+        about_to_start_sender = threading.Event()
         stop_returned = threading.Event()
+        real_start = live_viz.Run.start
+        calls = []
+
+        def gated_start(job, factory):
+            calls.append(len(calls))
+            if len(calls) == 2:                       # second process of the run: the sender
+                about_to_start_sender.set()
+                self.assertTrue(stop_returned.wait(5), "test did not release the worker")
+            return real_start(job, factory)
 
         def fake_spawn(args, host):
             spawned.append(args[0])
-            if args[0] == "echo":
-                return FakeProc(['{"event": "echo_start"}'])
-            return FakeProc(['{"event": "summary"}'])
-
-        def fake_emit(obj):
-            self.events.append(obj)
-            if obj.get("event") == "echo_start":
-                # The run thread is here, after the receiver reported ready and before it
-                # tries to start the sender. Hold it until stop() has fully returned.
-                echo_ready.set()
-                stop_returned.wait(5)
+            return FakeProc(['{"event": "echo_start"}'] if args[0] == "echo" else ['{"event": "summary"}'])
 
         live_viz.spawn = fake_spawn
-        live_viz.emit = fake_emit
-        job = live_viz.begin(config(), ("dup", 10, 0.02, "2:3"))
-        self.assertIsNotNone(job)
-        self.assertTrue(echo_ready.wait(5))
-        live_viz.stop()
-        stop_returned.set()
-        self.wait_idle()
+        live_viz.Run.start = gated_start
+        try:
+            job = live_viz.begin(config(), ("dup", 10, 0.02, "2:3"))
+            self.assertIsInstance(job, live_viz.Run)
+            self.assertTrue(about_to_start_sender.wait(5), "worker never reached the sender start")
+            self.assertEqual(spawned, ["echo"])
+            live_viz.stop()                            # returns only after the run is cancelled
+            stop_returned.set()
+            self.wait_idle()
+        finally:
+            live_viz.Run.start = real_start
         self.assertEqual(spawned, ["echo"], "sender was started after stop() returned")
         self.assertTrue(job.cancelled)
         self.assertIn("cancelled", [e.get("event") for e in self.events])
@@ -113,7 +121,7 @@ class StopOrdering(unittest.TestCase):
             return proc
 
         live_viz.spawn = fake_spawn
-        self.assertIsNotNone(live_viz.begin(config(), ("split", 10, 0.02, "2:3")))
+        self.assertIsInstance(live_viz.begin(config(), ("split", 10, 0.02, "2:3")), live_viz.Run)
         self.wait_idle()
         self.assertEqual(spawned, ["echo", "send"])
 
@@ -128,10 +136,134 @@ class StopOrdering(unittest.TestCase):
         live_viz.spawn = fake_spawn
         cfg = config()
         cfg.ready_timeout = 0.3
-        self.assertIsNotNone(live_viz.begin(cfg, ("baseline", 10, 0.02, "2:3")))
+        self.assertIsInstance(live_viz.begin(cfg, ("baseline", 10, 0.02, "2:3")), live_viz.Run)
         self.assertIsNone(live_viz.begin(cfg, ("baseline", 10, 0.02, "2:3")))
         release.set()
         self.wait_idle()
+
+
+class StopBeforeStartIsRegistered(unittest.TestCase):
+    """A stop can reach the server while its start request is still being handled."""
+
+    def setUp(self):
+        self.real_spawn, self.real_emit = live_viz.spawn, live_viz.emit
+        self.spawned = []
+        live_viz.emit = lambda obj: None
+
+        def fake_spawn(args, host):
+            self.spawned.append(args[0])
+            proc = FakeProc(['{"event": "echo_start"}'] if args[0] == "echo" else ['{"event": "summary"}'])
+            if args[0] == "send":
+                proc._done.set()
+            return proc
+
+        live_viz.spawn = fake_spawn
+        live_viz.cancelled_tokens.clear()
+
+    def tearDown(self):
+        live_viz.spawn, live_viz.emit = self.real_spawn, self.real_emit
+        live_viz.cancelled_tokens.clear()
+
+    def wait_idle(self):
+        self.assertTrue(live_viz.run_lock.acquire(timeout=5), "run did not finish")
+        live_viz.run_lock.release()
+
+    def test_stop_then_start_with_same_token_starts_nothing(self):
+        live_viz.stop("run1")                                          # arrives first
+        result = live_viz.begin(config(), ("dup", 10, 0.02, "2:3"), "run1")
+        self.assertEqual(result, "cancelled")
+        self.assertEqual(self.spawned, [])
+        self.assertIsNone(live_viz.state["run"])
+        self.wait_idle()                                               # the run slot was never taken
+
+    def test_cancelled_token_is_used_once_and_other_tokens_unaffected(self):
+        live_viz.stop("run1")
+        self.assertIsInstance(live_viz.begin(config(), ("baseline", 10, 0.02, "2:3"), "run2"), live_viz.Run)
+        self.wait_idle()
+        self.assertEqual(live_viz.begin(config(), ("baseline", 10, 0.02, "2:3"), "run1"), "cancelled")
+        self.assertIsInstance(live_viz.begin(config(), ("baseline", 10, 0.02, "2:3"), "run1"), live_viz.Run)
+        self.wait_idle()
+
+    def test_stop_for_another_token_does_not_cancel_registered_run(self):
+        gate = threading.Event()
+        real_start = live_viz.Run.start
+
+        def gated_start(job, factory):
+            gate.wait(5)
+            return real_start(job, factory)
+
+        live_viz.Run.start = gated_start
+        try:
+            job = live_viz.begin(config(), ("baseline", 10, 0.02, "2:3"), "mine")
+            live_viz.stop("someone-else")
+            self.assertFalse(job.cancelled)
+            live_viz.stop("mine")
+            self.assertTrue(job.cancelled)
+            gate.set()
+            self.wait_idle()
+        finally:
+            live_viz.Run.start = real_start
+        self.assertEqual(self.spawned, [])
+
+    def test_start_handler_paused_before_registration(self):
+        """The reviewed ordering over HTTP: /start paused before it registers, /stop answers 200,
+        then /start resumes. No worker may be scheduled and /start must not report success."""
+        import http.client
+        from http.server import ThreadingHTTPServer
+
+        paused, resume = threading.Event(), threading.Event()
+        real_begin = live_viz.begin
+
+        def paused_begin(cfg, params, token=None):
+            paused.set()
+            self.assertTrue(resume.wait(5))
+            return real_begin(cfg, params, token)
+
+        live_viz.begin = paused_begin
+        cfg = config()
+        cfg.port = 0
+        live_viz.H.cfg = cfg
+        server = ThreadingHTTPServer(("127.0.0.1", 0), live_viz.H)
+        server.daemon_threads = True
+        cfg.port = server.server_address[1]
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        answers = {}
+
+        def post(name, path):
+            conn = http.client.HTTPConnection("127.0.0.1", cfg.port, timeout=5)
+            conn.request("POST", path)
+            response = conn.getresponse()
+            answers[name] = (response.status, response.read())
+            conn.close()
+
+        try:
+            starter = threading.Thread(target=post, args=("start", "/start?mode=dup&count=10&interval=0.02&token=abc"))
+            starter.start()
+            self.assertTrue(paused.wait(5), "/start never reached registration")
+            post("stop", "/stop?token=abc")
+            self.assertEqual(answers["stop"][0], 200)
+            resume.set()
+            starter.join(5)
+        finally:
+            live_viz.begin = real_begin
+            server.shutdown()
+            server.server_close()
+        self.assertEqual(answers["start"][0], 409)
+        self.assertIn(b"cancelled", answers["start"][1])
+        self.assertEqual(self.spawned, [])
+        self.assertIsNone(live_viz.state["run"])
+
+    def test_malformed_token_rejected(self):
+        for bad in ("a b", "a;b", "$(id)", "x" * 65, ""):
+            self.assertFalse(live_viz.valid_token(bad), bad)
+        self.assertEqual(live_viz.request_token({"token": ["a;b"]}), (None, False))
+        self.assertEqual(live_viz.request_token({}), (None, True))
+        self.assertEqual(live_viz.request_token({"token": ["Run_1-a"]}), ("Run_1-a", True))
+
+    def test_remembered_tokens_are_bounded(self):
+        for i in range(live_viz.CANCELLED_TOKENS_MAX + 20):
+            live_viz.stop("t%d" % i)
+        self.assertEqual(len(live_viz.cancelled_tokens), live_viz.CANCELLED_TOKENS_MAX)
 
 
 class StartParameters(unittest.TestCase):
