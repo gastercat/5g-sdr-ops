@@ -60,7 +60,7 @@
 | 線上傳送端 `adaptive_send.py` | 已實作，僅在本機 loopback 測試 |
 | 在 OTA 上重錄路徑 A 的逐封包紀錄 | 未執行；需當次 Owner 授權 |
 | 在 OTA 上比較各策略，每個策略至少 3 次 | 未執行；需當次 Owner 授權 |
-| 即時頁面顯示每個封包的決策 | 未實作 |
+| 即時頁面顯示每個封包的決策 | 已實作於 `../lab03-dualpath-tools/live_viz.py`，僅在本機預演模式執行過 |
 | Interactive Lab 結果頁支援 `adaptive` 模式 | 未實作 |
 | 測試加入 `docs-ci` workflow | 未實作 |
 

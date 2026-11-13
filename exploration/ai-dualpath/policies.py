@@ -177,10 +177,12 @@ class Guarded(Policy):
         self.name = inner.name + "+guard"
         self.state = inner.state
         self.vetoes = {"dead": 0, "probe": 0}
+        self.last_veto = None   # rule that replaced the latest proposal, if any
 
     def act(self, t, i):
         self.inner.peek = getattr(self, "peek", (None, None))
         act = self.inner.act(t, i)
+        self.last_veto = None
         if act == "AB":
             return act
         other = "B" if act == "A" else "A"
@@ -188,6 +190,7 @@ class Guarded(Policy):
                else "probe" if self.state.stale_s(other, t, self.probe_s * 2.0) > self.probe_s else None)
         if why:
             self.vetoes[why] += 1
+            self.last_veto = why
             self.inner.override(i, "AB")
             return "AB"
         return act

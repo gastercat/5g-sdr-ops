@@ -73,6 +73,8 @@ EPC、eNB、UE 已由獲授權的操作者啟動並 Attach 成功。`adaptive_se
 `--leo-b` 的模擬在傳送端進行：被模型判定遺失的副本不會送出，其餘副本的回音會延後到模型給的來回時間之後
 才讓策略看到。不論路徑 B 實際是什麼網路，加上 `--leo-b` 得到的路徑 B 數字都是模擬。
 
+[即時頁面](../lab03-dualpath-tools/README.md#自適應策略模式)的「自適應策略」模式會執行本工具，並顯示每個封包的決策。
+
 `--json` 的摘要與 `dualpath_demo.py` 同結構，另有 `policy` 區塊。Interactive Lab 的 Lab03 OTA 實測頁
 可以載入，但該頁尚不認得 `adaptive` 模式，會以 Baseline 的標題顯示。
 

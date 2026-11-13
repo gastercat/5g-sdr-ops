@@ -96,7 +96,7 @@ def run(a, emit=None):
         deliver(now)
         act = policy.act(now - start, pid)
         actions.append(act)
-        emit({"event": "decision", "id": pid, "action": act})
+        emit({"event": "decision", "id": pid, "action": act, "veto": getattr(policy, "last_veto", None)})
         for tag in act:
             t0 = time.monotonic()
             extra = leo.sample(t0 - start, rng) if leo and tag == "B" else 0.0
