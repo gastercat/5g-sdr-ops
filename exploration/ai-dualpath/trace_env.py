@@ -19,7 +19,7 @@ Path B is leo_profile.LeoProfile, always SIMULATED.
 
 Stdlib only.
 """
-import heapq, json, random
+import heapq, json, math, random
 
 from leo_profile import LeoProfile
 
@@ -69,9 +69,27 @@ def load_trace(path, tag="A"):
                 o = json.loads(line)
             except ValueError:
                 continue
-            if isinstance(o, dict) and o.get("event") == "summary" and tag in o.get("per_packet", {}):
-                got = {int(i): float(r) for i, r in o["per_packet"][tag]}
-                return [got.get(i) for i in o["paths"][tag]["sent_ids"]]
+            if not (isinstance(o, dict) and o.get("event") == "summary" and isinstance(o.get("per_packet"), dict)
+                    and tag in o["per_packet"]):
+                continue
+            # Reject anything that would be counted as a result without being one: a negative RTT
+            # would pass every deadline, and NaN would count as an echo.
+            is_id = lambda v: isinstance(v, int) and not isinstance(v, bool) and v >= 0
+            is_rtt = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) and v >= 0
+            rows = o["per_packet"][tag]
+            try:
+                ids = o["paths"][tag]["sent_ids"]
+            except (KeyError, TypeError):
+                ids = None
+            if not (isinstance(rows, list) and isinstance(ids, list) and all(is_id(i) for i in ids)):
+                raise ValueError("per_packet[%s] or sent_ids is malformed in %s" % (tag, path))
+            got = {}
+            for row in rows:
+                if not (isinstance(row, list) and len(row) >= 2 and is_id(row[0]) and is_rtt(row[1])):
+                    raise ValueError("invalid per_packet[%s] row %r in %s: need [id >= 0, finite rtt_ms >= 0]" % (
+                        tag, row, path))
+                got[row[0]] = float(row[1])
+            return [got.get(i) for i in ids]
     raise ValueError("no summary with per_packet[%s] in %s (was it recorded with --json?)" % (tag, path))
 
 

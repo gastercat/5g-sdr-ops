@@ -8,7 +8,7 @@
 Everything printed here is SIMULATED_PROOF_OF_CONCEPT: path B is always emulated,
 and path A is a model unless --trace-a is given. See README.md.
 """
-import argparse, csv, os, statistics, sys
+import argparse, csv, math, os, statistics, sys
 
 import policies as P
 from leo_profile import LeoProfile
@@ -82,7 +82,7 @@ def plot(table, path, deadline):
     fig.savefig(path, dpi=150)
 
 
-def main():
+def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--scenario", action="append", choices=list(SCENARIOS))
     p.add_argument("--seeds", type=int, default=5)
@@ -93,7 +93,10 @@ def main():
     p.add_argument("--cost", type=float, default=0.1, help="LinUCB penalty for sending a second copy")
     p.add_argument("--trace-a", help="dualpath_demo.py send --json output to replay as path A")
     p.add_argument("--out", help="directory for results.csv and tradeoff.png")
-    a = p.parse_args()
+    a = p.parse_args(argv)
+    # Checked first: every comparison with NaN is False, so the range check below would let it through.
+    if not all(math.isfinite(v) for v in (a.interval, a.deadline, a.timeout, a.cost)):
+        p.error("--interval, --deadline, --timeout and --cost must be finite numbers")
     if a.seeds < 1 or a.count < 1 or a.interval <= 0 or a.deadline <= 0 or a.timeout < a.deadline:
         p.error("need seeds >= 1, count >= 1, interval > 0, deadline > 0 and timeout >= deadline")
     rows = run(a)

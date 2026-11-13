@@ -95,5 +95,23 @@ class Loopback(unittest.TestCase):
         self.assertLess(out["policy"]["copies_per_packet"], 2.0)
 
 
+class Arguments(unittest.TestCase):
+    def test_non_finite_numbers_are_rejected_before_anything_is_sent(self):
+        import contextlib, io
+        real, calls = adaptive_send.run, []
+        adaptive_send.run = lambda a, emit=None: calls.append(a)
+        base = ["--policy", "dup", "--dst-a", "127.0.0.1", "--dst-b", "127.0.0.1"]
+        try:
+            for flag in ("--interval", "--deadline", "--timeout", "--cost", "--wait"):
+                for value in ("nan", "inf", "-inf"):
+                    with self.assertRaises(SystemExit, msg=(flag, value)), contextlib.redirect_stderr(io.StringIO()):
+                        adaptive_send.main(base + [flag, value])
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+                adaptive_send.main(base + ["--wait", "-1"])
+        finally:
+            adaptive_send.run = real
+        self.assertEqual(calls, [])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

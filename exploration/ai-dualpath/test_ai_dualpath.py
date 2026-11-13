@@ -69,6 +69,28 @@ class PathAModel(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load_trace(f)
         self.assertEqual(PathA(trace=trace).series(6, 0.02, random.Random(0)), [10.0, 11.5, None, 12.0, 10.0, 11.5])
+
+    def test_load_trace_rejects_values_that_are_not_measurements(self):
+        ok = '{"event": "summary", "paths": {"A": {"sent_ids": [0, 1]}}, "per_packet": {"A": [[0, 10.0], [1, %s]]}}'
+        bad_rows = ("-10", '"NaN"', "NaN", "Infinity", "-Infinity", "true", "null", '"12.5"', "[1]")
+        bad_docs = [ok % v for v in bad_rows] + [
+            '{"event": "summary", "paths": {"A": {"sent_ids": [0, 1]}}, "per_packet": {"A": [[0, 10.0], [-1, 5.0]]}}',
+            '{"event": "summary", "paths": {"A": {"sent_ids": [0, 1]}}, "per_packet": {"A": [[0, 10.0], [1.5, 5.0]]}}',
+            '{"event": "summary", "paths": {"A": {"sent_ids": [0, 1]}}, "per_packet": {"A": [[0, 10.0], [1]]}}',
+            '{"event": "summary", "paths": {"A": {"sent_ids": [0, "1"]}}, "per_packet": {"A": [[0, 10.0]]}}',
+            '{"event": "summary", "paths": {"A": {}}, "per_packet": {"A": [[0, 10.0]]}}',
+            '{"event": "summary", "paths": {"A": {"sent_ids": [0]}}, "per_packet": {"A": {"0": 10.0}}}',
+            '{"event": "summary", "paths": {"A": {"sent_ids": [0]}}, "per_packet": [[0, 10.0]]}']
+        with tempfile.TemporaryDirectory() as d:
+            f = os.path.join(d, "run.jsonl")
+            for doc in bad_docs:
+                with open(f, "w", encoding="utf-8") as h:
+                    h.write(doc + "\n")
+                with self.assertRaises(ValueError, msg=doc):
+                    load_trace(f)
+            with open(f, "w", encoding="utf-8") as h:
+                h.write(ok % "0" + "\n")
+            self.assertEqual(load_trace(f), [10.0, 0.0])
         with self.assertRaises(ValueError):
             PathA(trace=[])
 
@@ -136,6 +158,22 @@ class Learning(unittest.TestCase):
     def test_guard_never_removes_a_copy(self):
         m = simulate(P.Guarded(P.Dup(30.0)), episode([10.0] * 50, [10.0] * 50), 30.0)
         self.assertEqual(m["copies"], 2.0)
+
+
+class EvaluateArguments(unittest.TestCase):
+    def test_non_finite_numbers_are_rejected_before_anything_runs(self):
+        import contextlib, io
+        import evaluate
+        real, calls = evaluate.run, []
+        evaluate.run = lambda a: calls.append(a) or []
+        try:
+            for flag in ("--interval", "--deadline", "--timeout", "--cost"):
+                for value in ("nan", "inf", "-inf"):
+                    with self.assertRaises(SystemExit, msg=(flag, value)), contextlib.redirect_stderr(io.StringIO()):
+                        evaluate.main([flag, value])
+        finally:
+            evaluate.run = real
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":

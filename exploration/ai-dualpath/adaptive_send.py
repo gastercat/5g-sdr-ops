@@ -15,7 +15,7 @@ with --leo-b are SIMULATED, whatever network path B really is.
 Latency is round-trip time on the sender's monotonic clock, not one-way latency.
 Splitting and duplication happen in this tool, not in PDCP.
 """
-import argparse, heapq, json, os, random, select, socket, sys, time
+import argparse, heapq, json, math, os, random, select, socket, sys, time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lab03-dualpath-tools"))
 from dualpath_demo import HDR, MAGIC, jitter, stats  # noqa: E402  same wire format and statistics
@@ -168,15 +168,19 @@ def parser():
     return p
 
 
-def main():
+def main(argv=None):
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
     p = parser()
-    a = p.parse_args()
-    if a.count < 1 or a.interval <= 0 or a.deadline <= 0 or a.timeout < a.deadline or a.size < HDR.size:
-        p.error("need count >= 1, interval > 0, deadline > 0, timeout >= deadline and size >= %d" % HDR.size)
+    a = p.parse_args(argv)
+    # Checked first: every comparison with NaN is False, so the range checks below would let it through.
+    if not all(math.isfinite(v) for v in (a.interval, a.deadline, a.timeout, a.cost, a.wait)):
+        p.error("--interval, --deadline, --timeout, --cost and --wait must be finite numbers")
+    if (a.count < 1 or a.interval <= 0 or a.deadline <= 0 or a.timeout < a.deadline or a.wait < 0
+            or a.size < HDR.size):
+        p.error("need count >= 1, interval > 0, deadline > 0, timeout >= deadline, wait >= 0 and size >= %d" % HDR.size)
     out = run(a, (lambda o: print(json.dumps(o), flush=True)) if a.json else None)
     if a.json:
         print(json.dumps(out), flush=True)
