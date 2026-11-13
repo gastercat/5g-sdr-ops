@@ -205,53 +205,84 @@ class StopBeforeStartIsRegistered(unittest.TestCase):
             live_viz.Run.start = real_start
         self.assertEqual(self.spawned, [])
 
-    def test_start_handler_paused_before_registration(self):
-        """The reviewed ordering over HTTP: /start paused before it registers, /stop answers 200,
-        then /start resumes. No worker may be scheduled and /start must not report success."""
+    def post_paused_start_then_stop(self, server_factory):
+        """Pause /start before it registers, send /stop, then let /start finish. Returns the answers.
+
+        Everything this changes (live_viz.begin, H.cfg) is restored in the finally block, which
+        also covers a failure while creating the server, and only resources that were actually
+        created are closed. A failure here therefore stays in the test that caused it.
+        """
         import http.client
-        from http.server import ThreadingHTTPServer
 
         paused, resume = threading.Event(), threading.Event()
-        real_begin = live_viz.begin
+        real_begin, real_cfg = live_viz.begin, getattr(live_viz.H, "cfg", None)
+        server = None
+        answers = {}
 
         def paused_begin(cfg, params, token=None):
             paused.set()
             self.assertTrue(resume.wait(5))
             return real_begin(cfg, params, token)
 
-        live_viz.begin = paused_begin
-        cfg = config()
-        cfg.port = 0
-        live_viz.H.cfg = cfg
-        server = ThreadingHTTPServer(("127.0.0.1", 0), live_viz.H)
-        server.daemon_threads = True
-        cfg.port = server.server_address[1]
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        answers = {}
-
         def post(name, path):
             conn = http.client.HTTPConnection("127.0.0.1", cfg.port, timeout=5)
-            conn.request("POST", path)
-            response = conn.getresponse()
-            answers[name] = (response.status, response.read())
-            conn.close()
+            try:
+                conn.request("POST", path)
+                response = conn.getresponse()
+                answers[name] = (response.status, response.read())
+            finally:
+                conn.close()
 
+        cfg = config()
+        cfg.port = 0
+        live_viz.begin = paused_begin
+        live_viz.H.cfg = cfg
         try:
+            server = server_factory(("127.0.0.1", 0), live_viz.H)
+            server.daemon_threads = True
+            cfg.port = server.server_address[1]
+            threading.Thread(target=server.serve_forever, daemon=True).start()
             starter = threading.Thread(target=post, args=("start", "/start?mode=dup&count=10&interval=0.02&token=abc"))
             starter.start()
             self.assertTrue(paused.wait(5), "/start never reached registration")
             post("stop", "/stop?token=abc")
-            self.assertEqual(answers["stop"][0], 200)
             resume.set()
             starter.join(5)
         finally:
+            resume.set()                                   # never leave a paused handler waiting
             live_viz.begin = real_begin
-            server.shutdown()
-            server.server_close()
+            live_viz.H.cfg = real_cfg
+            if server is not None:
+                server.shutdown()
+                server.server_close()
+        return answers
+
+    def test_start_handler_paused_before_registration(self):
+        """The reviewed ordering over HTTP: /start paused before it registers, /stop answers 200,
+        then /start resumes. No worker may be scheduled and /start must not report success."""
+        from http.server import ThreadingHTTPServer
+
+        answers = self.post_paused_start_then_stop(ThreadingHTTPServer)
+        self.assertEqual(answers["stop"][0], 200)
         self.assertEqual(answers["start"][0], 409)
         self.assertIn(b"cancelled", answers["start"][1])
         self.assertEqual(self.spawned, [])
         self.assertIsNone(live_viz.state["run"])
+
+    def test_server_creation_failure_restores_patches(self):
+        """If the loopback server cannot be created, begin and H.cfg are restored and the error
+        surfaces as itself, so the remaining tests are unaffected."""
+        real_begin, real_cfg = live_viz.begin, getattr(live_viz.H, "cfg", None)
+
+        def refuse(address, handler):
+            raise PermissionError("loopback bind not permitted")
+
+        with self.assertRaises(PermissionError):
+            self.post_paused_start_then_stop(refuse)
+        self.assertIs(live_viz.begin, real_begin)
+        self.assertIs(getattr(live_viz.H, "cfg", None), real_cfg)
+        self.assertIsInstance(live_viz.begin(config(), ("baseline", 10, 0.02, "2:3"), "after"), live_viz.Run)
+        self.wait_idle()
 
     def test_malformed_token_rejected(self):
         for bad in ("a b", "a;b", "$(id)", "x" * 65, ""):
