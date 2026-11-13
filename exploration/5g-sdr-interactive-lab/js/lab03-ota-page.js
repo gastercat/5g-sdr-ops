@@ -8,7 +8,8 @@ const $ = id => document.getElementById(id);
 const redraws = [];
 const MONO = '11px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
 const SANS = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-const num = value => (value == null || value === '' || Number.isNaN(Number(value)) ? null : Number(value));
+// Saved data and parsed runs hold numbers or null; anything else is treated as missing.
+const num = value => (typeof value === 'number' && Number.isFinite(value) ? value : null);
 const fmt = (value, digits = 2) => (num(value) == null ? '—' : num(value).toFixed(digits));
 
 function setup(canvas) {
@@ -287,8 +288,9 @@ $('run-file').addEventListener('change', event => {
   const reader = new FileReader();
   reader.addEventListener('error', () => { message.textContent = '讀不到這個檔案，請再選一次。'; });
   reader.addEventListener('load', () => {
-    const run = parseRun(String(reader.result));
-    if (!run) { message.textContent = '這個檔案裡找不到摘要。請確認是傳送端加了 --json 的輸出。'; return; }
+    let run = null;
+    try { run = parseRun(String(reader.result)); } catch { run = null; }
+    if (!run) { message.textContent = '這個檔案不是有效的結果：找不到摘要，或其中有不是數字的值。請確認是傳送端加了 --json 的輸出。'; return; }
     runs = runs.filter(item => !item.label); runs.push(run); current = runs.length - 1; render();
     message.textContent = `已載入 ${run.unique} 個 Packet ID` + (run.per_packet ? '，含逐封包延遲。' : '。這個檔案沒有逐封包延遲。');
   });

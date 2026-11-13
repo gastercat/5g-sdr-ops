@@ -17,7 +17,7 @@ h2{font-size:15px;margin:0;font-weight:600}
 button{font:500 14px var(--body);border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--ink2);padding:7px 15px;cursor:pointer}
 button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 button.go{background:var(--a);color:#fff;border-color:var(--a);font-weight:600}
-button.go[disabled]{opacity:.45;cursor:default}
+button[disabled]{opacity:.45;cursor:default}
 button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink3)}
 input{font:14px var(--mono);width:92px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--panel);color:var(--ink)}
@@ -91,11 +91,19 @@ function reset(m,count){S={mode:m,count:count,tx:{A:new Map(),B:new Map()},rtt:{
 reset('baseline',0);
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(running)return;mode=b.dataset.m;document.querySelectorAll('#modes button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('ratio-l').hidden=mode!=='split';});
 $('ratio-l').hidden=true;
-function setRunning(v){running=v;$('go').disabled=v;$('stop').hidden=!v;}
-$('go').onclick=async()=>{stopRequested=false;const c=+$('count').value||300,i=(+$('interval').value||20)/1000;reset(mode,c);S.interval=i*1000;setRunning(true);$('status').textContent='啟動中…';
-  try{const r=await fetch('/start?mode='+mode+'&count='+c+'&interval='+i+'&ratio='+encodeURIComponent($('ratio').value),{method:'POST'});if(!r.ok){const e=await r.json().catch(()=>({}));$('status').textContent=r.status===409?'上一輪還在跑，請等它結束或按停止。':'無法開始：參數不正確（'+(e.error||r.status)+'）。';setRunning(r.status===409);}}catch(e){$('status').textContent='連不上本機伺服器。請確認 live_viz.py 還在執行。';setRunning(false);}};
-let stopRequested=false;
-$('stop').onclick=()=>{stopRequested=true;fetch('/stop',{method:'POST'});};
+// starting: the start request is still in flight, so Stop stays unavailable until the server has answered.
+function setRunning(v,starting){running=v;$('go').disabled=v;$('stop').hidden=!v;$('stop').disabled=!!starting;}
+$('go').onclick=async()=>{stopRequested=false;liveRun=true;runToken=newToken();const c=+$('count').value||300,i=(+$('interval').value||20)/1000;reset(mode,c);S.interval=i*1000;setRunning(true,true);$('status').textContent='啟動中…';
+  try{const r=await fetch('/start?mode='+mode+'&count='+c+'&interval='+i+'&ratio='+encodeURIComponent($('ratio').value)+'&token='+runToken,{method:'POST'});const e=r.ok?{}:await r.json().catch(()=>({}));
+    if(r.ok){if(liveRun)setRunning(true,false);}  // the run may already have ended before this answer arrived
+    else if(e.error==='cancelled'){$('status').textContent='已停止，這一輪沒有開始。';setRunning(false);}
+    else if(r.status===409){runToken=null;$('status').textContent='上一輪還在跑，請等它結束或按停止。';setRunning(true,false);}
+    else{$('status').textContent='無法開始：參數不正確。';setRunning(false);}}catch(e){$('status').textContent='連不上本機伺服器。請確認 live_viz.py 還在執行。';setRunning(false);}};
+let stopRequested=false,runToken=null,liveRun=false;
+function newToken(){const a=new Uint8Array(12);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');}
+// Stop names the run it is for. If it reaches the server before that run's start is registered,
+// the server refuses the start instead of running it.
+$('stop').onclick=()=>{stopRequested=true;$('stop').disabled=true;fetch('/stop'+(runToken?'?token='+runToken:''),{method:'POST'});};
 fetch('/config').then(r=>r.json()).then(c=>{cfg=c;NAME=c.local?{A:'A　模擬',B:'B　本機'}:{A:'A　OTA',B:'B　有線'};document.querySelectorAll('[data-name]').forEach(n=>n.textContent=NAME[n.dataset.name]+(n.dataset.suffix||''));dirty=true;if(c.local){$('sim').hidden=false;$('sim').textContent='預演模式（SIMULATED）：兩條路徑都在這台 Mac 上，路徑 A 的延遲'+(c.sim.loss>0?'與 '+c.sim.loss+'% 遺失':'')+'是人為加上的（約 '+c.sim.ms+' ms）。畫面上的數字不是 OTA 實測。';}else{$('sub').textContent+='路徑 A 是 B210 OTA，路徑 B 是有線網路。接收端 '+c.host_echo+'，傳送端 '+c.host_send+'。';}setRunning(!!c.running);});
 function feed(o){const f=$('feed'),d=document.createElement('div'),b=document.createElement('b'),k=o.path==='B'?'B':'A';d.className=k;b.textContent=NAME[k].replace('　',' ');d.append('ID '+String(Number(o.id)).padStart(5,'\u00a0')+'　',b,'　'+String(o.local)+' ← '+String(o.src));f.appendChild(d);while(f.children.length>14)f.removeChild(f.firstChild);}
 function onEvent(o){
@@ -107,7 +115,7 @@ function onEvent(o){
   else if(o.event==='error'){$('status').textContent='發生問題：'+o.text;}
   else if(o.event==='log'){$('status').textContent='主機訊息：'+o.text;}
   else if(o.event==='cancelled'){$('status').textContent='已停止，沒有再啟動新的程序。';}
-  else if(o.event==='run_end'){setRunning(false);if(S.summary)$('status').textContent='完成。'+(cfg.local?'（預演，模擬資料）':'');else if(stopRequested)$('status').textContent='已停止。這一輪沒有完成，數字只涵蓋停止前的封包。';else if(!/問題|訊息|已停止/.test($('status').textContent))$('status').textContent='已結束，沒有收到摘要。';}
+  else if(o.event==='run_end'){liveRun=false;setRunning(false);if(S.summary)$('status').textContent='完成。'+(cfg.local?'（預演，模擬資料）':'');else if(stopRequested)$('status').textContent='已停止。這一輪沒有完成，數字只涵蓋停止前的封包。';else if(!/問題|訊息|已停止/.test($('status').textContent))$('status').textContent='已結束，沒有收到摘要。';}
   dirty=true;}
 function connect(){const es=new EventSource('/events');es.onmessage=e=>{try{onEvent(JSON.parse(e.data));}catch(_){}};es.onerror=()=>{if(!running)return;$('status').textContent='與本機伺服器的連線中斷，正在重連…';};}
 connect();
