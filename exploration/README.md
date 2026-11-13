@@ -31,6 +31,7 @@
 | 主題 | 入口 | 用途與 lifecycle |
 | --- | --- | --- |
 | 5G SDR Interactive Lab | [網站來源](5g-sdr-interactive-lab/index.html)、[PR 40 remediation 記錄](5g-sdr-interactive-lab/review/pr40-remediation.md) | 靜態教學視覺化，由 `Interactive Lab Pages` workflow 封裝；不是網路模擬器、即時 telemetry 或 Runtime evidence。Lab04／Tailcat 視角為 `PROPOSED`，各場景狀態以其證據頁標示的範圍為限 |
+| Lab03 雙路徑探測與即時檢視 | [工具與說明](lab03-dualpath-tools/README.md)、[Lab03 OTA 實測頁來源](5g-sdr-interactive-lab/lab03-ota.html) | `ENGINEERING AID / APPLICATION_LAYER_ONLY`；2026-11-12 單次實測的工具與結果視覺化，不是 PDCP 層實作、學生流程或驗收標準，也不授權 Runtime |
 
 ## Control Plane 與尚未收錄的材料
 

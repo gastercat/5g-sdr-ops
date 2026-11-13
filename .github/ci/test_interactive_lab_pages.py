@@ -25,7 +25,7 @@ class PackageTest(unittest.TestCase):
             for name in ('css', 'js', 'assets'):
                 (site / name).mkdir(parents=True)
                 (site / name / '.keep').touch()
-            for name in ('index.html', 'evidence.html'):
+            for name in ('index.html', 'evidence.html', 'lab03-ota.html'):
                 (site / name).write_text('<!doctype html>')
             (site / 'js/app.js').write_text('const fixture = true;')
             git('add', '.')

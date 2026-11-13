@@ -52,13 +52,14 @@ jobs:
           site=exploration/5g-sdr-interactive-lab
           test -f "$site/index.html"
           test -f "$site/evidence.html"
+          test -f "$site/lab03-ota.html"
           test -d "$site/css"
           test -d "$site/js"
           test -d "$site/assets"
           find "$site/js" -type f -name '*.js' -print0 | xargs -0 -r -n 1 node --check
           artifact="$RUNNER_TEMP/interactive-lab-site-pr-check"
           mkdir -p "$artifact"
-          cp "$site/index.html" "$site/evidence.html" "$artifact/"
+          cp "$site/index.html" "$site/evidence.html" "$site/lab03-ota.html" "$artifact/"
           cp -R "$site/css" "$site/js" "$site/assets" "$artifact/"
           find "$artifact" -type f -name '.DS_Store' -delete
           touch "$artifact/.nojekyll"
@@ -67,7 +68,7 @@ jobs:
           for entry in "$artifact"/* "$artifact"/.[!.]*; do
             [[ -e "$entry" ]] || continue
             case "${entry##*/}" in
-              .nojekyll|assets|css|evidence.html|index.html|js)
+              .nojekyll|assets|css|evidence.html|index.html|js|lab03-ota.html)
                 ;;
               *)
                 echo "Unexpected item in Pages artifact: ${entry##*/}" >&2
@@ -75,7 +76,7 @@ jobs:
                 ;;
             esac
           done
-          for entry in .nojekyll assets css evidence.html index.html js; do
+          for entry in .nojekyll assets css evidence.html index.html js lab03-ota.html; do
             test -e "$artifact/$entry"
           done
           if find "$artifact" -type f -name '.DS_Store' -print -quit | grep -q .; then
@@ -97,6 +98,12 @@ jobs:
         run: |
           python3 .github/ci/test_checks.py
           python3 .github/ci/test_interactive_lab_pages.py
+      - name: Test Lab03 dual-path tools and results-page loader
+        run: |
+          # Both interpreter modes: parameter validation must not depend on assert.
+          python3 -B exploration/lab03-dualpath-tools/test_live_viz.py
+          python3 -B -O exploration/lab03-dualpath-tools/test_live_viz.py
+          node exploration/lab03-dualpath-tools/test_lab03_ota_run.mjs
       - name: Check documentation and PR whitespace
         run: python3 .github/ci/checks.py docs-quality
 
