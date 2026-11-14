@@ -50,6 +50,7 @@ agent-prompts、checklists、reports、teaching、research、evidence 與二進�
 | Lab01 [runbook](../labs/lab01-small-cell/runbook.md)、[recovery checklist](../labs/lab01-small-cell/recovery-checklist.md)、[known issues](../labs/lab01-small-cell/known-issues.md)、[result summary](../labs/lab01-small-cell/result-summary.md) | Historical lower-authority notes | Delivery supporting + History；加標示與手冊連結，不提升舊 NEEDS_CONFIRMATION |
 | [Lab02 README](../labs/lab02-embb/README.md) | Delivery intent + historical protocol／parser／PCAP 待確認筆記 | Delivery anchor；舊列表不直接等同 minimum，保留技術正文 |
 | [Lab03 README](../labs/lab03-urllc/README.md) | Delivery intent + historical hardware／PRP 方向 + 2026-11-12 單次實測摘要 | Delivery anchor；baseline／Split／Duplication 方向可見，OTA Baseline 與應用層 Split／Duplication 各有一次觀察，PDCP 層與 criteria 待定 |
+| [Lab03 啟動與停止步驟](../labs/lab03-urllc/runbook.md) | 2026-11-12 單次實測使用的 EPC／eNB／UE 啟動順序、命令與停止方式 | Operator reference；單次觀察，非學生流程，不授權 Runtime 或 RF 執行 |
 | [Lab04 README](../labs/lab04-security/README.md) | Independent post-Lab model superseded | History + future Security mapping input；保留原位，不是第四套必做 Runtime |
 | [Audits](history/README.md) 下 2026-07-10 rollback inventory、config tree、SHA-256 三份文件 | 日期限定的 residue／metadata evidence | History + canonical evidence dependency；不改 bytes／paths |
 | [TEH](evidence/task-evidence/README.md)、template 與既有四份 TER | Evidence-only 機制與 recovery／runtime／research provenance | History + Shared mechanism；舊 YAML 不改，新 refactor TER 另立 |
