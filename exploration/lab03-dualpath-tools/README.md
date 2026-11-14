@@ -51,6 +51,7 @@ python3 live_viz.py --local --sim-a-loss 8
 ## 在實驗主機上使用
 
 前提：EPC、eNB、UE 已由獲授權的操作者啟動並 Attach 成功；控制端可用 SSH 金鑰連到兩台主機。
+2026-11-12 那一輪的啟動方式見 [Lab03 啟動與停止步驟](../../labs/lab03-urllc/runbook.md)。
 工具不使用 sudo，也不在主機上留檔。
 
 ```bash
