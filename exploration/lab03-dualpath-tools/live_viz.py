@@ -7,6 +7,8 @@ UE host) and streams every packet event to the page as it happens.
 
   python3 live_viz.py            # lab hosts over SSH (needs EPC/eNB/UE already running)
   python3 live_viz.py --local    # rehearsal on this Mac only; path A is SIMULATED
+  python3 live_viz.py --echo-local --host-send <UE host>   # run on the EPC host itself: the receiver
+                                 # starts here without SSH, only the sender goes over SSH
 
 When ../ai-dualpath is present the page also offers an adaptive mode: the sender is
 adaptive_send.py, which picks the path of every packet with a policy, and the page shows
@@ -181,6 +183,11 @@ def parse_adaptive(query):
     return policy, max(1.0, min(150.0, deadline)), leo == "1"
 
 
+def echo_host(cfg):
+    """Where the receiver runs: None means this machine (rehearsal, or --echo-local on the EPC host)."""
+    return None if cfg.local or getattr(cfg, "echo_local", False) else cfg.host_echo
+
+
 def run(cfg, job, mode, count, interval, ratio, adaptive=None):
     try:
         dur = count * interval + 12
@@ -207,7 +214,7 @@ def run(cfg, job, mode, count, interval, ratio, adaptive=None):
             sender = spawn_adaptive
         emit(start)
         ready = threading.Event()
-        pe = job.start(lambda: spawn(echo, None if local else cfg.host_echo))
+        pe = job.start(lambda: spawn(echo, echo_host(cfg)))
         threading.Thread(target=pump, args=(pe, "echo", ready), daemon=True).start()
         if not ready.wait(cfg.ready_timeout):
             emit({"event": "error", "text": "接收端沒有在時限內啟動。請確認主機可連線，且 EPC 已啟動。"})
@@ -306,6 +313,7 @@ class H(BaseHTTPRequestHandler):
         elif u.path == "/config":
             c = self.cfg
             self._send(200, json.dumps({"local": c.local, "running": state["run"] is not None,
+                                        "echo_local": bool(getattr(c, "echo_local", False)),
                                         "host_echo": c.host_echo, "host_send": c.host_send,
                                         "dst_a": c.dst_a, "dst_b": c.dst_b, "policies": list(POLICIES),
                                         "sim": {"ms": c.sim_a_ms, "jitter": c.sim_a_jitter, "loss": c.sim_a_loss}}).encode())
@@ -368,6 +376,9 @@ class H(BaseHTTPRequestHandler):
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--local", action="store_true", help="rehearse on this Mac; path A is simulated")
+    p.add_argument("--echo-local", action="store_true",
+                   help="this machine is the EPC host: start the receiver here without SSH; "
+                        "only the sender uses SSH (--host-send). Measured, not simulated")
     p.add_argument("--port", type=int, default=8770)
     p.add_argument("--host-echo", default="5g-linux1-audit")
     p.add_argument("--host-send", default="5g-linux2-audit")
@@ -378,11 +389,14 @@ def main():
     p.add_argument("--sim-a-loss", type=float, default=0.0)
     p.add_argument("--ready-timeout", type=float, default=15.0, help="seconds to wait for the receiver to start")
     cfg = p.parse_args()
+    if cfg.local and cfg.echo_local:
+        p.error("--local and --echo-local cannot be combined: --local simulates path A on one machine")
     H.cfg = cfg
     srv = ThreadingHTTPServer(("127.0.0.1", cfg.port), H)
     srv.daemon_threads = True
     print("Lab03 live viewer: http://127.0.0.1:%d/  (%s)  Ctrl-C to quit" % (
-        cfg.port, "LOCAL REHEARSAL, path A simulated" if cfg.local else "lab hosts over SSH"), flush=True)
+        cfg.port, "LOCAL REHEARSAL, path A simulated" if cfg.local else
+        "receiver on this host, sender over SSH" if cfg.echo_local else "lab hosts over SSH"), flush=True)
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

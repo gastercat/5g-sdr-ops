@@ -59,6 +59,20 @@ python3 live_viz.py --host-echo <EPC 主機的 SSH 別名> --host-send <UE 主�
   --dst-a <EPC SGi 位址> --dst-b <EPC 主機的有線位址>
 ```
 
+### 直接在 EPC 主機上執行
+
+沒有另一台控制端時，可以把這個資料夾放到 EPC 主機，在那台主機上啟動即時頁面並用它的瀏覽器觀看：
+
+```bash
+python3 live_viz.py --echo-local --host-send <UE 主機的 SSH 目標> \
+  --dst-a <EPC SGi 位址> --dst-b <EPC 主機的有線位址>
+```
+
+`--echo-local` 讓接收端直接在這台主機執行、不經 SSH；傳送端仍要在 UE 主機上執行，所以 EPC 主機
+要能以金鑰 SSH 到 UE 主機，兩台之間的有線連線（路徑 B）也要保留。量到的仍是實測，不是模擬；
+它不能與 `--local` 併用。這種用法會在 EPC 主機上留下工具檔案與 SSH 金鑰，屬於主機變更，需要 Owner
+決定。此選項只以替身程序測試過，尚未在實驗主機上執行。
+
 不經即時頁面、只要一份可保存的結果時：
 
 ```bash

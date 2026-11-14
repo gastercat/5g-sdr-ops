@@ -5,6 +5,8 @@ Run with both interpreters, because one finding was specific to -O:
 """
 import io
 import shlex
+import subprocess
+import sys
 import threading
 import types
 import unittest
@@ -400,6 +402,65 @@ class AdaptiveMode(unittest.TestCase):
         self.assertEqual(out.returncode, 0, out.stderr)
         summary = json.loads(out.stdout.strip().splitlines()[-1])
         self.assertEqual((summary["event"], summary["dedup"]["delivered_unique"]), ("summary", 20))
+
+
+class EchoLocal(unittest.TestCase):
+    """--echo-local: the viewer runs on the EPC host, so the receiver starts here and only the sender uses SSH."""
+
+    def setUp(self):
+        self.real = live_viz.spawn, live_viz.emit
+        self.events = []
+        live_viz.emit = self.events.append
+
+    def tearDown(self):
+        live_viz.spawn, live_viz.emit = self.real
+
+    def run_once(self, **over):
+        calls = []
+
+        def fake_spawn(args, host):
+            calls.append((args, host))
+            proc = FakeProc(['{"event": "echo_start"}'] if args[0] == "echo" else ['{"event": "summary"}'])
+            if args[0] == "send":
+                proc._done.set()
+            return proc
+
+        live_viz.spawn = fake_spawn
+        cfg = types.SimpleNamespace(local=False, echo_local=True, dst_a="172.16.0.1", dst_b="192.168.250.11",
+                                    host_echo="epc-host", host_send="ue-host", sim_a_ms=1.0, sim_a_jitter=0.0,
+                                    sim_a_loss=0.0, ready_timeout=5.0)
+        cfg.__dict__.update(over)
+        self.assertIsInstance(live_viz.begin(cfg, ("dup", 10, 0.02, "2:3")), live_viz.Run)
+        self.assertTrue(live_viz.run_lock.acquire(timeout=5), "run did not finish")
+        live_viz.run_lock.release()
+        return dict((args[0], (args, host)) for args, host in calls)
+
+    def test_receiver_runs_here_and_sender_over_ssh(self):
+        calls = self.run_once()
+        echo, echo_host = calls["echo"]
+        send, send_host = calls["send"]
+        self.assertIsNone(echo_host)
+        self.assertEqual(send_host, "ue-host")
+        # Real addresses on both paths, and none of the rehearsal's simulated delay.
+        self.assertEqual([echo[i + 1] for i, a in enumerate(echo) if a == "--bind"], ["172.16.0.1", "192.168.250.11"])
+        self.assertFalse([a for a in echo if a.startswith("--sim-a")])
+        self.assertEqual((send[send.index("--dst-a") + 1], send[send.index("--dst-b") + 1]),
+                         ("172.16.0.1", "192.168.250.11"))
+        start = [e for e in self.events if e.get("event") == "run_start"][0]
+        self.assertIs(start["simulated"], False)
+
+    def test_without_the_option_the_receiver_uses_ssh(self):
+        self.assertEqual(self.run_once(echo_local=False)["echo"][1], "epc-host")
+
+    def test_config_without_the_attribute_keeps_ssh(self):
+        cfg = types.SimpleNamespace(local=False, host_echo="epc-host")
+        self.assertEqual(live_viz.echo_host(cfg), "epc-host")
+
+    def test_cannot_be_combined_with_rehearsal(self):
+        out = subprocess.run([sys.executable, live_viz.__file__, "--local", "--echo-local"],
+                             capture_output=True, text=True, timeout=20)
+        self.assertEqual(out.returncode, 2)
+        self.assertIn("cannot be combined", out.stderr)
 
 
 class RemoteCommand(unittest.TestCase):
