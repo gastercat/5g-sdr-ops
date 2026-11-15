@@ -226,7 +226,7 @@ git status --short
 
 ### 5.2 建置並確認 ZeroMQ support
 
-Instructor 確認依 srsRAN_4G 官方安裝指引安裝依賴後，執行下列建置流程。這一步確認本次 build（建置）納入 ZeroMQ support；沒有它，就不能使用本 Lab 的 RF sample path：
+Instructor 確認依 srsRAN_4G 官方安裝指引安裝依賴後（具體指令見 [Stage 0 環境建置補丁](environment-setup-patch.md)），執行下列建置流程。這一步確認本次 build（建置）納入 ZeroMQ support；沒有它，就不能使用本 Lab 的 RF sample path：
 
 ```bash
 mkdir build
