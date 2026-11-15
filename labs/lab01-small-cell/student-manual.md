@@ -214,7 +214,8 @@ clean-build PASS 或 installed-binary provenance。
 
 ### 5.2 建置與確認 ZeroMQ support
 
-依 srsRAN_4G 官方安裝指引安裝依賴後：
+依 srsRAN_4G 官方安裝指引安裝依賴後（具體安裝與檢查指令見
+[Stage 0 環境建置補丁](environment-setup-patch.md)）：
 
 ```bash
 mkdir build
