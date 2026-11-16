@@ -6,7 +6,7 @@ identity:
   source_thread: "Claude Code session 34017d6f-fa35-4332-bfd9-d95b35a93a7b"
   date_or_range: "2026-11-16 08:23Z–10:51Z（16:23–18:51 Asia/Taipei）"
   executor: "Claude agent：遠端唯讀檢查、ICMP、非 root 的 UDP 探測與策略傳送端、離線分析。Owner（現場）：啟動與多次重啟 EPC／eNB／UE，並以命令列設定各段發射增益；Agent 未啟動、停止或調整任何 Runtime 程序。"
-  historical_or_current: "當日 Runtime 與 RF 觀察；最後一次檢查時 Runtime 仍由 Owner 維持執行，不代表之後的狀態"
+  historical_or_current: "當日 Runtime 與 RF 觀察；Agent 最後一次檢查（10:51Z）時 Runtime 仍在執行，其後 Owner 回報已關機；不代表之後的狀態"
 
 authorization:
   scope:
@@ -192,15 +192,20 @@ recovered_or_observed_claims:
   - claim: "55／55 無法 Attach、57／57 撐不住、59／55 出現 Radio-Link failure 警告。"
     status: "REPORTED_ONLY"
     supporting_evidence: ["AD-07"]
+  - claim: "量測結束後 Runtime 已停止、主機已關機。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: []
   - claim: "在真實劣化的路徑 A 上的線上策略比較。"
     status: "NOT_FOUND_IN_THREAD"
     supporting_evidence: []
 
 provenance_gaps:
+  - "關機與停機順序為 Owner 回報，Agent 未觀察；Agent 只觀察到 11:08Z 兩台主機的 SSH 連線逾時。關機後沒有設定檔雜湊或程序狀態的檢查。"
+  - "競賽報告表 3 與圖 2 所用的離線重播（59／53 的 15000 個封包紀錄、5 組種子各 15000 個封包、期限 30 ms）於 commit c85178b 之後執行，輸出在 Repo 外 2026-11-16-AI-Dualpath-OTA/14-report-replay/；其數值與 AD-08 所列以前 6000 個封包重播的數值不同。"
   - "Repo 外證據目錄為本機路徑，可攜共享位置 UNKNOWN；SHA256SUMS.txt 為本機完整性索引，不是獨立簽章。"
   - "除 AD-10 的摘錄外未保存 Runtime log；70／70 至 57／53 各段沒有 RSRP、SNR 或 BLER 等無線端指標。"
   - "預檢的 ICMP 輸出未存檔。"
 
 stop_point:
-  result: "路徑 A 逐封包紀錄重錄；七種策略於增益 70／70 與 59／53 各 3 輪；八段增益的單路探測與四份 15000 個封包的長紀錄；離線重播完成。eNB 58 與 57 僅有少量真實劣化，各策略差距不超過 0.25 個百分點。10:51Z Runtime 仍由 Owner 維持執行（eNB 55／UE 55）。Owner 驗收 PENDING。"
-  next_authority_required: "以其他方式取得真實劣化、任何新的 Runtime 或 RF 執行、Runtime 停機，以及 commit／push，均需 Owner 另行決定或授權。"
+  result: "路徑 A 逐封包紀錄重錄；七種策略於增益 70／70 與 59／53 各 3 輪；八段增益的單路探測與四份 15000 個封包的長紀錄；離線重播完成。eNB 58 與 57 僅有少量真實劣化，各策略差距不超過 0.25 個百分點。10:51Z Runtime 仍由 Owner 維持執行（eNB 55／UE 55）；11:08Z 兩台主機的 SSH 連線逾時，Owner 其後回報已關機收工。Owner 驗收 PENDING。"
+  next_authority_required: "以其他方式取得真實劣化、任何新的 Runtime 或 RF 執行，以及 push，均需 Owner 另行決定或授權。"

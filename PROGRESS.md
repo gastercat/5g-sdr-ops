@@ -42,7 +42,8 @@ Exploration 範圍，不改變 Lab01～03 的交付條件。Owner 於本輪啟�
   Radio Link Failure 轉為閒置，有流量時可重建並正常傳送，5 分鐘紀錄 15000／15000 無中斷；先前那次失敗的原因仍未知。
 - `NOT TESTED`：真實劣化的路徑 A 上的線上策略比較。
 - `PENDING / OWNER_DECISION_REQUIRED`：是否以其他方式取得真實劣化。本紀錄不授權新的
-  Runtime 或 RF 執行；最後一次檢查（10:51Z）時 Runtime 仍由 Owner 維持執行。
+  Runtime 或 RF 執行；Agent 最後一次檢查（10:51Z）時 Runtime 仍在執行，
+  其後 Owner 回報已關機（`REPORTED_ONLY`）。
 
 ## Lab03 B210／OTA Delta｜2026-11-12
 
