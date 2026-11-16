@@ -36,6 +36,7 @@
         <button id="explanation-toggle" type="button" aria-expanded="false" aria-controls="explanation-panel">步驟說明</button>
         <button id="interface-toggle" type="button" aria-expanded="false" aria-controls="interface-details architecture-canvas">IP / Port</button>
       </div>
+      <div id="scene-progress" class="scene-progress" aria-hidden="true"><i></i></div>
     </div>
     <main id="main-content" tabindex="-1">
       <section class="architecture-card" aria-labelledby="scene-title">
@@ -54,6 +55,7 @@
           <span class="legend-item legend-user-item"><i class="legend-line"></i>User Plane · 實線</span>
           <span class="legend-item"><i class="legend-line legend-control"></i>Control Plane · 虛線</span>
           <span id="socket-legend" class="legend-item" hidden><i class="legend-socket"></i>Socket · 端點方塊</span>
+          <span id="encapsulation-legend" class="legend-item" hidden><i class="legend-ring"></i>封包外圈 · GTP-U 外層標頭（示意）</span>
           <span class="legend-item legend-sample-item" hidden><i class="legend-line legend-sample"></i>Sample Plane</span>
           <span class="legend-item legend-radio-item" hidden><i class="legend-line legend-radio"></i>OTA E2E 目標 · NOT_TESTED</span>
           <span class="legend-item legend-plain-item" hidden><i class="legend-line legend-plain"></i>一般路徑 · 保護未知</span>
@@ -64,7 +66,8 @@
           <p class="muted">各步驟預設展開相關圖層；手動選擇會優先保留，重設可恢復預設。</p>
           <fieldset><legend>選擇要補充的架構細節</legend><div id="layer-controls"></div></fieldset>
         </details>
-        <p class="canvas-hint">左右捲動畫布，查看完整架構。</p>
+        <p class="canvas-hint">點選元件可查看它的連線與端點。</p>
+        <p class="canvas-fit-row"><span>畫布較寬，可左右捲動。</span><button id="canvas-fit" type="button" aria-pressed="false">縮小至符合寬度</button></p>
         <div class="canvas-scroll" tabindex="0" aria-label="累積架構圖；窄螢幕可左右捲動">
           <svg id="architecture-canvas" class="architecture-svg" viewBox="0 0 720 800" role="img"
             aria-labelledby="canvas-title canvas-description" xmlns="http://www.w3.org/2000/svg">
@@ -103,6 +106,10 @@
           <p class="muted">依圖中的介面名稱對照端點。教學設定、歷史位址與上游實作分開標示；不是目前 Runtime 的監聽狀態。實際部署版本與動態 Port 未驗證。</p>
           <ul id="interface-list" class="interface-list"></ul>
         </div></aside>
+    <aside id="node-inspector" class="node-inspector" aria-labelledby="node-inspector-title" hidden>
+      <div class="floating-heading"><h2 id="node-inspector-title" data-inspector-title></h2><button type="button" data-inspector-close aria-label="關閉元件資訊">關閉</button></div>
+      <div class="floating-content" data-inspector-body></div>
+    </aside>
     <footer class="site-footer">
       <p>本網站是教學視覺化，不是網路模擬器或即時 SDR telemetry。</p>
       <a href="#main-content">回到頁面頂端</a>

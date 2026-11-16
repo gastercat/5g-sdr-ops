@@ -2,6 +2,8 @@ import { createPlaybackController, SCENE_DURATION_MS } from './animation/playbac
 import { scenes } from './data/scenes.js';
 import { createSceneController } from './animation/scenes.js';
 import { renderScene, setVisibleLayers } from './svg/renderer.js';
+import { compactScene } from './svg/compact.js';
+import { createNodeInspector } from './ui/node-inspector.js';
 
 const canvas = document.querySelector('#architecture-canvas');
 if (!canvas) throw new Error('The page is missing the architecture canvas.');
@@ -147,6 +149,7 @@ function closePanel(id) {
 document.querySelectorAll('[data-close-panel]').forEach(button => button.addEventListener('click', () => closePanel(button.dataset.closePanel)));
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
+  if (inspector.isOpen()) { event.preventDefault(); inspector.close({ restoreFocus: true }); return; }
   const focusedPanel = document.activeElement.closest('.floating-panel');
   const lastPanel = document.getElementById(lastOpenedPanel);
   const panel = focusedPanel || (!lastPanel.hidden ? lastPanel : document.querySelector('.floating-panel:not([hidden])'));
@@ -171,6 +174,8 @@ for (const entry of (initialParams.get('layers') || '').split(',')) {
   if (knownLayers.has(id) && ['0', '1'].includes(value)) layerOverrides.set(id, value === '1');
 }
 let currentScene;
+let displayScene; // currentScene with empty vertical bands closed for the selected layers.
+const inspector = createNodeInspector({ canvas, panel: document.querySelector('#node-inspector'), getScene: () => displayScene });
 function syncEvidenceLinks() {
   if (!currentScene) return;
   const params = new URLSearchParams({ scene: currentScene.id });
@@ -180,7 +185,10 @@ function syncEvidenceLinks() {
   document.querySelectorAll('[data-evidence-link]').forEach(link => { link.href = './evidence.html?' + params; });
 }
 function applyLayers(sceneChanged = false) {
-  const { visibleLinks } = setVisibleLayers(canvas, currentScene, selectedLayers);
+  inspector.close();
+  displayScene = compactScene(currentScene, selectedLayers);
+  renderScene(canvas, displayScene);
+  const { visibleLinks } = setVisibleLayers(canvas, displayScene, selectedLayers);
   document.querySelector('#layer-count').textContent = `${(currentScene.layers || []).filter(layer => selectedLayers.has(layer.id)).length} / ${(currentScene.layers || []).length}`;
   document.querySelectorAll('#layer-controls input').forEach(input => { input.checked = selectedLayers.has(input.value); });
   const notes = document.querySelector('#layer-notes');
@@ -194,6 +202,8 @@ function applyLayers(sceneChanged = false) {
   document.querySelector('.legend-radio-item').hidden = !currentScene.links.some(link => visibleLinks.has(link.id) && link.kind === 'radio');
   document.querySelector('.legend-plain-item').hidden = !currentScene.links.some(link => visibleLinks.has(link.id) && link.kind === 'plain');
   document.querySelector('.legend-proposed-item').hidden = !currentScene.links.some(link => visibleLinks.has(link.id) && link.kind === 'proposed');
+  const routeLinks = new Set((currentScene.animation?.packets || []).flatMap(flow => flow.routes.flat()).map(segment => typeof segment === 'string' ? segment : segment.linkId));
+  document.querySelector('#encapsulation-legend').hidden = !currentScene.links.some(link => link.encapsulation && routeLinks.has(link.id) && visibleLinks.has(link.id));
   document.querySelector('#socket-legend').hidden = !canvas.querySelector('[data-socket-id]:not([hidden])');
   syncEvidenceLinks();
   if (sceneChanged) playback.setScene(currentScene, visibleLinks);
@@ -259,6 +269,15 @@ function renderBeats(beats = []) {
 }
 
 const playButton = document.querySelector('#scene-play');
+const sceneProgress = document.querySelector('#scene-progress');
+function focusScene(scene) {
+  if (!scene?.focusNodeId) return;
+  requestAnimationFrame(() => {
+    if (canvas.dataset.sceneId !== scene.id) return;
+    const target = [...canvas.querySelectorAll('[data-node-id]')].find(node => node.dataset.nodeId === scene.focusNodeId);
+    if (target && !target.hasAttribute('hidden')) target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+  });
+}
 const playbackStatus = document.querySelector('#playback-status');
 const playback = createPlaybackController({
   canvas,
@@ -267,6 +286,7 @@ const playback = createPlaybackController({
     controller.next();
     return true;
   },
+  onProgress: fraction => sceneProgress.style.setProperty('--progress', fraction.toFixed(4)),
   onStateChange: state => {
     playButton.textContent = state.playing ? '暫停' : '播放';
     playButton.setAttribute('aria-pressed', String(state.playing));
@@ -281,6 +301,7 @@ playButton.addEventListener('click', () => {
   else {
     if (playback.getState().finished) controller.reset();
     playback.play();
+    if (currentScene.animation) focusScene(currentScene); // Bring the moving part of the canvas into view.
   }
 });
 
@@ -309,13 +330,8 @@ const controller = createSceneController(scenes, ({ scene, index, total, canPrev
   updatePanel('interfaces', scene.interfaces, () => renderInterfaces(scene.interfaces));
   document.querySelector('#claim-preview').textContent = `${scene.claim.status} · ${scene.claim.label || scene.claim.title}`;
   updatePanel('layers', scene.layers, () => renderLayerControls(scene.layers));
-  renderScene(canvas, scene);
   applyLayers(true);
-  if (scene.focusNodeId) requestAnimationFrame(() => {
-    if (canvas.dataset.sceneId !== scene.id) return;
-    const target = [...canvas.querySelectorAll('[data-node-id]')].find(node => node.dataset.nodeId === scene.focusNodeId);
-    if (target && !target.hasAttribute('hidden')) target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
-  });
+  focusScene(scene);
 });
 sceneSelect.addEventListener('change', () => { playback.pause(); controller.goTo(Number(sceneSelect.value)); });
 previous.addEventListener('click', () => { playback.pause(); controller.previous(); });
@@ -337,3 +353,12 @@ const initialIndex = scenes.findIndex(scene => scene.id === initialParams.get('s
 if (initialIndex >= 0) controller.goTo(initialIndex);
 setInterfacesVisible(initialParams.get('ip') === '1');
 setExplanationVisible(initialParams.get('notes') === '1');
+
+const fitButton = document.querySelector('#canvas-fit');
+fitButton.addEventListener('click', () => {
+  const fit = fitButton.getAttribute('aria-pressed') !== 'true';
+  fitButton.setAttribute('aria-pressed', String(fit));
+  fitButton.textContent = fit ? '放大並左右捲動' : '縮小至符合寬度';
+  document.querySelector('.canvas-scroll').dataset.fit = String(fit);
+  inspector.close();
+});

@@ -51,7 +51,7 @@ const radioBase = {
   }),
   links: lab02.links.filter(link => link.id !== 'sgi-mb-collapsed').map(link =>
     serviceLinks.has(link.id) ? { ...link, layers: ['service'] }
-    : link.id === 'sgi-nat' ? { ...link, via: [{ x: 710, y: 268 }, { x: 710, y: 800 }, { x: 432, y: 800 }], labelAt: { x: 575, y: 800 } } : link),
+    : link.id === 'sgi-nat' ? { ...link, via: [{ x: 710, y: 268 }, { x: 710, y: 800 }, { x: 432, y: 800 }], labelAt: { x: 590, y: 800 } } : link),
   evidenceFootnote: 'RF Gate 目前是教學檢查清單；不能由歷史 ZeroMQ、Lab02 播放或拓樸圖推論 B210 OTA 通過。',
   interfaces: [...lab02.interfaces, {
     title: 'USRP B210 / OTA · 規劃位置', basis: 'NOT_TESTED · 完整 B210 OTA 端到端目標測試',
@@ -66,9 +66,9 @@ const physicalNodes = [
   { id: 'b210-ue', label: 'USRP B210', detail: 'Linux2 · UE 端', x: 453, y: 625, kind: 'unverified', layers: ['transport'] }
 ];
 const physicalLinks = [
-  { id: 'enb-b210', source: 'enb-host', target: 'b210-enb', kind: 'sample', label: 'USB 3.0 · 圖例', labelOffsetY: -40, bidirectional: false, layers: ['transport'] },
+  { id: 'enb-b210', source: 'enb-host', target: 'b210-enb', kind: 'sample', label: 'USB 3.0 · 圖例', labelOffsetY: -46, bidirectional: false, layers: ['transport'] },
   { id: 'ota-rf', source: 'b210-enb', target: 'b210-ue', kind: 'radio', label: 'OTA E2E 目標 · NOT_TESTED', labelOffsetY: 42, bidirectional: false, layers: ['transport'] },
-  { id: 'b210-ue-host', source: 'b210-ue', target: 'ue-host', kind: 'sample', label: 'USB 3.0 · 圖例', labelOffsetY: -40, bidirectional: false, layers: ['transport'] }
+  { id: 'b210-ue-host', source: 'b210-ue', target: 'ue-host', kind: 'sample', label: 'USB 3.0 · 圖例', labelOffsetY: -46, bidirectional: false, layers: ['transport'] }
 ];
 const referenceNodes = [
   { id: 'wired-nic-enb', label: 'NIC · eNB 主機', detail: 'Linux1 · 圖例', x: 267, y: 760, kind: 'unverified', layers: ['wired'] },
@@ -78,7 +78,7 @@ const referenceNodeIds = ['wired-nic-enb', 'wired-nic-ue'];
 const referenceLinkIds = ['wired-enb-nic', 'wired-ethernet', 'wired-nic-ue'];
 const referenceLinks = [
   { id: 'wired-enb-nic', source: 'enb-host', target: 'wired-nic-enb', kind: 'config', label: 'NIC', labelOffsetX: -54, bidirectional: false, layers: ['wired'] },
-  { id: 'wired-ethernet', source: 'wired-nic-enb', target: 'wired-nic-ue', kind: 'config', label: '獨立 Ethernet · 圖例', labelOffsetY: 44, bidirectional: false, layers: ['wired'] },
+  { id: 'wired-ethernet', source: 'wired-nic-enb', target: 'wired-nic-ue', kind: 'config', label: '獨立 Ethernet · 圖例', labelOffsetY: -46, bidirectional: false, layers: ['wired'] },
   { id: 'wired-nic-ue', source: 'wired-nic-ue', target: 'ue-host', kind: 'config', label: 'NIC', labelOffsetX: 54, bidirectional: false, layers: ['wired'] }
 ];
 export const rfPhysicalArchitecture = {

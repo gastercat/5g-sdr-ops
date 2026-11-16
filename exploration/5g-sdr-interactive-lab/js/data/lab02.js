@@ -34,7 +34,7 @@ const common = {
     { id: 'app-bmsc', source: 'multicast-source', target: 'bm-sc', kind: 'user', label: 'Application · 來源', labelOffsetY: 44, bidirectional: false, layers: ['service'] },
     { id: 'bmsc-sgi-mb', source: 'bm-sc', target: 'sgi-mb', kind: 'user', label: '參考角色路徑', labelAt: { x: 550, y: -86 }, bidirectional: false, layers: ['service'] },
     { id: 'sgi-mb-gw', source: 'sgi-mb', target: 'mbms-gw', kind: 'user', label: 'SGI_MB · sgi_mb', via: [{ x: 252, y: -42 }], labelAt: { x: 342, y: -92 }, bidirectional: false, layers: ['service'] },
-    { id: 'm1', source: 'mbms-gw', target: 'enb', kind: 'user', label: 'M1 · GTP-U', labelOffsetX: 48, bidirectional: false }
+    { id: 'm1', source: 'mbms-gw', target: 'enb', kind: 'user', label: 'M1 · GTP-U', labelOffsetX: 48, encapsulation: 'GTP-U', bidirectional: false }
   ],
   interfaces: [
     ...architecture.interfaces.map(item => item.title === 'UE IP · tun_srsue' ? { ...item, basis: 'Lab02 歷史人工報告 · 位址轉換', endpoints: ['初始 UE：172.16.0.2/24', 'controlled recovery 後 UE：172.16.0.3/24'], note: '兩個 session observation 分別保留，不合併成固定配置。參考圖的 174.16.0.2/24 與 Repo 報告的 172.16.0.2/24 不同；此處保留報告並明列差異，不宣稱目前 Runtime 位址。TUN 沒有固定 TCP / UDP Port。', sources: [{ label: 'Teaching Extension · TE-01', reference: playbackRecord }] } : item),
@@ -49,7 +49,7 @@ const common = {
   ]
 };
 const serviceLinks = ['sgi-mb-collapsed', 'app-bmsc', 'bmsc-sgi-mb', 'sgi-mb-gw', 'm1', 'embms-radio'];
-const radioLink = { id: 'embms-radio', source: 'enb', target: 'ue', kind: 'user', label: 'eMBMS · MCH / MTCH', via: [{ x: 252, y: 232 }, { x: 82, y: 232 }], labelAt: { x: 165, y: 254 }, bidirectional: false };
+const radioLink = { id: 'embms-radio', source: 'enb', target: 'ue', kind: 'user', label: 'eMBMS · MCH / MTCH', via: [{ x: 252, y: 232 }, { x: 82, y: 232 }], labelAt: { x: 145, y: 254 }, bidirectional: false };
 const delivery = { ...common, links: [...common.links, radioLink] };
 export const lab02Scenes = [
   {

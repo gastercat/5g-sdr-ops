@@ -1,6 +1,11 @@
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const NODE_WIDTH = 132;
 const NODE_HEIGHT = 64;
+// Arrowheads are a fixed size in canvas units, so thick and thin links get the same head.
+const ARROW_SIZE = 11;
+const ARROW_REF_X = 1;
+const ARROW_REACH = (10 - ARROW_REF_X) * ARROW_SIZE / 10;
+const SOCKET_INSET = 6;
 
 function element(name, attributes = {}) {
   const node = document.createElementNS(SVG_NS, name);
@@ -8,27 +13,34 @@ function element(name, attributes = {}) {
   return node;
 }
 
-function addMarker(defs, id, direction) {
+// The tip sits ARROW_REACH beyond the end of the stroke; addLink shortens the stroke by the
+// same amount, so the tip lands exactly on the node edge instead of underneath the node box.
+function addMarker(defs, id) {
   const marker = element('marker', {
-    id, viewBox: '0 0 10 10', refX: direction === 'start' ? 2 : 8,
-    refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse',
-    markerUnits: 'strokeWidth'
+    id, viewBox: '0 0 10 10', refX: ARROW_REF_X,
+    refY: 5, markerWidth: ARROW_SIZE, markerHeight: ARROW_SIZE, orient: 'auto-start-reverse',
+    markerUnits: 'userSpaceOnUse'
   });
-  marker.append(element('path', { d: 'M 0 1 L 9 5 L 0 9 z', class: 'marker-shape marker-shape--' + id.split('-')[1] }));
+  marker.append(element('path', { d: 'M 0 0.5 L 10 5 L 0 9.5 z', class: 'marker-shape marker-shape--' + id.split('-')[1] }));
   defs.append(marker);
+}
+
+// Moves `point` toward `toward`, never past 35% of the segment so short links keep a shaft.
+function pullBack(point, toward, distance) {
+  const dx = toward.x - point.x;
+  const dy = toward.y - point.y;
+  const length = Math.hypot(dx, dy);
+  if (length === 0) return { ...point };
+  const step = Math.min(distance, length * 0.35) / length;
+  return { x: point.x + dx * step, y: point.y + dy * step };
 }
 
 function buildDefs(defs) {
   defs.replaceChildren();
-  for (const [id, direction] of [
-    ['arrow-user-start', 'start'], ['arrow-user-end', 'end'],
-    ['arrow-control-start', 'start'], ['arrow-control-end', 'end'],
-    ['arrow-sample-start', 'start'], ['arrow-sample-end', 'end'],
-    ['arrow-radio-start', 'start'], ['arrow-radio-end', 'end'],
-    ['arrow-config-start', 'start'], ['arrow-config-end', 'end'],
-    ['arrow-proposed-start', 'start'], ['arrow-proposed-end', 'end'],
-    ['arrow-plain-start', 'start'], ['arrow-plain-end', 'end']
-  ]) addMarker(defs, id, direction);
+  for (const kind of ['user', 'control', 'sample', 'radio', 'config', 'proposed', 'plain']) {
+    addMarker(defs, 'arrow-' + kind + '-start');
+    addMarker(defs, 'arrow-' + kind + '-end');
+  }
 }
 
 function edgePoint(node, toward) {
@@ -73,7 +85,8 @@ function labelWidth(text) {
 export function addNode(layer, node) {
   const group = element('g', {
     class: 'node-group', 'data-node-id': node.id, 'data-state': node.state || 'active',
-    role: 'group', 'aria-label': node.label + (node.detail ? ', ' + node.detail : '')
+    role: 'button', tabindex: 0, 'aria-expanded': 'false', 'aria-controls': 'node-inspector',
+    'aria-label': node.label + (node.detail ? ', ' + node.detail : '') + '；顯示連線與端點'
   });
   const box = element('rect', {
     x: node.x - NODE_WIDTH / 2, y: node.y - NODE_HEIGHT / 2,
@@ -113,16 +126,28 @@ export function addLink(linkLayer, labelLayer, link, nodeById) {
   const start = edgePoint(source, via[0] || targetOffset);
   const end = edgePoint(target, via[via.length - 1] || sourceOffset);
   const marker = 'arrow-' + link.kind;
+  const hasStartArrow = link.bidirectional !== false;
+  const route = [start, ...via, end];
+  const drawn = [...route];
+  if (hasStartArrow) drawn[0] = pullBack(start, route[1], ARROW_REACH);
+  drawn[drawn.length - 1] = pullBack(end, route[route.length - 2], ARROW_REACH);
   const geometry = via.length ? {
-    points: [start, ...via, end].map(point => point.x + ',' + point.y).join(' ')
-  } : { x1: start.x, y1: start.y, x2: end.x, y2: end.y };
+    points: drawn.map(point => point.x + ',' + point.y).join(' ')
+  } : { x1: drawn[0].x, y1: drawn[0].y, x2: drawn[1].x, y2: drawn[1].y };
   const line = element(via.length ? 'polyline' : 'line', {
     ...geometry,
     class: 'link-path link-path--' + link.kind,
     'data-link-id': link.id, 'data-state': link.state || 'active',
-    ...(link.bidirectional === false ? {} : { 'marker-start': 'url(#' + marker + '-start)' }),
+    'data-source': link.source, 'data-target': link.target,
+    ...(link.encapsulation ? { 'data-encapsulation': link.encapsulation } : {}),
+    ...(hasStartArrow ? { 'marker-start': 'url(#' + marker + '-start)' } : {}),
     'marker-end': 'url(#' + marker + '-end)'
   });
+  // Socket markers sit just inside the node edge, clear of the arrowhead that touches it.
+  line.socketPoints = {
+    source: pullBack(start, route[1], -SOCKET_INSET),
+    target: pullBack(end, route[route.length - 2], -SOCKET_INSET)
+  };
   linkLayer.append(line);
 
   const x = link.labelAt?.x ?? ((start.x + end.x) / 2 + (link.labelOffsetX || 0));
@@ -228,7 +253,7 @@ export function renderScene(svgRoot, scene) {
     for (const socket of scene.sockets || []) {
       const line = state.links.get(socket.linkId)?.element;
       if (!line) continue;
-      const point = line.getPointAtLength(socket.endpoint === 'source' ? 0 : line.getTotalLength());
+      const point = line.socketPoints[socket.endpoint === 'source' ? 'source' : 'target'];
       const group = element('g', { 'data-socket-id': socket.id });
       const title = element('title'); title.textContent = socket.label;
       group.append(title, element('rect', { x: point.x - 5, y: point.y - 5, width: 10, height: 10, rx: 1, class: 'socket-marker' }));
