@@ -57,9 +57,9 @@
 | --- | --- |
 | 類 LEO 劣化模型 `leo_profile.py` | 已實作；參數為 `NEEDS_CONFIRMATION` 的假設值 |
 | 離線環境 `trace_env.py`、策略 `policies.py`、比較 `evaluate.py` | 已實作，有單元測試 |
-| 線上傳送端 `adaptive_send.py` | 已實作，僅在本機 loopback 測試 |
-| 在 OTA 上重錄路徑 A 的逐封包紀錄 | 未執行；需當次 Owner 授權 |
-| 在 OTA 上比較各策略，每個策略至少 3 次 | 未執行；需當次 Owner 授權 |
+| 線上傳送端 `adaptive_send.py` | 已實作；2026-11-16 起另有實驗主機上的執行紀錄 |
+| 在 OTA 上重錄路徑 A 的逐封包紀錄 | 2026-11-16 執行一次，見 [TER](../../docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml) |
+| 在 OTA 上比較各策略，每個策略至少 3 次 | 2026-11-16 於兩組增益各 3 輪；路徑 A 穩定，自適應策略未顯示效益，見同一份 TER |
 | 即時頁面顯示每個封包的決策 | 已實作於 `../lab03-dualpath-tools/live_viz.py`，僅在本機預演模式執行過 |
 | Interactive Lab 結果頁支援 `adaptive` 模式 | 未實作 |
 | 測試加入 `docs-ci` workflow | 未實作 |
@@ -87,7 +87,7 @@
 ### 2026-11-19 至 2026-12-03
 
 - 加強模型：預測下一次中斷，並與 LinUCB 比較。
-- 分段調低 OTA 增益，取得真實的無線劣化。
+- 分段調低 OTA 增益，取得真實的無線劣化。2026-11-16 已試：可連線的增益最多只有少量劣化，不足以區分各策略，需改用其他方式。
 - 現場展示：即時頁面顯示決策，並準備離線重播。
 - A0 海報、7 分鐘講稿與排練。
 - 平行支線，不阻擋主線：Open5GS＋UERANSIM 的虛擬 5G SA；有餘力再以 Open5GS EPC 取代 srsEPC。
