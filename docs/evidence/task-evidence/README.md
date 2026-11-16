@@ -111,3 +111,6 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 - [`2026-11-12-lab03-b210-ota-baseline-split-dup.yaml`](2026-11-12-lab03-b210-ota-baseline-split-dup.yaml)：
   Lab03 B210 OTA 下行隨發射增益的分段觀察、一次 Attach 與雙向 ICMP、OTA 單路 Baseline，
   以及應用層 Split／Duplication 量測；不含 PDCP 層實作，不建立 Owner 驗收或後續 Runtime 授權。
+- [`2026-11-16-ai-dualpath-ota-policy-comparison.yaml`](2026-11-16-ai-dualpath-ota-policy-comparison.yaml)：
+  路徑 A（LTE OTA）逐封包 RTT 重錄一次、七種雙路徑策略於 OTA 上各 3 輪，以及重播該紀錄的離線比較；
+  路徑 B 的類 LEO 特性為傳送端模擬，路徑 A 未劣化，不展示自適應策略的效益，也不建立 Owner 驗收。

@@ -1,6 +1,6 @@
 # 5G SDR Operations Progress
 
-更新日期：2026-11-12（Lab03 OTA delta；其餘段落的 Runtime evidence 日期維持原紀錄）
+更新日期：2026-11-16（AI 雙路徑 OTA delta；其餘段落的 Runtime evidence 日期維持原紀錄）
 文件角色：`CURRENT STATE / DELTA-ONLY NAVIGATION`
 
 ## Documentation Navigation Delta
@@ -14,6 +14,35 @@
 - `KNOWN / DOCUMENTATION-ONLY`：本次 split 已建立 Delivery／Exploration navigation；
   未修改 Runtime、engineering claims 或 implementation authority。後續內容修訂與 validation
   仍需另立 Work Unit。
+
+## AI 雙路徑 OTA Delta｜2026-11-16
+
+Exploration 範圍，不改變 Lab01～03 的交付條件。Owner 於本輪啟動 Runtime 並同意當次的
+非 root 應用層量測；Execution provenance 見
+[AI 雙路徑 OTA TER](docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml)；
+原始證據在 Repo 外，尚無可攜共享 locator。
+
+- `OBSERVED / BOUNDED`：路徑 A（LTE OTA）逐封包 RTT 重錄一次，1000／1000，中位數 16.1 ms、
+  p95 26.2 ms；30 ms 內 99.4%。單一短試次，來回時間。
+- `OBSERVED / APPLICATION_LAYER_ONLY`：七種策略於 OTA 上各 3 輪、每輪 3000 個封包，路徑 B 的
+  類 LEO 特性為傳送端模擬。路徑 A 穩定，只走 A 已達 99.87%（30 ms）與 100%（50 ms）；
+  自適應策略未顯示效益，LinUCB 沒有勝過門檻規則。
+- `OBSERVED`：路徑 A 間歇使用時 RTT 較高（2:3 分流時中位數約 22 ms、最大約 120 ms）；
+  離線環境沒有重現這個效應。原因屬推論。
+- `OBSERVED / BOUNDED`：Owner 分段調低發射增益後，eNB／UE 為 65／65、59／59、59／57、59／53
+  的單路探測皆 1000／1000 且連續傳送時無穩態劣化；59／53 另有七種策略各 3 輪與一份
+  15000／15000 的 5 分鐘紀錄（最大 38.2 ms），結論與增益 70 相同。
+- `REPORTED_ONLY`：55／55 無法 Attach、57／57 撐不住、59／55 出現 Radio-Link failure 警告。
+- `OBSERVED / BOUNDED`：eNB 58／UE 53 的 5 分鐘紀錄有一次約 1.1 秒的中斷（17 個遺失）；
+  eNB 57／UE 53 的 5 分鐘紀錄無遺失、有 4 個輕微延遲群集。以這兩份紀錄離線重播，
+  各策略差距不超過 0.25 個百分點。中斷僅觀察到一次，原因未查。
+- `OBSERVED`：閒置約 30 秒後連線被釋放，下一次傳送先以 Service Request 重建，與每次探測開頭
+  約 120～220 ms 的停頓一致。55／55 嘗試期間核網未收到 UE 的任何訊息；53／53 可連線，
+  UE 同步階段約等 55 秒。55／55 再試一次時數秒內 Attach，約 5 秒後出現一次
+  Radio Link Failure 轉為閒置，有流量時可重建並正常傳送，5 分鐘紀錄 15000／15000 無中斷；先前那次失敗的原因仍未知。
+- `NOT TESTED`：真實劣化的路徑 A 上的線上策略比較。
+- `PENDING / OWNER_DECISION_REQUIRED`：是否以其他方式取得真實劣化。本紀錄不授權新的
+  Runtime 或 RF 執行；最後一次檢查（10:51Z）時 Runtime 仍由 Owner 維持執行。
 
 ## Lab03 B210／OTA Delta｜2026-11-12
 

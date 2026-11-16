@@ -1,0 +1,206 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "AI-DUALPATH-2026-11-16-OTA-TRACE-AND-POLICY-COMPARISON"
+  source_thread: "Claude Code session 34017d6f-fa35-4332-bfd9-d95b35a93a7b"
+  date_or_range: "2026-11-16 08:23Z–10:51Z（16:23–18:51 Asia/Taipei）"
+  executor: "Claude agent：遠端唯讀檢查、ICMP、非 root 的 UDP 探測與策略傳送端、離線分析。Owner（現場）：啟動與多次重啟 EPC／eNB／UE，並以命令列設定各段發射增益；Agent 未啟動、停止或調整任何 Runtime 程序。"
+  historical_or_current: "當日 Runtime 與 RF 觀察；最後一次檢查時 Runtime 仍由 Owner 維持執行，不代表之後的狀態"
+
+authorization:
+  scope:
+    - "Owner 於對話中告知主機、EPC、eNB、UE 與 USRP 已接好，並詢問能否量測實際數據。Agent 依此先執行遠端唯讀檢查，以及兩條路徑各 5 個 ICMP；這 10 個 ICMP 在下一項明確授權之前送出，事前未個別取得核准。"
+    - "Owner 其後明確同意三項：（1）以 11/12 相同條件重錄路徑 A 的逐封包紀錄；（2）在 OTA 上比較七種策略，路徑 B 加上傳送端模擬的類 LEO 特性，每個策略 3 次；（3）以重錄的紀錄重跑離線比較，結果存於 Repo 外。Owner 同時回報籠體已關好。"
+    - "Owner 指定期限 30 ms 與 50 ms 都執行，並同意量測後將紀錄寫入 Repo。"
+    - "Owner 於增益 70 的結果回報後，同意分段調低發射增益繼續量測，並指定這部分只測期限 30 ms。各段增益由 Owner 現場重啟程序設定後逐段告知 Agent；Agent 每段先做唯讀檢查再量測。"
+    - "eNB 59／UE 53 的完整策略比較與 5 分鐘長紀錄：Agent 依上述分段量測的授權自行決定執行並於開始時告知 Owner，事前未就這一段的執行長度另行取得確認。"
+    - "Owner 其後要求量測 eNB 58／UE 53 與 eNB 57／UE 53。58／53 的 20 分鐘長紀錄為 Agent 自行決定延長並於開始時告知 Owner。"
+    - "Owner 回報 53／53 可連線並詢問 55／55 先前為何連不上。Agent 依此讀取兩台主機上所有人可讀的 /tmp/epc.log 與 /tmp/ue.log 的關鍵事件行（未使用 sudo），並在 53／53 執行一次單路探測；讀取 Runtime log 事前未個別取得核准，於同一回合回報。"
+    - "Agent 以 kill 終止自己啟動、因 Owner 重啟 Runtime 而失效的兩個探測程序（見 AD-09）；事前未個別取得核准，於同一回合回報。"
+  allowed_mutations:
+    - "Repo 外本機證據目錄 2026-11-16-AI-Dualpath-OTA/。"
+    - "Repo：本 TER、TER 索引、PROGRESS.md，以及 exploration/ai-dualpath 內與本次結果直接矛盾的狀態敘述。未 commit。"
+  forbidden:
+    - "Agent 不使用 sudo、不輸入或接收密碼；不修改設定檔、/etc/srsran/、網路設定、套件或服務；不啟動或停止 Runtime；不調整發射增益；不在主機上留檔。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "feat/ai-dualpath"
+  start_head: "38edff7b5a1c8ff74c1a092f119d48e4c2012df1"
+  end_head: "38edff7b5a1c8ff74c1a092f119d48e4c2012df1"
+
+evidence:
+  - evidence_id: "AD-01"
+    claim: "量測前 Runtime 已在執行，UE 已取得位址，兩條路徑可達。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "08:23Z Linux1 有 srsepc 與 srsenb（命令列 --rf.tx_gain=70），srs_spgw_sgi 172.16.0.1/24。Linux2 有 srsue（命令列 --rf.tx_gain=70），tun_srsue 172.16.0.2/24。兩台 lsusb 各有一台 B210，srsRAN_4G HEAD 6bcbd9e，Python 3.12.3、NumPy 1.26.4，NTP 已同步，CPU governor 為 powersave。UDP 47003 無監聽者。Linux2 → 172.16.0.1 ICMP 5／5、RTT 29.6／48.0／114.8 ms（min／avg／max）；Linux2 → 192.168.250.11 ICMP 5／5、avg 0.22 ms。"
+    directness: "PRIMARY"
+    confidence: "高；限當次命令輸出。"
+    source_location: "Repo 外 2026-11-16-AI-Dualpath-OTA/00-preflight/；ICMP 輸出僅存於 source_thread"
+    limitations:
+      - "Attach 過程、啟動順序、天線接法與籠體關閉由 Owner 回報，未由 Agent 觀察；Agent 未讀取 Runtime log。"
+      - "enb.conf 的實際路徑由程序的相對路徑參數推定為 pre-lab03-rf/config/，未以程序工作目錄確認。"
+      - "ICMP 的較高 RTT 出現在閒置後的頭幾個封包；與後續連續傳送的差異原因未查。"
+  - evidence_id: "AD-02"
+    claim: "路徑 A（LTE OTA）的逐封包 RTT 已重錄一次，條件與 11/12 Baseline 相同。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "08:28:41Z–08:29:03Z，dualpath_demo.py send --mode baseline --json，1000 個 Packet ID、128 bytes、間隔 20 ms，Linux2 送、Linux1 echo。1000／1000、loss 0%、RTT min 8.9／p50 16.1／mean 17.2／p95 26.2／max 124.5 ms、jitter 3.9 ms。RTT ≤ 30 ms 的比例 99.4%，≤ 50 ms 99.6%。超過 50 ms 的 4 筆為 64.3、84.4、104.5、124.5 ms。echo 端 1000 個不重複 ID，全部由 172.16.0.2 進入 172.16.0.1。"
+    directness: "PRIMARY"
+    confidence: "高；限單一試次。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/01-baseline/"
+    limitations:
+      - "RTT 為傳送端單調時鐘的來回時間，不是單向延遲。約 20 秒、低速率。"
+      - "4 筆離群值相差約 20 ms，等於送出間隔，推論為同一次約 125 ms 的停頓；原因未查。"
+  - evidence_id: "AD-03"
+    claim: "七種策略在 OTA 路徑 A 與模擬類 LEO 路徑 B 上各執行 3 輪。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "08:29Z–09:04Z，30 次執行，每次 3000 個 Packet ID、128 bytes、間隔 20 ms、timeout 200 ms，全部有 summary，傳送與接收 socket 錯誤 0。固定策略（only_a、only_b、split_2_3、dup）每輪一次，以逐封包 RTT 分別計算兩個期限；自適應策略（threshold+guard、linucb、linucb+guard）兩個期限各執行一次。同一輪所有策略使用相同的 --leo-seed（等於輪次 1、2、3）。期限內送達比例，三輪平均（最小–最大），括號後為每封包副本數。期限 30 ms：only_a 99.87（99.80–99.97）1.00；only_b 49.39（27.27–69.90）1.00；split_2_3 61.64（49.00–73.40）1.00；dup 99.91（99.83–99.97）2.00；threshold+guard 99.90（99.87–99.93）1.04；linucb 99.40（98.50–99.93）1.00；linucb+guard 99.60（99.20–99.93）1.05。期限 50 ms：only_a 100.00 1.00；only_b 96.47（92.40–98.57）1.00；split_2_3 97.71（95.17–99.03）1.00；dup 100.00 2.00；threshold+guard 99.91（99.73–100.00）1.04；linucb 100.00 1.00；linucb+guard 99.49（99.37–99.67）1.02。echo 端共 99358 份副本，進入位址與來源位址和路徑標記不符者 0。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；限 3 輪與所述參數。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/02-policies/、02-policies-runs.csv、02-policies-summary.md、02-policies.log、tools/"
+    limitations:
+      - "路徑 B 的延遲與遺失全部是傳送端依 leo_profile.py 模擬（SIMULATED），不是衛星鏈路；其參數仍是 NEEDS_CONFIRMATION 的假設值。被模型判定遺失的副本沒有送上有線網路。"
+      - "路徑 A 在整段期間穩定，未注入也未出現劣化；自適應策略相對 only_a 沒有可改善的空間，本批結果不展示自適應策略的效益。"
+      - "各策略依序執行而非同時執行，面對的路徑 A 不是同一段時間；每個策略每個期限只有 3 次。"
+      - "linucb 於期限 30 ms 的第 2 輪有 29 個 Packet ID 在路徑 A 未回送（2998 送出、2969 回送），同輪其他策略的路徑 A 皆無遺失；原因未查。"
+      - "分流與複製在應用層 UDP，不是 PDCP 層，也不是 nukxURLLC；不代表符合 3GPP URLLC 或 NTN。"
+  - evidence_id: "AD-04"
+    claim: "路徑 A 的 RTT 隨它自己被使用的頻率而變。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "每個封包都走路徑 A 的 9 次執行（only_a、dup 與期限 50 ms 的 linucb，各 3 輪）路徑 A p50 16.1–16.8 ms、max 不超過 38.2 ms；三次 only_a 合計 9000 個封包 p50 16.6／p95 26.1／p99 28.7／max 38.1 ms，超過 30 ms 者 12 個。split_2_3 三輪（每 5 個封包只有前 2 個走 A）路徑 A p50 22.2–22.5 ms、p95 35.2–35.6 ms、max 116.3–120.8 ms。linucb+guard 期限 50 ms 第 1、3 輪（路徑 A 分別送 2548、2244 個）p50 18.0、19.0 ms。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；原因屬推論。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/02-policies-runs.csv"
+    limitations:
+      - "推論為 LTE 上行在閒置後需重新請求排程所致，未以 MAC 層 log 驗證。"
+      - "離線環境的路徑 A（模型與重播）假設各封包的 RTT 與策略無關，沒有重現這個效應。"
+  - evidence_id: "AD-05"
+    claim: "以 AD-02 的紀錄重播路徑 A 的離線比較。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "evaluate.py --trace-a baseline-a.jsonl，5 組種子各 6000 個封包，路徑 B 為模擬類 LEO。期限內送達比例與每封包副本數。stable_a、期限 30 ms：only_a 99.40／1.00，dup 99.58／2.00，threshold+guard 99.36／1.05，linucb 99.37／1.02，linucb+guard 99.38／1.05。degraded_a（路徑 A 另加 20% 時間的模擬劣化）、期限 30 ms：only_a 82.59，dup 88.49／2.00，threshold+guard 88.13／1.26，linucb 86.34／1.04，linucb+guard 87.18／1.13。degraded_a、期限 50 ms：only_a 90.80，dup 99.33／2.00，threshold+guard 98.44／1.09，linucb 97.64／1.05，linucb+guard 97.89／1.06。"
+    directness: "PRIMARY"
+    confidence: "高；相同參數可重現。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/03-offline-replay/"
+    limitations:
+      - "輸出標示 SIMULATED_PROOF_OF_CONCEPT。1000 筆紀錄被循環重播 6 次；degraded_a 的劣化與路徑 B 皆為模擬。"
+      - "evaluate.py 在重播時，情境說明仍印出「path A as measured on 2026-11-12 (model)」；第一行標頭的「replay of baseline-a.jsonl」才是實際來源。本輪未修改程式。"
+      - "LinUCB 在離線與 OTA 兩邊都沒有勝過門檻規則。"
+  - evidence_id: "AD-06"
+    claim: "量測結束時 Runtime 仍在執行，設定檔雜湊未變，主機上沒有留下工具程序。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "09:04:16Z srsepc、srsenb、srsue 的 PID 與 08:23Z 相同（4969、5042、4383）。enb.conf、epc.conf、rb.conf、rr.conf、sib.conf、ue.conf 的 SHA-256 與預檢相同。UDP 47003 無監聽者。Linux2 的 wlo1 於預檢時為 DOWN，結束時為 UP 並取得 172.20.10.12/28。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點的唯讀觀察。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/04-post-check/"
+    limitations:
+      - "wlo1 的狀態變化不是 Agent 的操作，發生時間與原因未查。172.16.0.0/24 與 192.168.250.0/24 仍為直連路由，且 AD-03 的 echo 端位址檢查為 0 筆不符，未觀察到對量測路徑的影響。"
+      - "pgrep 的輸出只比對到檢查命令本身。"
+  - evidence_id: "AD-07"
+    claim: "發射增益分段調低後，路徑 A 在可連線的各段都沒有穩態劣化。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "各段為 Owner 重啟後 Agent 以 ps 觀察到的命令列 --rf.tx_gain（eNB／UE），每段一次 1000 個封包、128 bytes、間隔 20 ms 的單路探測，皆 1000／1000。65／65（09:15Z）：p50 18.0／p95 26.4／max 127.9 ms，≤30 ms 99.3%。59／59（09:20Z）：p50 16.8／p95 26.2／max 119.1 ms，99.5%。59／57（09:26Z）：p50 16.9／p95 26.4／max 221.2 ms，98.7%。59／53（09:32Z）：p50 17.2／p95 26.7／max 220.1 ms，98.7%。超過 30 ms 的封包集中在每次探測的開頭：70／70、65／65、59／59 為前 5～6 個（最長約 120～128 ms），59／57 與 59／53 為前 10～11 個（最長約 220 ms）；其後每次最多 3 個略超過 30 ms（不超過 38.1 ms）。各段設定檔 SHA-256 與預檢相同。UE 位址依序為 172.16.0.2、.3、.5、.7。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；每段限單一短試次。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/05-gain65/、06-gain59/、07-gain-enb59-ue57/、08-gain-enb59-ue53/baseline/"
+    limitations:
+      - "Owner 回報：55／55 無法 Attach；57／57 撐不住；eNB 59／UE 55 出現 Radio-Link failure 警告。這三段 Agent 未觀察，也沒有量測或 log。"
+      - "Owner 曾描述 tx 與 rx 皆調整；Agent 在命令列只觀察到 --rf.tx_gain 的覆寫，未見 rx_gain 覆寫，設定檔雜湊未變。實際接收增益未確認。"
+      - "65／65 與 59／59 沒有執行完整策略比較。開頭停頓的長度與增益沒有一致關係：UE 53 時在 eNB 59 與 57 約 220 ms，在 eNB 58 約 125 ms（見 AD-09）；原因未查。"
+  - evidence_id: "AD-08"
+    claim: "eNB 59／UE 53 下的策略比較與 5 分鐘路徑 A 長紀錄，路徑 A 仍然穩定。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "09:33Z–09:47Z，七種策略各 3 輪、每次 1500 個 Packet ID、期限 30 ms，21 次執行皆有 summary，socket 錯誤 0。期限內送達比例三輪平均（最小–最大）與每封包副本數：only_a 99.89（99.80–100.00）1.00；only_b 43.20（10.93–65.60）1.00；split_2_3 57.91（39.13–71.53）1.00；dup 99.91（99.87–99.93）2.00；threshold+guard 99.64（99.13–99.93）1.04；linucb 99.82（99.80–99.87）1.00；linucb+guard 99.40（98.53–99.87）1.05。echo 端 35872 份副本，位址與路徑標記不符者 0。09:47Z–09:52Z 路徑 A 單路長紀錄：15000／15000、loss 0%、RTT min 8.9／p50 16.6／p95 26.0／max 38.2 ms，≤30 ms 99.83%，超過 30 ms 者 26 個且沒有連續 3 個以上的群集。以該紀錄重播的離線比較（期限 30 ms，5 組種子各 6000 個封包）：stable_a only_a 99.78、dup 99.85、threshold+guard 99.81／1.05、linucb 99.73／1.01、linucb+guard 99.77／1.04；degraded_a only_a 82.35、dup 88.17、threshold+guard 87.94／1.25、linucb 86.61／1.07、linucb+guard 87.10／1.14。09:52:47Z srsenb、srsue PID 與 09:32Z 相同，設定檔雜湊未變，主機上無工具程序。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；限所述參數。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/08-gain-enb59-ue53/"
+    limitations:
+      - "約 19 分鐘內未觀察到 Radio-Link failure 或中斷；不代表這個增益下不會發生。"
+      - "每次 1500 個封包（30 秒），比 AD-03 的 3000 個短，只涵蓋一次模擬換手；兩批的 only_b 與 split_2_3 數字不宜直接比較。"
+      - "AD-03 所列路徑 B 為模擬、各策略依序執行、應用層而非 PDCP 層等限制同樣適用。離線重播的 degraded_a 劣化為模擬。"
+      - "59／53 以上沒有找到穩態劣化；更低的 eNB 增益見 AD-09。"
+  - evidence_id: "AD-09"
+    claim: "eNB 發射增益 58 與 57（UE 53）時路徑 A 出現少量真實劣化：58 有一次約 1.1 秒的中斷，57 有數次輕微的延遲群集。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "58／53：單路探測（10:00Z）1000／1000，p50 17.4／p95 26.3／max 125.5 ms，≤30 ms 99.4%。5 分鐘紀錄（10:00Z–10:05Z）14983／15000、loss 0.113%，p50 16.8／p95 26.0／max 782.6 ms，≤30 ms 99.57%；一次事件在開始後約 27.5 秒，Packet ID 1376–1415 共 40 個延後送達（RTT 由 783 ms 以約 20 ms 遞減至 15 ms，其中 39 個超過 30 ms），ID 1416–1432 共 17 個遺失，全程約 1.14 秒；事件前後 UE 位址（172.16.0.8）與 srsenb、srsue 的 PID 不變。以該紀錄重播的離線比較（期限 30 ms、路徑 A 不加模擬劣化、5 組種子各 15000 個封包）：only_a 99.57、linucb 99.62／1.01、threshold+guard 99.67／1.05、linucb+guard 99.68／1.05、dup 99.76／2.00。57／53：單路探測（10:15Z）1000／1000，p50 17.0／p95 26.3／max 222.3 ms，≤30 ms 98.8%。5 分鐘紀錄（10:15Z–10:20Z）15000／15000、loss 0%，p50 17.1／p95 26.1／max 59.8 ms，≤30 ms 99.67%；4 個延遲群集集中在開始後 108–140 秒，各有 3～12 個封包超過 30 ms，最大 60 ms，無遺失。同樣方式的離線重播：only_a 99.67、linucb 99.67／1.00、threshold+guard 99.68／1.05、linucb+guard 99.66／1.04、dup 99.82／2.00。各段設定檔 SHA-256 與預檢相同；10:20:54Z 主機上無工具程序。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；58 的中斷僅一次，是否隨增益反覆出現未建立。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/09-gain-enb58-ue53/、10-gain-enb57-ue53/、gain-steps-events.txt、tools/events.py"
+    limitations:
+      - "58／53 的 20 分鐘紀錄在約 310 秒時因 Owner 重啟 Runtime（改為 57／53）而中斷，傳送端的逐封包 RTT 未保存。echo 端紀錄顯示這 310 秒收到 15473 個封包，除重啟當下的 5 個之外沒有缺漏，封包到達間隔也沒有超過 80 ms 的空檔；這只反映上行方向，不含 RTT。"
+      - "中斷後 Linux2 的傳送端與 Linux1 的 echo 仍在執行並佔用 UDP 47003。Agent 核對 PID、擁有者與命令列後以 kill 終止這兩個自己啟動的程序（一般使用者，無 sudo）。"
+      - "58／53 與 57／53 沒有執行線上策略比較；上列策略數字為離線重播，路徑 B 為模擬。各策略之間的差距不超過 0.25 個百分點，threshold+guard 與 linucb+guard 相對 only_a 的差距在 57／53 小於種子間的標準差。"
+      - "中斷的原因未查，未讀取 Runtime log；Owner 先前回報 57／57 撐不住，本段 57／53 可連線，兩者差異未解釋。"
+      - "離線重播將超過 200 ms 的副本視為遺失。"
+  - evidence_id: "AD-10"
+    claim: "由 EPC 與 UE 的 log 重建各次連線過程：55／55 那次嘗試期間核網沒有收到 UE 的任何訊息；低增益時 UE 在同步階段的等待時間拉長；閒置約 30 秒後連線會被釋放。"
+    evidence_type: "LOG"
+    exact_observation: "EPC log（srsepc 自 09:12Z 起同一程序）：09:16:37Z eNB 完成 S1 Setup，09:18:37Z 該 eNB context 被刪除，其間沒有任何 Initial UE Message；時間上對應 Owner 回報的 55／55 嘗試（位於 65／65 的 09:15Z 探測與 59／59 的 09:18:52Z Attach 之間）。其餘各次：eNB S1 Setup 後 7～8 秒收到 Attach Request（09:18:52、09:22:35、09:23:52Z）；09:22:36Z 配發 172.16.0.4 後 09:23:37Z eNB context 被刪除（對應 57／57）；09:27:50Z 配發 172.16.0.6 後 09:28:36Z UE 送出 Detach（對應 eNB 59／UE 55）。10:25Z–10:35Z 另有 172.16.0.10～.17 共 8 次 Attach。每次 Attach 或 Service Request 之後若無流量，約 30 秒出現 UE Context Release Request（例如 09:13:23→09:13:53、09:18:52→09:19:22、10:35:33→10:36:03Z）；Agent 各次探測開始時 EPC 都記錄到 Service Request（09:15:01、09:20:10、09:25:35、09:32:27、09:59:34、10:14:46Z）。58／53 長紀錄的中斷時段（約 10:00:30Z）EPC 沒有任何事件。UE log（53／53，srsue 自 10:34:32Z）：10:34:37.1Z 解出 MIB 並找到 PCI 1；之後到 10:35:32.9Z 約 55 秒只有 MAC 的週期性紀錄；10:35:32.94Z 完成 SFN 同步（SNR 13.8 dB）並駐留；10:35:33.02Z 送出一次 PRACH 即完成隨機存取，10:35:33.16Z Attach 成功。其後 RSRP 約 −84～−93 dBm，10:35:30Z–10:38:30Z 間有 1656 筆 out-of-sync 警告，警告當下 SNR −3.1～3.0 dB；10:35:37.99Z 啟動 T310 後 108 ms 恢復同步。53／53 單路探測（10:39Z）：1000／1000，p50 15.6／p95 26.5／max 124.6 ms，≤30 ms 99.2%。"
+    directness: "PRIMARY"
+    confidence: "高（log 內容）；對 55／55 失敗原因的解釋屬推論。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/12-epc-log-timeline/、11-gain-enb53-ue53/；log 原檔留在主機 /tmp，未複製"
+    limitations:
+      - "55／55 那次的 UE log 已被之後的啟動覆寫，無法得知 UE 當時停在哪個階段。推論：該次失敗在無線端、訊令到達核網之前；53／53 的同步階段等了約 55 秒，而 55／55 的 eNB 只開了 2 分鐘，可能尚未完成同步即被停止。不能排除其他一次性原因。"
+      - "各段增益與 EPC 事件的對應依時間順序與 Owner 的回報推定，EPC log 本身不含增益。"
+      - "AD-01、AD-02、AD-07 所述每次探測開頭約 120～220 ms 的停頓，與上述閒置釋放後以 Service Request 重建連線的時間點一致；AD-04 對間歇使用時 RTT 較高的推論不因此得到驗證。"
+      - "保存的摘錄已遮蔽 IMSI、TMSI、NAS MAC 與長十六進位字串；未讀取 user_db.csv、金鑰或設定檔內容。"
+  - evidence_id: "AD-11"
+    claim: "Owner 再次設為 55／55 時 UE 於數秒內 Attach；約 5 秒後出現一次 Radio Link Failure 並轉為閒置，其後有流量時可重建連線並正常傳送。"
+    evidence_type: "LOG"
+    exact_observation: "Owner 要求查看 UE log。srsenb 10:42:42Z、srsue 10:42:48Z 啟動，命令列皆 --rf.tx_gain=55。UE log：10:42:51.24Z 解出 MIB，10:42:51.26Z 完成 SFN 同步（SNR 15.3 dB），一次 PRACH 完成隨機存取，10:42:51.52Z Attach 成功（172.16.0.18）。10:42:56.51Z 偵測到 out-of-sync 並啟動 T310（200 ms），10:42:56.71Z T310 逾時判定 Radio Link Failure，連線重建程序以「Selected cell no longer suitable」結束並進入 RRC_IDLE；10:42:59Z 起重新同步（SNR 14.7～17.7 dB）。連線期間 RSRP 約 −82～−85 dBm，回報的 CQI 為 2～5。單路探測（10:43:55Z–10:44:23Z）：UE 以 Service Request 重建連線（一次 PRACH，約 32 ms 完成），1000／1000，p50 18.0／p95 26.9／max 226.6 ms，≤30 ms 98.4%；超過 30 ms 者為開頭 11 個與零散 5 個。探測期間 UE log 沒有 Radio Link Failure。5 分鐘紀錄（10:45Z–10:50Z）：15000／15000、loss 0%，p50 16.8／p95 26.1／max 122.4 ms，≤30 ms 99.72%；超過 30 ms 者為開頭 11 個（重建連線）、兩個各 3 個封包的群集（最大 34 ms）與零散 25 個。這 5 分鐘內 UE log 沒有 T310、Radio Link Failure 或連線釋放，out-of-sync 警告 58 筆，RSRP −81～−84 dBm，CQI 以 3～5 為主（1～6）。10:51Z srsenb、srsue 的 PID 不變，ue.conf、enb.conf、epc.conf 的 SHA-256 與預檢相同，UDP 47003 無監聽者。"
+    directness: "PRIMARY"
+    confidence: "高（log 與量測）；限單次啟動。"
+    source_location: "2026-11-16-AI-Dualpath-OTA/13-gain-enb55-ue55/"
+    limitations:
+      - "本次 55／55 可連線，未重現 Owner 先前回報的 Attach 失敗；先前那次的原因仍未知，AD-10 的推論未獲驗證也未被否定。同步所需時間在各次啟動間差異很大（本次約 20 ms，53／53 那次約 55 秒）。"
+      - "53／53（AD-10）與本次都在 Attach 完成後約 5 秒出現 out-of-sync；RSRP 未下降而 CQI 偏低，原因未查。"
+      - "55／55 未做策略比較。5 分鐘內路徑 A 無遺失也無中斷，未提供可區分各策略的真實劣化。"
+      - "更正：AD-06、AD-08、AD-09 所稱主機上無工具程序，指沒有 Agent 啟動的程序與 UDP 47003 監聽者。Linux1 上另有一個一般使用者的 python3 live_viz.py（07:26Z 啟動，早於本輪，非 Agent 啟動），整段期間都在；Agent 於 10:51Z 才辨識出來，先前的檢查輸出中已有其 PID。"
+
+mutations:
+  - "兩台主機：Agent 以一般使用者經 SSH 標準輸入執行 dualpath_demo.py 與 adaptive_send.py，在 UDP 47003 收送探測封包；程序結束後無殘留，未寫入任何檔案。"
+  - "Repo 外新增 2026-11-16-AI-Dualpath-OTA/ 證據目錄與其 SHA256SUMS.txt。"
+  - "Repo：新增本 TER，更新 TER 索引、PROGRESS.md 與 exploration/ai-dualpath 的狀態敘述；未 commit。"
+  - "兩台主機：Agent 以 kill 終止自己啟動、因 Runtime 重啟而失效的一個傳送端與一個 echo 程序（見 AD-09）。"
+  - "Runtime 的啟動與各次重啟、發射增益的命令列覆寫與 Linux2 wlo1 的狀態變化皆非 Agent 操作。"
+
+recovered_or_observed_claims:
+  - claim: "路徑 A 的可重播逐封包紀錄已取得一份（1000 個封包）。"
+    status: "OBSERVED"
+    supporting_evidence: ["AD-02"]
+  - claim: "七種策略在 OTA 路徑 A 上各有 3 輪量測；路徑 A 穩定時 only_a 已達 99.87%（30 ms）與 100%（50 ms），自適應策略未顯示效益。"
+    status: "OBSERVED"
+    supporting_evidence: ["AD-03"]
+  - claim: "adaptive_send.py 經 SSH 標準輸入的合併腳本路徑可在實驗主機上執行。"
+    status: "OBSERVED"
+    supporting_evidence: ["AD-03"]
+  - claim: "路徑 A 的 RTT 在間歇使用時較高。"
+    status: "OBSERVED"
+    supporting_evidence: ["AD-04"]
+  - claim: "籠體關閉、天線接法與 Attach 成功。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["AD-01"]
+  - claim: "eNB 發射增益 59～70、UE 發射增益 53～70 的已測設定下，路徑 A 連續傳送時無穩態劣化。"
+    status: "OBSERVED"
+    supporting_evidence: ["AD-02", "AD-03", "AD-07", "AD-08"]
+  - claim: "eNB 58／UE 53 的 5 分鐘內有一次約 1.1 秒的路徑 A 中斷；eNB 57／UE 53 的 5 分鐘內無遺失、有 4 個輕微延遲群集。"
+    status: "OBSERVED"
+    supporting_evidence: ["AD-09"]
+  - claim: "55／55 嘗試期間核網未收到 UE 的任何訊息；閒置約 30 秒後連線被釋放，下一次傳送以 Service Request 重建。"
+    status: "OBSERVED"
+    supporting_evidence: ["AD-10"]
+  - claim: "55／55 無法 Attach、57／57 撐不住、59／55 出現 Radio-Link failure 警告。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["AD-07"]
+  - claim: "在真實劣化的路徑 A 上的線上策略比較。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+
+provenance_gaps:
+  - "Repo 外證據目錄為本機路徑，可攜共享位置 UNKNOWN；SHA256SUMS.txt 為本機完整性索引，不是獨立簽章。"
+  - "除 AD-10 的摘錄外未保存 Runtime log；70／70 至 57／53 各段沒有 RSRP、SNR 或 BLER 等無線端指標。"
+  - "預檢的 ICMP 輸出未存檔。"
+
+stop_point:
+  result: "路徑 A 逐封包紀錄重錄；七種策略於增益 70／70 與 59／53 各 3 輪；八段增益的單路探測與四份 15000 個封包的長紀錄；離線重播完成。eNB 58 與 57 僅有少量真實劣化，各策略差距不超過 0.25 個百分點。10:51Z Runtime 仍由 Owner 維持執行（eNB 55／UE 55）。Owner 驗收 PENDING。"
+  next_authority_required: "以其他方式取得真實劣化、任何新的 Runtime 或 RF 執行、Runtime 停機，以及 commit／push，均需 Owner 另行決定或授權。"
