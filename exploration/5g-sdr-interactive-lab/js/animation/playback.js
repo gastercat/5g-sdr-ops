@@ -5,7 +5,7 @@ const CYCLE_DURATION_MS = 6000;
 const ARRIVAL_HOLD_MS = 1000;
 
 // One clock owns packets and automatic scene navigation. No animation timers live in data or renderer.
-export function createPlaybackController({ canvas, advance, onStateChange }) {
+export function createPlaybackController({ canvas, advance, onStateChange, onProgress = () => {} }) {
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let playing = false, scene, visibleLinks = new Set(), packets = [];
   let frameId = null, lastTime = null, elapsed = 0, lastCycle = -1;
@@ -38,7 +38,7 @@ export function createPlaybackController({ canvas, advance, onStateChange }) {
       const route = flow.routes.find(routeVisible);
       if (!route) continue;
       const duration = plan.alternateArrival && cycle % 2 ? flows[flows.length - 1 - index].durationMs : flow.durationMs;
-      const visual = animatePacket(canvas, flow, route);
+      const visual = animatePacket(canvas, flow, route, { holdMs: ARRIVAL_HOLD_MS });
       if (!visual) continue;
       const packet = { flow, visual, duration, delay: flow.delayMs || 0 };
       packets.push(packet);
@@ -61,8 +61,8 @@ export function createPlaybackController({ canvas, advance, onStateChange }) {
     const cycleTime = elapsed % CYCLE_DURATION_MS;
     for (const packet of packets) {
       const time = cycleTime - packet.delay;
-      if (time < 0 || time > packet.duration + ARRIVAL_HOLD_MS) packet.visual.element.setAttribute('hidden', '');
-      else packet.visual.render(time / packet.duration, time >= packet.duration ? packet.arrivalLabel : null);
+      if (time < 0 || time > packet.duration + ARRIVAL_HOLD_MS) packet.visual.hide();
+      else packet.visual.render(time, packet.duration, time >= packet.duration ? packet.arrivalLabel : null);
     }
   }
   function tick(now) {
@@ -75,6 +75,7 @@ export function createPlaybackController({ canvas, advance, onStateChange }) {
       if (!advance()) { pause(); finished = true; notify(); return; }
     }
     renderPackets();
+    onProgress(elapsed / SCENE_DURATION_MS);
     frameId = requestAnimationFrame(tick);
   }
   function pause() {
@@ -95,6 +96,7 @@ export function createPlaybackController({ canvas, advance, onStateChange }) {
     elapsed = 0; finished = false; lastTime = null;
     clearPackets();
     if (playing) renderPackets();
+    onProgress(0);
     notify();
   }
   function setVisibleLinks(nextVisibleLinks) {
@@ -103,7 +105,7 @@ export function createPlaybackController({ canvas, advance, onStateChange }) {
     if (playing) renderPackets();
     notify();
   }
-  function reset() { pause(); elapsed = 0; finished = false; clearPackets(); notify(); }
+  function reset() { pause(); elapsed = 0; finished = false; clearPackets(); onProgress(0); notify(); }
   reducedMotion.addEventListener('change', () => {
     clearPackets();
     canvas.getAnimations({ subtree: true }).forEach(animation => animation.finish());

@@ -21,11 +21,11 @@ const conceptNodes = [
   { id: 'reliability-dest', label: 'Destination', detail: '接收端', x: 638, y: 665, kind: 'unverified', layers: ['reliability'] }
 ];
 const branchA = [
-  { id: 'to-path-a', source: 'reliability-source', target: 'path-a', kind: 'user', label: 'P1', labelAt: { x: 190, y: 612 }, bidirectional: false, layers: ['reliability'] },
+  { id: 'to-path-a', source: 'reliability-source', target: 'path-a', kind: 'user', label: 'P1', labelAt: { x: 190, y: 596 }, bidirectional: false, layers: ['reliability'] },
   { id: 'from-path-a', source: 'path-a', target: 'reliability-dest', kind: 'user', label: 'Path A', labelAt: { x: 470, y: 608 }, bidirectional: false, layers: ['reliability'] }
 ];
 const branchB = [
-  { id: 'to-path-b', source: 'reliability-source', target: 'path-b', kind: 'user', label: 'P2', labelAt: { x: 190, y: 716 }, bidirectional: false, layers: ['reliability'] },
+  { id: 'to-path-b', source: 'reliability-source', target: 'path-b', kind: 'user', label: 'P2', labelAt: { x: 190, y: 736 }, bidirectional: false, layers: ['reliability'] },
   { id: 'from-path-b', source: 'path-b', target: 'reliability-dest', kind: 'user', label: 'Path B', labelAt: { x: 470, y: 714 }, bidirectional: false, layers: ['reliability'] }
 ];
 const reliabilityIds = ['reliability-source', 'path-a', 'path-b', 'reliability-dest'];

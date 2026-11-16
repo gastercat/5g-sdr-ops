@@ -370,3 +370,50 @@ a { text-underline-offset: 3px; }
   .evidence-item { grid-template-columns: 1fr; }
   .evidence-page main { padding: var(--space-4); }
 }
+
+/* Phase 6: clock-driven packet trail, encapsulation ring, node pulse and scene progress. */
+.packet { --packet: var(--user-plane); }
+.packet[data-kind="control"], .packet[data-kind="plain"] { --packet: var(--control); }
+.packet[data-kind="sample"], .packet[data-kind="radio"] { --packet: var(--sample-plane); }
+.packet[data-kind="proposed"] { --packet: var(--accent); }
+.packet .packet-dot { fill: var(--packet); }
+/* Mixed toward the ink colour so the trail stays visible on a link of the packet's own colour. */
+.packet-trail { fill: color-mix(in srgb, var(--packet) 40%, var(--ink)); }
+.packet-ring { fill: none; stroke: var(--ink); stroke-width: 2px; }
+.packet-label { font-size: 12px; }
+.node-pulse { fill: none; stroke: var(--accent); stroke-width: 2.5px; pointer-events: none; }
+.link-path[data-carrying] { stroke-width: 4.8px; }
+.link-path--control[data-carrying], .link-path--proposed[data-carrying], .link-path--plain[data-carrying] { stroke-width: 3.8px; }
+.legend-ring { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--ink); border-radius: 50%; background: radial-gradient(circle, var(--user-plane) 0 3px, transparent 4px); }
+.scene-progress { height: 3px; background: transparent; }
+.scene-progress i { display: block; height: 100%; background: var(--accent); transform-origin: left center; transform: scaleX(var(--progress, 0)); }
+@media (prefers-reduced-motion: reduce) { .scene-progress { display: none; } }
+
+/* Phase 7: clickable nodes, node inspector, fit-to-width canvas. */
+.node-group { cursor: pointer; }
+.node-group:hover .node-box, .node-group[aria-expanded="true"] .node-box { stroke: var(--accent); stroke-width: 2.5px; }
+.node-group:focus-visible { outline: none; }
+.node-group:focus-visible .node-box { stroke: var(--accent); stroke-width: 3.5px; }
+.architecture-svg[data-inspecting] .node-group:not([data-related]),
+.architecture-svg[data-inspecting] .link-path:not([data-related]),
+.architecture-svg[data-inspecting] [data-link-label-id]:not([data-related]),
+.architecture-svg[data-inspecting] [data-socket-id] { opacity: .22; }
+.architecture-svg[data-inspecting] .node-group[data-related],
+.architecture-svg[data-inspecting] .link-path[data-related],
+.architecture-svg[data-inspecting] [data-link-label-id][data-related] { opacity: 1; }
+.node-inspector { position: fixed; z-index: 25; width: min(340px, calc(100vw - 24px)); max-height: min(60dvh, 460px); display: flex; flex-direction: column; border: 1px solid var(--accent); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+.node-inspector .floating-content { font-size: 14px; }
+.node-inspector h4 { margin: var(--space-4) 0 var(--space-1); font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .04em; color: var(--muted); }
+.node-inspector p { margin: 0 0 var(--space-1); }
+.inspector-detail { color: var(--muted); }
+.inspector-links { margin: 0; padding: 0; list-style: none; }
+.inspector-links li { display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr); gap: var(--space-2); padding-block: 3px; border-top: 1px solid var(--line); }
+.inspector-peer, .inspector-location, .inspector-interface { font-weight: 650; }
+.inspector-interface { margin-top: var(--space-2) !important; }
+.architecture-svg { min-width: min(920px, max(100%, 640px)); }
+.canvas-hint { display: block; }
+.canvas-fit-row { display: none; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-3); margin: 0 0 var(--space-2); color: var(--muted); font-size: 14px; }
+.canvas-fit-row button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
+.canvas-fit-row button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--page); }
+.canvas-scroll[data-fit="true"] .architecture-svg { min-width: 0; }
+@media (max-width: 730px) { .canvas-fit-row { display: flex; } }

@@ -42,11 +42,11 @@ const lab01 = {
     { id: 'uu-control', source: 'ue', target: 'enb', kind: 'control', label: 'RRC', parallelOffset: 12, labelOffsetY: 44 },
     { id: 's1-mme', source: 'enb', target: 'mme', kind: 'control', label: 'S1-MME · S1AP / SCTP', labelOffsetX: -48 },
     { id: 's11', source: 'mme', target: 'sgw', kind: 'control', label: 'S11 · GTP-C', labelOffsetX: 48 },
-    { id: 's1-u', source: 'enb', target: 'sgw', kind: 'user', label: 'S1-U · GTP-U', labelOffsetY: -54 },
+    { id: 's1-u', source: 'enb', target: 'sgw', kind: 'user', label: 'S1-U · GTP-U', labelOffsetY: -54, encapsulation: 'GTP-U' },
     { id: 'sgw-pgw', source: 'sgw', target: 'pgw', kind: 'user', label: 'GTP-U', labelOffsetY: -54 },
     { id: 'pgw-tun', source: 'pgw', target: 'tun-sgi', kind: 'user', label: 'SGi TUN', labelOffsetX: 49 },
     { id: 'sgi', source: 'tun-sgi', target: 'internet', kind: 'user', label: 'SGi', via: [{ x: 704, y: 268 }, { x: 704, y: 588 }], labelAt: { x: 684, y: 570 } },
-    { id: 'mme-hss', source: 'mme', target: 'hss', kind: 'control', label: '內部查詢', labelOffsetY: -36 },
+    { id: 'mme-hss', source: 'mme', target: 'hss', kind: 'control', label: '內部查詢', labelOffsetY: -46 },
     { id: 'hss-db', source: 'user-db', target: 'hss', kind: 'config', label: '讀取檔案', bidirectional: false },
     { id: 'sample-plane', source: 'enb-host', target: 'ue-host', kind: 'sample', label: 'Ethernet · ZMQ / ZeroMQ radio samples', labelOffsetY: 43 }
   ],
