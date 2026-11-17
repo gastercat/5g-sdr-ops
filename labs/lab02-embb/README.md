@@ -10,6 +10,19 @@
 結果。現有材料尚未提供完整學生手冊、已核准最小 acceptance criteria 或功能完成證據。
 Protocol-level 深度分析、完整 packet archaeology 與額外 showcase 不自動成為最低交付。
 
+**學生手冊 v0.2 排版稿：**[student-manual-humanized-v0.2.md](student-manual-humanized-v0.2.md)
+（`DRAFT / HUMAN REVIEW REQUIRED`）以 v0.1 為底，內容與界線不變，改為一步一卡的短段落排版；尚未取代 v0.1。
+
+**設定檔位置：**學生手冊改為使用 Lab02 專用資料夾 `/etc/srsran/lab02/`（含 MBSFN 版 `sib.conf`），
+與 Lab01 會逐組修改的 `/etc/srsran/*.conf` 分開；各元件從該資料夾啟動。此路徑配置尚未經 Runtime
+驗證，Instructor provisioning 時須確認所有被引用的檔案都在資料夾內，以及 `epc.conf` 的 `db_file`
+指向哪一份 subscriber database。
+
+**Sample Plane 位址：**學生手冊與 calibration sidecar 由固定 `10.0.0.1/24`／`10.0.0.2/24` 與歷史
+USB adapter 介面名稱，改為與 Lab01 相同的教室規劃 `10.0.<排>.<電腦編號>/24` 及本次確認的介面變數。
+`/etc/srsran/lab02/` 內 `enb.conf`／`ue.conf` 的 ZeroMQ `rx_port` 由 Instructor 依各組位址設定。
+此配置尚未經 Runtime 驗證，`NOT VALIDATED`。
+
 ## 歷史技術目標與待確認筆記
 
 以下保留原始架構、parser／PCAP 方向及 `NEEDS_CONFIRMATION`；不是 current validated
