@@ -9,10 +9,11 @@
 開始前請先確認：
 
 - 兩台是核准用於 Lab02 的專用 host，學生已獲得本次實驗所需的 `sudo` 權限。
-- `/etc/srsran/epc.conf`、`mbms.conf`、`enb.conf`、`ue.conf` 已由助教準備並確認可用。學生不需在本實驗中修改設定或處理使用者加密。
-- 兩台 host 的 Sample Plane 介面名稱與本手冊列出的介面一致；不一致時先停止，由助教協助更新步驟。
+- Lab02 專用設定資料夾 `/etc/srsran/lab02/` 內的 `epc.conf`、`mbms.conf`、`enb.conf`、`ue.conf`，以及 `enb.conf` 引用的 MBSFN 版 `sib.conf`、`rr.conf`、`rb.conf`，已由助教準備並確認可用；不與 Lab01 的 `/etc/srsran/*.conf` 共用。學生不需在本實驗中修改設定或處理使用者加密。
+- 已依第 2 節確認本組 Sample Plane 位址（`10.0.<排>.<電腦編號>/24`）與本次介面名稱；不確定時先停止，由助教協助確認。
+- Instructor 已依本組位址設定 `/etc/srsran/lab02/enb.conf` 與 `ue.conf` 的 ZeroMQ `rx_port`：eNB 指向 `tcp://<LINUX2_SAMPLE_IP>:2001`，UE 指向 `tcp://<LINUX1_SAMPLE_IP>:2000`。學生不自行修改。
 - 確認`srsepc`、`srsmbms`、`srsenb`、`srsue`、`socat`、`ffmpeg` 與 `ffplay` 已可用。此手冊不包含安裝步驟；Repo 未固定本次 Teaching Extension 的 OS／工具版本與設定檔雜湊。
-- 助教已在 `/etc/srsran/ue.conf` 預先準備 UE MAC-PCAP 設定：`[pcap]` 下為 `enable = mac` 與 `mac_filename = /tmp/ue_mac.pcap`。學生以本次 Runtime 產生的 UE MAC capture 作為主要協定觀察證據；不自行修改設定。
+- 助教已在 `/etc/srsran/lab02/ue.conf` 預先準備 UE MAC-PCAP 設定：`[pcap]` 下為 `enable = mac` 與 `mac_filename = /tmp/ue_mac.pcap`。學生以本次 Runtime 產生的 UE MAC capture 作為主要協定觀察證據；不自行修改設定。
 - 若課程需要對照範例或離線備援，導師可另提供標示清楚的 **Lab02 Reference Capture**（B.3D／B.3D.1 使用的 finalized Session B capture）。Reference Capture 不能代替學生自己的 Runtime capture。
 
 若 Gate 未通過，停止並詢問導師及助教。Recovered 2026 commands 是記錄於本手冊的操作脈絡，並非本次重新執行的結果。
@@ -42,8 +43,25 @@
 
 | 節點 | 本實驗角色 | Sample Plane |
 | --- | --- | --- |
-| Linux1 | EPC、MBMS-GW、eNB、FFmpeg multicast sender | `10.0.0.1/24`，`enxec9a0c14d482` |
-| Linux2 | srsUE、multicast receiver、ffplay | `10.0.0.2/24`，`enxec9a0c14d470` |
+| Linux1 | EPC、MBMS-GW、eNB、FFmpeg multicast sender | `10.0.<排>.<Linux1 電腦編號>/24`，`$LINUX1_SAMPLE_IFACE` |
+| Linux2 | srsUE、multicast receiver、ffplay | `10.0.<排>.<Linux2 電腦編號>/24`，`$LINUX2_SAMPLE_IFACE` |
+
+**Sample Plane 位址規劃（電腦教室）：**Linux1 與 Linux2 是兩台不同電腦上的 VM，位址與 Lab01 相同，使用所在電腦的位置：`10.0.<排>.<電腦編號>/24`（排 1～7，電腦編號為該排的 1～12）。同一組的兩台電腦必須在同一排；排與編號以教室標示為準。介面名稱以本次 `ip -br link` 的輸出為準，不沿用歷史主機的 USB adapter 名稱。
+
+在**兩台主機**都設定同一組數值，之後的指令都使用這些變數：
+
+```bash
+ROW='<排，1～7>'
+LINUX1_PC='<Linux1 所在電腦編號>'
+LINUX2_PC='<Linux2 所在電腦編號>'
+LINUX1_SAMPLE_IP="10.0.${ROW}.${LINUX1_PC}"
+LINUX2_SAMPLE_IP="10.0.${ROW}.${LINUX2_PC}"
+LINUX1_SAMPLE_IFACE='<Linux1 本次確認的 Sample Plane 介面>'
+LINUX2_SAMPLE_IFACE='<Linux2 本次確認的 Sample Plane 介面>'
+echo "$LINUX1_SAMPLE_IP $LINUX2_SAMPLE_IP $LINUX1_SAMPLE_IFACE $LINUX2_SAMPLE_IFACE"
+```
+
+這些變數只存在目前的終端機；開新終端機或重開機後要重新設定。
 
 `tun_srsue` 是 UE 側的接收路徑。兩個 multicast checks 使用同一 group `239.255.1.1`，但使用不同 UDP port：
 
@@ -59,13 +77,13 @@ UE IP 在歷史回報中先記為 `172.16.0.2/24`，controlled eNB／UE recovery
 Linux1：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d482
+ip -4 -o address show dev "$LINUX1_SAMPLE_IFACE"
 ```
 
 Linux2：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d470
+ip -4 -o address show dev "$LINUX2_SAMPLE_IFACE"
 ```
 
 若該節點尚無本實驗所需的位址，再執行對應設定命令。若介面不存在、位址衝突，或你不確定位址由誰設定，先停止並通知 Instructor。
@@ -75,13 +93,13 @@ ip -4 -o address show dev enxec9a0c14d470
 Linux1：
 
 ```bash
-sudo ip address add 10.0.0.1/24 dev enxec9a0c14d482
+sudo ip address add "${LINUX1_SAMPLE_IP}/24" dev "$LINUX1_SAMPLE_IFACE"
 ```
 
 Linux2：
 
 ```bash
-sudo ip address add 10.0.0.2/24 dev enxec9a0c14d470
+sudo ip address add "${LINUX2_SAMPLE_IP}/24" dev "$LINUX2_SAMPLE_IFACE"
 ```
 
 以上是本次 Sample Plane 的暫時 host address 設定，不建立 persistent network profile。既有 incident 曾回報介面重新枚舉後 Sample Plane address 消失；若介面重新出現，先依第 10 節檢查並通知 Instructor。
@@ -91,15 +109,15 @@ sudo ip address add 10.0.0.2/24 dev enxec9a0c14d470
 Linux1：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d482
-ip route get 10.0.0.2
+ip -4 -o address show dev "$LINUX1_SAMPLE_IFACE"
+ip route get "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d470
-ip route get 10.0.0.1
+ip -4 -o address show dev "$LINUX2_SAMPLE_IFACE"
+ip route get "$LINUX1_SAMPLE_IP"
 ```
 
 ### 3.3 驗證雙向 Sample Plane connectivity
@@ -107,13 +125,13 @@ ip route get 10.0.0.1
 Linux1：
 
 ```bash
-ping -c 3 -I 10.0.0.1 10.0.0.2
+ping -c 3 -I "$LINUX1_SAMPLE_IP" "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ping -c 3 -I 10.0.0.2 10.0.0.1
+ping -c 3 -I "$LINUX2_SAMPLE_IP" "$LINUX1_SAMPLE_IP"
 ```
 
 **預期觀察：**兩個位址都出現在指定介面；peer route 選用 Sample Plane；兩個方向都收到 peer 回應。記錄實際封包數與 loss，不抄寫預期值代替結果。
@@ -124,10 +142,13 @@ ping -c 3 -I 10.0.0.2 10.0.0.1
 
 使用四個分開的終端機；每個命令留在前景執行。依序啟動，不要把四個程序串成背景工作。
 
+Lab02 使用獨立的設定資料夾 `/etc/srsran/lab02/`，不使用 Lab01 的 `/etc/srsran/*.conf`。`enb.conf` 以相對路徑引用 `sib.conf`、`rr.conf`、`rb.conf`，所以每個元件啟動前都先 `cd /etc/srsran/lab02`，讓 eNB 讀到本資料夾內的 MBSFN 版 `sib.conf`。資料夾內缺檔時，srsRAN 可能改讀其他位置的同名檔（例如 Lab01 的 `/etc/srsran/sib.conf`），看起來仍能啟動，但不會有 SIB13；因此由 Instructor 確認全部檔案都在本資料夾內，學生不自行補檔或複製。
+
 ### 4.1 Linux1：EPC
 
 ```bash
-sudo /usr/local/bin/srsepc /etc/srsran/epc.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsepc /etc/srsran/lab02/epc.conf
 ```
 
 ### 4.2 Linux1：MBMS-GW
@@ -135,7 +156,8 @@ sudo /usr/local/bin/srsepc /etc/srsran/epc.conf
 確認 EPC 已開始後，在另一個 Linux1 terminal 執行：
 
 ```bash
-sudo /usr/local/bin/srsmbms /etc/srsran/mbms.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsmbms /etc/srsran/lab02/mbms.conf
 ```
 
 ### 4.3 Linux1：eNB
@@ -143,12 +165,13 @@ sudo /usr/local/bin/srsmbms /etc/srsran/mbms.conf
 確認 Instructor 指示的前置程序已開始後，在另一個 Linux1 terminal 執行：
 
 ```bash
-sudo /usr/local/bin/srsenb /etc/srsran/enb.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsenb /etc/srsran/lab02/enb.conf
 ```
 
 ### 4.4 Linux2：Student Runtime Capture 與 UE
 
-由 Instructor 在啟動 UE 前確認 `/etc/srsran/ue.conf` 的 `[pcap]` 區段包含以下設定：
+由 Instructor 在啟動 UE 前確認 `/etc/srsran/lab02/ue.conf` 的 `[pcap]` 區段包含以下設定：
 
 ```ini
 [pcap]
@@ -161,7 +184,8 @@ mac_filename = /tmp/ue_mac.pcap
 eNB 開始後，在 Linux2 terminal 執行：
 
 ```bash
-sudo /usr/local/bin/srsue /etc/srsran/ue.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsue /etc/srsran/lab02/ue.conf
 ```
 
 **預期觀察：**各程序留在運行中的前景終端，並記錄實際啟動、錯誤或中止訊息。Recovered session 回報這四個元件曾成功建立；Repo 沒有保存所有元件可通用的 literal readiness log line。不要只因命令沒有立即返回 shell，就標記該階段成功。
@@ -251,7 +275,7 @@ Teaching Extension evidence 包含 bounded follow-up photo：該照片顯示 ffp
 
 依下列界線檢查並記錄：
 
-1. 在 Linux1 確認 `10.0.0.1/24` 仍在 `enxec9a0c14d482`；在 Linux2 確認 `10.0.0.2/24` 仍在 `enxec9a0c14d470`。
+1. 在 Linux1 確認 `$LINUX1_SAMPLE_IP/24` 仍在 `$LINUX1_SAMPLE_IFACE`；在 Linux2 確認 `$LINUX2_SAMPLE_IP/24` 仍在 `$LINUX2_SAMPLE_IFACE`。
 2. 重新確認 peer route，並依第 3 節確認兩個方向的 Sample Plane connectivity。
 3. 記錄 error 發生時間；查看該時段的 kernel 與 NetworkManager logs，留意 USB Ethernet disconnect、介面 unregister、re-enumeration／重新註冊事件。在使用 systemd 的 host，可用以下唯讀查詢：
 
@@ -278,13 +302,13 @@ Teaching Extension evidence 包含 bounded follow-up photo：該照片顯示 ffp
 Linux1：
 
 ```bash
-sudo ip address del 10.0.0.1/24 dev enxec9a0c14d482
+sudo ip address del "${LINUX1_SAMPLE_IP}/24" dev "$LINUX1_SAMPLE_IFACE"
 ```
 
 Linux2：
 
 ```bash
-sudo ip address del 10.0.0.2/24 dev enxec9a0c14d470
+sudo ip address del "${LINUX2_SAMPLE_IP}/24" dev "$LINUX2_SAMPLE_IFACE"
 ```
 
 6. 檢查兩台目前的 Sample Plane address，並記錄實際結果。不得將本推薦步驟寫成歷史 session 曾逐項執行或由 Codex 驗證。

@@ -8,6 +8,9 @@
    core 流程、protocol observation、Security Lens、troubleshooting 與 final checklist。
    - [Stage 0 環境建置與依賴套件安裝補丁](environment-setup-patch.md)：`DRAFT / NOT VALIDATED`；
      補上手冊 Gate 與 §5.2 未列出的 apt 安裝與檢查指令。
+   - [學生實驗手冊 v0.2 合併稿](student-manual-v0.2.md)：`DRAFT / HUMAN REVIEW REQUIRED`；
+     以 v0.1 候選稿為底，併入 Stage 0 補丁與 2026-11-17 課堂常見錯誤，改為一步一卡的短段落排版；
+     尚未取代上列文件。
 2. [Student Teaching Config](student-config/README.md)：無 Secret 教學設定及 Instructor／TA
    provisioning gate；static review 不等於 isolated Runtime validation。
 3. Instructor／TA 核對 [PROGRESS](../../PROGRESS.md) 與[限制](../../docs/known-limitations.md)。

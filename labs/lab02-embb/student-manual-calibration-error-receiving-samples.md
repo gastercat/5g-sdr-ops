@@ -14,21 +14,23 @@ Sample Plane 檢查先確認兩台 Linux host 目前的位址、peer route 與�
 
 ### 1. 確認位址仍在預期介面
 
+以下指令使用 [Lab02 Student Manual](student-manual.md) 第 2 節設定的 `LINUX1_SAMPLE_IP`、`LINUX2_SAMPLE_IP`、`LINUX1_SAMPLE_IFACE`、`LINUX2_SAMPLE_IFACE` 變數；終端機裡沒有這些變數時先重新設定。
+
 Linux1：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d482
+ip -4 -o address show dev "$LINUX1_SAMPLE_IFACE"
 ```
 
-預期檢查 `10.0.0.1/24` 是否仍在 `enxec9a0c14d482`。
+預期檢查 `$LINUX1_SAMPLE_IP/24` 是否仍在 `$LINUX1_SAMPLE_IFACE`。
 
 Linux2：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d470
+ip -4 -o address show dev "$LINUX2_SAMPLE_IFACE"
 ```
 
-預期檢查 `10.0.0.2/24` 是否仍在 `enxec9a0c14d470`。
+預期檢查 `$LINUX2_SAMPLE_IP/24` 是否仍在 `$LINUX2_SAMPLE_IFACE`。
 
 **Why this check matters：**它回答「本機目前是否仍把本實驗使用的 Sample Plane address 放在預期介面上？」
 
@@ -41,13 +43,13 @@ ip -4 -o address show dev enxec9a0c14d470
 Linux1：
 
 ```bash
-ip route get 10.0.0.2
+ip route get "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ip route get 10.0.0.1
+ip route get "$LINUX1_SAMPLE_IP"
 ```
 
 **Why this check matters：**它回答「Linux 目前打算用哪個 interface 與 source address 前往另一端？」確認結果是否選用對應的 Sample Plane 介面與來源位址。
@@ -61,13 +63,13 @@ ip route get 10.0.0.1
 Linux1：
 
 ```bash
-ping -c 3 -I 10.0.0.1 10.0.0.2
+ping -c 3 -I "$LINUX1_SAMPLE_IP" "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ping -c 3 -I 10.0.0.2 10.0.0.1
+ping -c 3 -I "$LINUX2_SAMPLE_IP" "$LINUX1_SAMPLE_IP"
 ```
 
 **Why this check matters：**從兩端分別送出 ICMP echo，確認每個方向在檢查當下是否有回應；只測一個方向不足以記錄雙向結果。

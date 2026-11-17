@@ -13,10 +13,11 @@
 先由 Instructor 確認以下條件。任何一項不符合，先停止並詢問 Instructor。
 
 - 兩台主機是核准用於 Lab02 的專用主機，且你已取得本次實驗需要的 `sudo` 權限。
-- `/etc/srsran/epc.conf`、`mbms.conf`、`enb.conf`、`ue.conf` 已備妥並確認可用。本實驗不要求學生修改設定或處理使用者加密資料。
-- Sample Plane 介面名稱與第 2 節一致。名稱不同時，由 Instructor 協助確認步驟，不自行替換。
+- Lab02 專用設定資料夾 `/etc/srsran/lab02/` 內的 `epc.conf`、`mbms.conf`、`enb.conf`、`ue.conf`，以及 `enb.conf` 引用的 MBSFN 版 `sib.conf`、`rr.conf`、`rb.conf`，已備妥並確認可用；不與 Lab01 的 `/etc/srsran/*.conf` 共用。本實驗不要求學生修改設定或處理使用者加密資料。
+- 已依第 2 節確認本組 Sample Plane 位址（`10.0.<排>.<電腦編號>/24`）與本次介面名稱。不確定時，由 Instructor 協助確認，不自行替換。
+- Instructor 已依本組位址設定 `/etc/srsran/lab02/enb.conf` 與 `ue.conf` 的 ZeroMQ `rx_port`：eNB 指向 `tcp://<LINUX2_SAMPLE_IP>:2001`，UE 指向 `tcp://<LINUX1_SAMPLE_IP>:2000`。學生不自行修改。
 - `srsepc`、`srsmbms`、`srsenb`、`srsue`、`socat`、`ffmpeg`、`ffplay` 已可使用。本手冊不包含安裝步驟；現有紀錄未固定 Teaching Extension（教學延伸實驗）的 OS／工具版本與設定檔雜湊。
-- Instructor 已準備 UE MAC-PCAP 設定：`/etc/srsran/ue.conf` 的 `[pcap]` 包含 `enable = mac` 與 `mac_filename = /tmp/ue_mac.pcap`。學生不自行修改設定。
+- Instructor 已準備 UE MAC-PCAP 設定：`/etc/srsran/lab02/ue.conf` 的 `[pcap]` 包含 `enable = mac` 與 `mac_filename = /tmp/ue_mac.pcap`。學生不自行修改設定。
 - 如需範例或離線備援，Instructor 可另提供 **Lab02 Reference Capture（Lab02 參考擷取檔）**：B.3D／B.3D.1 使用的 finalized Session B capture（已完成寫入的 Session B 擷取檔）。它是次要參考，不能代替自己的 Runtime capture。
 
 本手冊的操作命令來自 recovered 2026 procedure context（已恢復的 2026 操作脈絡）。它們不是本次文件工作的重跑結果，也不保證在未準備好的環境中成功。
@@ -58,8 +59,25 @@
 
 | 節點 | 本實驗角色 | Sample Plane 位址與介面 |
 | --- | --- | --- |
-| Linux1 | EPC、MBMS-GW、eNB、FFmpeg multicast sender | `10.0.0.1/24`，`enxec9a0c14d482` |
-| Linux2 | srsUE、multicast receiver、ffplay | `10.0.0.2/24`，`enxec9a0c14d470` |
+| Linux1 | EPC、MBMS-GW、eNB、FFmpeg multicast sender | `10.0.<排>.<Linux1 電腦編號>/24`，`$LINUX1_SAMPLE_IFACE` |
+| Linux2 | srsUE、multicast receiver、ffplay | `10.0.<排>.<Linux2 電腦編號>/24`，`$LINUX2_SAMPLE_IFACE` |
+
+**Sample Plane 位址規劃（電腦教室）：**Linux1 與 Linux2 是兩台不同電腦上的 VM，位址與 Lab01 相同，使用所在電腦的位置：`10.0.<排>.<電腦編號>/24`（排 1～7，電腦編號為該排的 1～12）。同一組的兩台電腦必須在同一排；排與編號以教室標示為準。介面名稱以本次 `ip -br link` 的輸出為準，不沿用歷史主機的 USB adapter 名稱。
+
+在**兩台主機**都設定同一組數值，之後的指令都使用這些變數：
+
+```bash
+ROW='<排，1～7>'
+LINUX1_PC='<Linux1 所在電腦編號>'
+LINUX2_PC='<Linux2 所在電腦編號>'
+LINUX1_SAMPLE_IP="10.0.${ROW}.${LINUX1_PC}"
+LINUX2_SAMPLE_IP="10.0.${ROW}.${LINUX2_PC}"
+LINUX1_SAMPLE_IFACE='<Linux1 本次確認的 Sample Plane 介面>'
+LINUX2_SAMPLE_IFACE='<Linux2 本次確認的 Sample Plane 介面>'
+echo "$LINUX1_SAMPLE_IP $LINUX2_SAMPLE_IP $LINUX1_SAMPLE_IFACE $LINUX2_SAMPLE_IFACE"
+```
+
+這些變數只存在目前的終端機；開新終端機或重開機後要重新設定。
 
 EPC 是演進封包核心網路，MBMS-GW 是多媒體廣播多播閘道，eNB 是 LTE 基地臺，UE 是使用者設備。正式名稱會保留在命令與觀察中。
 
@@ -79,16 +97,16 @@ EPC 是演進封包核心網路，MBMS-GW 是多媒體廣播多播閘道，eNB �
 Linux1：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d482
+ip -4 -o address show dev "$LINUX1_SAMPLE_IFACE"
 ```
 
 Linux2：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d470
+ip -4 -o address show dev "$LINUX2_SAMPLE_IFACE"
 ```
 
-**要看什麼：**Linux1 的指定介面是否有 `10.0.0.1/24`，Linux2 是否有 `10.0.0.2/24`。
+**要看什麼：**Linux1 的指定介面是否有 `$LINUX1_SAMPLE_IP/24`，Linux2 是否有 `$LINUX2_SAMPLE_IP/24`。
 
 **何時停止：**介面不存在、位址衝突，或不確定位址由誰設定時，先通知 Instructor。不要把名稱相近的其他介面當成替代品。
 
@@ -99,13 +117,13 @@ ip -4 -o address show dev enxec9a0c14d470
 Linux1：
 
 ```bash
-sudo ip address add 10.0.0.1/24 dev enxec9a0c14d482
+sudo ip address add "${LINUX1_SAMPLE_IP}/24" dev "$LINUX1_SAMPLE_IFACE"
 ```
 
 Linux2：
 
 ```bash
-sudo ip address add 10.0.0.2/24 dev enxec9a0c14d470
+sudo ip address add "${LINUX2_SAMPLE_IP}/24" dev "$LINUX2_SAMPLE_IFACE"
 ```
 
 這是暫時的主機位址設定，不建立 persistent network profile（持久網路設定）。歷史事件曾回報介面重新枚舉後 Sample Plane 位址消失；若介面重新出現，依第 10 節檢查並通知 Instructor。
@@ -115,15 +133,15 @@ sudo ip address add 10.0.0.2/24 dev enxec9a0c14d470
 Linux1：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d482
-ip route get 10.0.0.2
+ip -4 -o address show dev "$LINUX1_SAMPLE_IFACE"
+ip route get "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d470
-ip route get 10.0.0.1
+ip -4 -o address show dev "$LINUX2_SAMPLE_IFACE"
+ip route get "$LINUX1_SAMPLE_IP"
 ```
 
 **要看什麼：**位址在預期介面，route 選用對應的 Sample Plane 介面與來源位址。route 輸出說明本機預計怎麼送，不代表封包已抵達另一端。
@@ -133,13 +151,13 @@ ip route get 10.0.0.1
 Linux1：
 
 ```bash
-ping -c 3 -I 10.0.0.1 10.0.0.2
+ping -c 3 -I "$LINUX1_SAMPLE_IP" "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ping -c 3 -I 10.0.0.2 10.0.0.1
+ping -c 3 -I "$LINUX2_SAMPLE_IP" "$LINUX1_SAMPLE_IP"
 ```
 
 **預期觀察：**兩個方向都收到另一端回應。記錄實際封包數、loss（遺失率）與時間，不用預期值代替結果。
@@ -150,10 +168,13 @@ ping -c 3 -I 10.0.0.2 10.0.0.1
 
 使用四個分開的終端機，讓各程序留在前景。分開執行可讓你記錄每個元件的輸出，並在停止時確認各程序是否退出。依 **EPC → MBMS-GW → eNB → UE** 順序啟動，不把四個程序串成背景工作。
 
+Lab02 使用獨立的設定資料夾 `/etc/srsran/lab02/`，不使用 Lab01 的 `/etc/srsran/*.conf`。`enb.conf` 以相對路徑引用 `sib.conf`、`rr.conf`、`rb.conf`，所以每個元件啟動前都先 `cd /etc/srsran/lab02`，讓 eNB 讀到本資料夾內的 MBSFN 版 `sib.conf`。資料夾內缺檔時，srsRAN 可能改讀其他位置的同名檔（例如 Lab01 的 `/etc/srsran/sib.conf`），看起來仍能啟動，但不會有 SIB13；因此由 Instructor 確認全部檔案都在本資料夾內，學生不自行補檔或複製。
+
 ### 4.1 Linux1 啟動 EPC
 
 ```bash
-sudo /usr/local/bin/srsepc /etc/srsran/epc.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsepc /etc/srsran/lab02/epc.conf
 ```
 
 ### 4.2 Linux1 啟動 MBMS-GW
@@ -161,7 +182,8 @@ sudo /usr/local/bin/srsepc /etc/srsran/epc.conf
 確認 EPC 已開始後，在另一個 Linux1 終端機執行：
 
 ```bash
-sudo /usr/local/bin/srsmbms /etc/srsran/mbms.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsmbms /etc/srsran/lab02/mbms.conf
 ```
 
 ### 4.3 Linux1 啟動 eNB
@@ -169,12 +191,13 @@ sudo /usr/local/bin/srsmbms /etc/srsran/mbms.conf
 確認 Instructor 指示的前置程序已開始後，在另一個 Linux1 終端機執行：
 
 ```bash
-sudo /usr/local/bin/srsenb /etc/srsran/enb.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsenb /etc/srsran/lab02/enb.conf
 ```
 
 ### 4.4 Linux2 準備自己的 capture 並啟動 UE
 
-**為什麼在這裡確認 capture：**你之後要分析的是自己這次 Runtime 產生的封包，所以 UE 啟動前就要由 Instructor 確認 `/etc/srsran/ue.conf` 的設定。學生不修改此設定。
+**為什麼在這裡確認 capture：**你之後要分析的是自己這次 Runtime 產生的封包，所以 UE 啟動前就要由 Instructor 確認 `/etc/srsran/lab02/ue.conf` 的設定。學生不修改此設定。
 
 ```ini
 [pcap]
@@ -187,7 +210,8 @@ mac_filename = /tmp/ue_mac.pcap
 eNB 開始後，在 Linux2 終端機執行：
 
 ```bash
-sudo /usr/local/bin/srsue /etc/srsran/ue.conf
+cd /etc/srsran/lab02
+sudo /usr/local/bin/srsue /etc/srsran/lab02/ue.conf
 ```
 
 **要觀察與記錄：**各程序的實際啟動、錯誤或中止訊息。歷史 session 回報四個元件曾成功建立，但 Repo 沒有保存所有元件可通用的 literal readiness log line（逐字可比對的就緒訊息）。命令沒有立即返回 shell，不足以標記成功。
@@ -298,16 +322,16 @@ Sample Plane 檢查先看比 LTE attach／eMBMS 更低層的主機網路條件�
 Linux1：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d482
+ip -4 -o address show dev "$LINUX1_SAMPLE_IFACE"
 ```
 
 Linux2：
 
 ```bash
-ip -4 -o address show dev enxec9a0c14d470
+ip -4 -o address show dev "$LINUX2_SAMPLE_IFACE"
 ```
 
-**檢查的問題：**`10.0.0.1/24` 是否仍在 Linux1 的 `enxec9a0c14d482`，`10.0.0.2/24` 是否仍在 Linux2 的 `enxec9a0c14d470`。
+**檢查的問題：**`$LINUX1_SAMPLE_IP/24` 是否仍在 Linux1 的 `$LINUX1_SAMPLE_IFACE`，`$LINUX2_SAMPLE_IP/24` 是否仍在 Linux2 的 `$LINUX2_SAMPLE_IFACE`。
 
 **結果怎麼看：**缺少位址或出現在不同介面，只能說目前本機設定與預期不符。記錄並停止，交由 Instructor 判斷。位址存在也不代表另一端可達、ZeroMQ 或 LTE／eMBMS 正常。
 
@@ -316,13 +340,13 @@ ip -4 -o address show dev enxec9a0c14d470
 Linux1：
 
 ```bash
-ip route get 10.0.0.2
+ip route get "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ip route get 10.0.0.1
+ip route get "$LINUX1_SAMPLE_IP"
 ```
 
 **檢查的問題：**Linux kernel（核心）目前選用哪個介面與 source address（來源位址）前往 peer（另一端）。
@@ -334,13 +358,13 @@ ip route get 10.0.0.1
 Linux1：
 
 ```bash
-ping -c 3 -I 10.0.0.1 10.0.0.2
+ping -c 3 -I "$LINUX1_SAMPLE_IP" "$LINUX2_SAMPLE_IP"
 ```
 
 Linux2：
 
 ```bash
-ping -c 3 -I 10.0.0.2 10.0.0.1
+ping -c 3 -I "$LINUX2_SAMPLE_IP" "$LINUX1_SAMPLE_IP"
 ```
 
 **檢查的問題：**分別從兩端送出 ICMP echo，確認檢查當下兩個方向是否有回應。只測一個方向，不足以記錄雙向結果。
@@ -403,13 +427,13 @@ sudo journalctl -u NetworkManager --since "15 minutes ago" --no-pager
 Linux1：
 
 ```bash
-sudo ip address del 10.0.0.1/24 dev enxec9a0c14d482
+sudo ip address del "${LINUX1_SAMPLE_IP}/24" dev "$LINUX1_SAMPLE_IFACE"
 ```
 
 Linux2：
 
 ```bash
-sudo ip address del 10.0.0.2/24 dev enxec9a0c14d470
+sudo ip address del "${LINUX2_SAMPLE_IP}/24" dev "$LINUX2_SAMPLE_IFACE"
 ```
 
 6. 檢查兩台目前的 Sample Plane 位址，記錄實際結果。
