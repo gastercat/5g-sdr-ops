@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5f7">
+  <meta name="description" content="2026-11-16 AI 雙路徑 OTA 量測：七種封包分流與複製策略在 LTE OTA 路徑 A 與模擬類低軌衛星路徑 B 上的比較。">
+  <title>AI 雙路徑 · 5G SDR Interactive Lab</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <script src="./js/theme.js"></script>
+  <link rel="stylesheet" href="./css/main.css"><link rel="stylesheet" href="./css/lab03-ota.css"><link rel="stylesheet" href="./css/ai-dualpath.css">
+  <script type="module" src="./js/ai-dualpath-page.js"></script><script type="module" src="./js/ai-dualpath-demo.js"></script>
+</head>
+<body class="evidence-page lab03-ota-page ai-dualpath-page">
+  <a class="skip-link" href="#main-content">跳到主要內容</a>
+  <div class="pinned-header"><header class="site-header"><div>
+    <h1>5G SDR Interactive Lab</h1>
+    <nav class="page-tabs" aria-label="頁面"><a href="./index.html">← 返回架構</a><a href="./evidence.html">證據與範圍</a><a href="./lab03-ota.html">Lab03 OTA 實測</a><a href="./ai-dualpath.html" aria-current="page">AI 雙路徑</a><button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">深色主題</button></nav>
+  </div></header><p class="proposal-note">2026-11-16 單日量測，Owner 驗收待定。路徑 B 全部是模擬；不是 performance、reliability 或 URLLC validation。</p></div>
+  <main id="main-content" tabindex="-1">
+    <section>
+      <p class="ota-eyebrow">路徑 A：LTE OTA（實測） · 路徑 B：類低軌衛星（傳送端模擬） · 2026-11-16</p>
+      <h2>AI 雙路徑：每個封包該走哪條路</h2>
+      <p class="lead">有兩條路可以送資料：一條是 B210 的 LTE 無線鏈路，另一條模擬類低軌衛星，會定期換手、延遲時高時低。每個封包都要在期限（30 或 50 ms）內送到。這一頁比較七種決定方式，從固定規則到 LinUCB 線上學習，看誰在期限內送到最多，又多送了幾份副本。</p>
+    </section>
+
+    <section aria-labelledby="setup-title">
+      <h2 id="setup-title">兩條路徑與七種策略</h2>
+      <div class="ota-facts">
+        <div><b>路徑 A</b><span><i class="ota-tag is-measured">實測</i>UE → B210 OTA → EPC，LTE，RTT 中位數約 16.5 ms</span></div>
+        <div><b>路徑 B</b><span><i class="ota-tag is-simulated">模擬</i>實體走有線網路，傳送端依模型加上延遲與遺失：每 15 秒換手、換手後中斷 150 ms、RTT 20～45 ms</span></div>
+        <div><b>封包</b><span>128 bytes，每 20 ms 一個，UE 端送出、EPC 端回送</span></div>
+      </div>
+      <div class="ota-table-wrap"><table class="ota-table">
+        <thead><tr><th>策略</th><th>類型</th><th>怎麼決定</th></tr></thead>
+        <tbody>
+          <tr><td><i class="ota-dot" style="background:var(--series-off)"></i>只走 A／只走 B</td><td>固定</td><td class="is-text">每個封包都走同一條路</td></tr>
+          <tr><td><i class="ota-dot" style="background:var(--series-off)"></i>2:3 分流</td><td>固定</td><td class="is-text">每 5 個封包前 2 個走 A、後 3 個走 B</td></tr>
+          <tr><td><i class="ota-dot" style="background:var(--series-off)"></i>全部複製</td><td>固定</td><td class="is-text">每個封包兩條路各送一份，成本是 2 倍</td></tr>
+          <tr><td><i class="ota-dot" style="background:var(--path-a)"></i>門檻規則＋規則層</td><td>自適應</td><td class="is-text">走目前看起來健康、比較快的那條；兩條都不健康時複製</td></tr>
+          <tr><td><i class="ota-dot" style="background:var(--path-a)"></i>LinUCB</td><td>自適應</td><td class="is-text">線上學習的多臂吃角子老虎機：副本在期限內回來就得分，複製要扣成本</td></tr>
+          <tr><td><i class="ota-dot" style="background:var(--path-a)"></i>LinUCB＋規則層</td><td>自適應</td><td class="is-text">LinUCB 提議，規則層可以把單路改成兩路都送（某條路連續 3 個副本失敗，或另一條路超過 1 秒沒有回音），但不會刪掉副本</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section aria-labelledby="demo-title">
+      <h2 id="demo-title">系統演示</h2>
+      <p>在瀏覽器裡把整套系統跑一次：路徑 A 重播 2026-11-16 錄到的 60 秒 OTA 紀錄（播完從頭再來），路徑 B 用和實驗相同的類 LEO 模型即時產生。七種策略同時跑在同一批封包上，下方的表格可以直接比；上面的動畫只畫你選的那一種。</p>
+      <div class="demo-controls">
+        <div class="demo-row"><span class="demo-label">策略</span><div class="ota-tabs" id="demo-policy" role="group" aria-label="選擇要畫出的策略"></div></div>
+        <div class="demo-row"><span class="demo-label">路徑 A</span><div class="ota-tabs" id="demo-trace" role="group" aria-label="選擇路徑 A 的實測紀錄"></div></div>
+        <div class="demo-row"><span class="demo-label">期限</span><div class="ota-tabs" id="demo-deadline" role="group" aria-label="選擇期限"></div></div>
+        <div class="demo-row"><span class="demo-label">速度</span><div class="ota-tabs" id="demo-speed" role="group" aria-label="選擇播放速度"></div></div>
+      </div>
+      <div class="demo-actions">
+        <button type="button" class="demo-primary" id="demo-play" aria-pressed="false">開始演示</button>
+        <button type="button" id="demo-degrade">注入 A 劣化 3 秒（模擬）</button>
+        <button type="button" id="demo-jump-b">跳到下一次 B 換手</button>
+        <button type="button" id="demo-jump-a" hidden>跳到 A 的真實中斷前</button>
+        <button type="button" id="demo-reset">重新開始</button>
+      </div>
+      <div class="ota-panel">
+        <h3>封包怎麼走</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-a" style="border-radius:50%"></i>A 的副本</span><span><i class="ota-swatch is-box is-b" style="border-radius:50%"></i>B 的副本</span><span><i class="ota-swatch is-box is-late" style="border-radius:50%"></i>超過期限才回來</span><span><b class="demo-x">✕</b>遺失</span></div>
+        <div class="ota-chart"><canvas id="demo-flow" class="is-flow" role="img" aria-label="動畫：UE 與 EPC 之間的兩條路徑，副本沿上方軌道送出、沿下方軌道回送"></canvas></div>
+        <p class="demo-decision" id="demo-decision"></p>
+        <p class="ota-caption" id="demo-view"></p>
+        <div class="ota-chart"><canvas id="demo-strip" class="is-strip" role="img" aria-label="最近 150 個封包在 A、B 兩條路徑上的結果，以及每個封包是否在期限內送達"></canvas></div>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-ok"></i>期限內送達</span><span><i class="ota-swatch is-box is-late"></i>超過期限或遺失</span><span><i class="ota-swatch is-box is-lost"></i>該副本遺失</span><span><i class="ota-swatch is-box is-pending"></i>還在路上</span><span>空白：沒有走這條路</span></div>
+      </div>
+      <div class="ota-facts" id="demo-facts"></div>
+      <div class="ota-table-wrap"><table class="ota-table demo-board" id="demo-board"></table></div>
+      <p class="ota-note">這是示範，不是量測。路徑 B 與「注入 A 劣化」都是模擬，參數與 <code>leo_profile.py</code>、<code>trace_env.py</code> 相同（每 15 秒換手、中斷 150 ms；劣化時延遲 ×2.5、掉包 10%）。策略是 <code>policies.py</code> 的 JavaScript 版本；亂數產生器與 Python 不同，所以數字不會和上面的表格完全一樣。可以試試：在「58／53 實測」按「跳到 A 的真實中斷前」，再用慢動作看規則層怎麼反應。</p>
+    </section>
+
+    <section aria-labelledby="online-title">
+      <h2 id="online-title">OTA 上的線上比較</h2>
+      <p>七種策略依序在真實的 LTE 路徑 A 上跑，每種 3 輪。同一輪的所有策略用同一組路徑 B 模擬種子。發射增益（eNB／UE）70／70 時兩個期限都跑，59／53 時只跑 30 ms。</p>
+      <div class="ota-tabs" id="online-tabs" role="group" aria-label="選擇增益與期限"></div>
+      <div class="ota-facts" id="online-facts"></div>
+      <div class="ota-panel">
+        <h3>期限內送達比例：3 輪的範圍與平均</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-off"></i>固定策略</span><span><i class="ota-swatch is-a"></i>自適應策略</span><span>線：最小到最大　圓點：平均</span></div>
+        <div class="ota-chart"><canvas id="chart-online" class="is-range" role="img" aria-label="各策略期限內送達比例的範圍圖：只走 A、全部複製與三種自適應策略都在 99% 以上，只走 B 與 2:3 分流明顯較低"></canvas></div>
+        <p class="ota-caption">只走 B 和 2:3 分流的範圍很寬，因為每輪的模擬換手落在不同位置。前面五種擠在 99% 以上，差距看表格比較清楚。</p>
+      </div>
+      <div class="ota-table-wrap"><table class="ota-table" id="online-table"></table></div>
+      <p class="ota-note">結論：路徑 A 在整段量測都很穩，只走 A 就有 99.9%。自適應策略多送約 4～5% 的副本，達成率沒有提高。這批數字說明不了自適應策略的效益，因為沒有可以改善的空間。</p>
+    </section>
+
+    <section aria-labelledby="replay-title">
+      <h2 id="replay-title">離線重播：路徑 A 變差的時候</h2>
+      <p><span class="ota-tag is-simulated">模擬</span>把 59／53 那次 15,000 個封包的路徑 A 實測紀錄拿來重播，5 組種子各跑 15,000 個封包，期限 30 ms。再另外模擬路徑 A 有 20% 的時間變差，看各策略怎麼反應。「事後最佳」事先知道每個封包的結果，實際做不到，只當作上界參考。</p>
+      <div class="ota-tabs" id="replay-tabs" role="group" aria-label="選擇路徑 A 的情境"></div>
+      <div class="ota-panel">
+        <h3>達成率與成本的取捨</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-a" style="border-radius:50%"></i>自適應策略</span><span><i class="ota-swatch is-box is-off" style="border-radius:50%"></i>固定策略</span><span><i class="ota-dot is-ring"></i>事後最佳（不可實作）</span></div>
+        <div class="ota-chart"><canvas id="chart-tradeoff" class="is-trade" role="img" aria-label="散佈圖：橫軸每封包副本數，縱軸期限內送達比例。路徑 A 變差時，只走 A 降到 83%，自適應策略以 1.04 到 1.24 份副本達到 87 到 89%，全部複製以 2 份達到 89%"></canvas></div>
+        <p class="ota-caption">越靠左上越好：送得少又準時。路徑 A 變差時，門檻規則＋規則層用 1.24 份副本就接近全部複製（2 份）的達成率。</p>
+      </div>
+      <div class="ota-table-wrap"><table class="ota-table" id="replay-table"></table></div>
+      <p class="ota-note">自適應策略的效益目前只在模擬劣化下成立。LinUCB 在離線與實測都沒有勝過門檻規則。重播把超過 200 ms 的副本視為遺失。</p>
+    </section>
+
+    <section aria-labelledby="gain-title">
+      <h2 id="gain-title">把發射增益調低，找真實的劣化</h2>
+      <p>為了在路徑 A 上找到真實的劣化，Owner 在現場分段調低 eNB 與 UE 的發射增益，Agent 每段先做唯讀檢查再量測。增益是 srsRAN 的命令列設定值，實際輻射功率沒有量過。</p>
+      <div class="ota-table-wrap"><table class="ota-table" id="gain-table"></table></div>
+      <p class="ota-note">另有三段只有 Owner 回報、沒有量測：55／55 第一次無法 Attach（原因仍未知，那次的 UE log 已被覆寫）；57／57 撐不住；eNB 59／UE 55 出現 Radio Link Failure 警告。</p>
+      <div class="ota-panel">
+        <h3>唯一的真實中斷：58／53，開始後約 27.5 秒</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-a"></i>路徑 A 的 RTT</span><span><i class="ota-swatch is-box is-b"></i>遺失（沒有回送）</span></div>
+        <div class="ota-chart"><canvas id="chart-outage" role="img" aria-label="Packet ID 1300 到 1500 的來回延遲折線圖：1376 開始的 40 個封包延遲由 783 ms 逐步降回 15 ms，接著 17 個封包遺失，之後恢復約 20 ms"></canvas></div>
+        <p class="ota-caption">Packet ID 1376 起的 40 個封包延後送達，RTT 從 783 ms 每個少約 20 ms（也就是送出間隔），推論是它們被卡住後在同一時刻一起放行。接著 1416–1432 共 17 個遺失，全程約 1.14 秒。前後 UE 位址與程序都沒變，EPC 那段時間沒有任何事件。更低的 57／53、55／55 沒有再出現，比較像是偶發。</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="link-title">
+      <h2 id="link-title">離線模型沒有重現的兩個鏈路特性</h2>
+      <ul class="dp-list">
+        <li><b>閒置約 30 秒會被釋放。</b>EPC log 顯示每次沒有流量約 30 秒後就送出 UE Context Release，下一次傳送要先用 Service Request 重建連線，所以每次探測開頭的幾個封包延遲 120～230 ms。</li>
+        <li><b>路徑 A 用得越少，RTT 越高。</b>每個封包都走 A 時中位數約 16.5 ms；2:3 分流時（每 5 個只有 2 個走 A）升到約 22 ms，最大值超過 116 ms。推論是 LTE 上行閒置後要重新請求排程，沒有用 MAC 層 log 驗證。</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="scope-title">
+      <h2 id="scope-title">這一頁不能說明的事</h2>
+      <ul class="dp-list">
+        <li>分流與複製在應用層 UDP，不是 PDCP 層，不代表符合 3GPP URLLC 或 NTN。</li>
+        <li>無線端是 LTE（srsRAN 4G），不是 5G NR。</li>
+        <li>路徑 B 的類低軌衛星特性全部是傳送端模擬，參數是本組假設值，不是衛星鏈路或軌道模型。</li>
+        <li>沒有「在真實劣化的路徑 A 上驗證自適應策略」這件事。各策略依序執行，面對的路徑 A 不是同一段時間。</li>
+      </ul>
+      <p class="ota-note">來源：Task Evidence Record <code>docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml</code>（AD-01～AD-11）與 Repo 外證據目錄 <code>2026-11-16-AI-Dualpath-OTA/</code> 的 <code>02-policies-summary.md</code>、<code>08-gain-enb59-ue53/policies-summary.md</code>、<code>14-report-replay/d30.txt</code>、<code>gain-steps-events.txt</code>。策略程式在 <code>exploration/ai-dualpath/</code>。</p>
+    </section>
+    <a class="return-link" href="./index.html">← 返回架構</a>
+  </main>
+  <footer class="site-footer"><p>教學視覺化 · AI 雙路徑 2026-11-16 單日量測。路徑 A 為 LTE OTA 實測，路徑 B 為傳送端模擬；分流與複製在應用層 UDP，不是 PDCP 層。不授權任何 Runtime 或 RF 操作。</p></footer>
+</body>
+</html>
