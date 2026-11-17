@@ -1,0 +1,31 @@
+/* AI dual-path page. Builds on main.css and lab03-ota.css; adds only chart heights and flags. */
+.ai-dualpath-page .ota-chart canvas.is-range { height: 260px; }
+.ai-dualpath-page .ota-chart canvas.is-trade { height: 300px; }
+.ai-dualpath-page .ota-dot.is-ring { border: 2px solid var(--muted); background: transparent; box-sizing: border-box; }
+.ai-dualpath-page .ota-table td.is-text { text-align: left; white-space: normal; min-width: 14em; color: var(--muted); }
+.ai-dualpath-page .ota-table tr.is-flag td { background: var(--soft); }
+.ai-dualpath-page .ota-tag { display: inline-block; margin-right: var(--space-2); padding: 1px 8px; border: 1px solid currentColor; border-radius: 999px; font-size: 12px; letter-spacing: .04em; }
+.ai-dualpath-page .ota-tag.is-measured { color: var(--path-a); }
+.ai-dualpath-page .ota-tag.is-simulated { color: var(--path-b); }
+.ai-dualpath-page .dp-list { margin: 0; padding-left: 1.3em; max-width: 72ch; }
+.ai-dualpath-page .dp-list li + li { margin-top: var(--space-2); }
+/* System demo */
+:root { --late: #c62828; --ok: #2e7d32; }
+:root[data-theme="glass"] { --late: #ff7a7a; --ok: #6fcf8a; }
+.ai-dualpath-page .ota-swatch.is-late { background: var(--late); }
+.ai-dualpath-page .ota-swatch.is-ok { background: var(--ok); }
+.ai-dualpath-page .ota-swatch.is-lost { background: var(--ink); }
+.ai-dualpath-page .ota-swatch.is-pending { background: var(--soft); outline: 1px solid var(--line); }
+.ai-dualpath-page .demo-x { color: var(--late); font-weight: 700; }
+.ai-dualpath-page .ota-chart canvas.is-flow { height: 240px; }
+.ai-dualpath-page .ota-chart canvas.is-strip { height: 92px; }
+.demo-controls { display: flex; flex-direction: column; gap: var(--space-2); }
+.demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.demo-label { min-width: 4em; color: var(--muted); font-size: 13px; }
+.demo-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.demo-actions button { min-height: 44px; padding: 6px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--page); color: var(--ink); font-size: 14px; cursor: pointer; }
+.demo-actions button:hover { border-color: var(--ink); }
+.demo-actions .demo-primary { border-color: var(--ink); background: var(--ink); color: var(--page); font-weight: 600; min-width: 7em; }
+.demo-actions button[hidden] { display: none; }
+.demo-decision { margin: 0; min-height: 1.5em; font-size: 14px; font-variant-numeric: tabular-nums; }
+.demo-board tr.is-current td { background: var(--soft); font-weight: 600; }
