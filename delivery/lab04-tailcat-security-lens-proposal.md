@@ -2,7 +2,7 @@
 
 [Delivery 入口](README.md) · [PD-02 決策](../docs/decisions/2026-08-18-professor-meeting.md#pd-02security-改為-lab0103-cross-cutting-direction) · [舊 Lab04](../labs/lab04-security/README.md)
 
-狀態：`PROPOSAL / OPTION A EXECUTED 2026-11-19 / T8 PARTIAL / OPTION B NOT AUTHORIZED`
+狀態：`PROPOSAL / OPTION A EXECUTED 2026-11-19 / OPTION B NOT AUTHORIZED`
 
 - 撰寫日期：2026-11-19
 - 性質：提案草稿，方向已登錄為 DR-016；內容待 Owner 與教授 Review
@@ -226,7 +226,8 @@ derper（Tailscale v1.104.7）。
 | T5 | `PASS` | 先經本地 relay，隨即改走有線直連；熱點沒有 tailcat 流量 |
 | T6 | `PASS` | 預設位址含 PresharedKey，持有即可連入；`--allow` 後未登記的金鑰被擋，預設 log 沒有拒絕紀錄 |
 | T7 | `PASS` | 主機與 Mac 上的程序、檔案、金鑰、測試 CA 已移除 |
-| T8 | `PARTIAL` | relay 鏈路上沒有標記，但資料已改走直連；強制只走 relay 需防火牆變更，待另行授權 |
+| T8 | `PASS` | 同日補做。T8a：以暫時 nftables 規則擋住主機間直連 UDP，流量只經 relay，內容仍送達。T8b：relay 改用明文 HTTP 後側錄，看不到標記，但每個轉送 frame 都帶有雙方公鑰（linux2 127 次、linux1 133 次） |
 
 執行中另外觀察到：`forward` 只能以命令列參數接收位址，client 主機上的 `ps` 看得到；
-serve 的 log 會寫出完整位址。
+serve 的 log 會寫出完整位址。自建 relay 雖然看不到內容，仍掌握「誰和誰通訊」與流量時間、
+大小等中繼資料。

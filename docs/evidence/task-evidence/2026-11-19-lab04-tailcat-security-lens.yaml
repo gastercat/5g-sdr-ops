@@ -4,9 +4,9 @@ record_type: "Task Evidence Record"
 identity:
   task_id: "LAB04-TAILCAT-2026-11-19-SECURITY-LENS-T0-T8"
   source_thread: "Claude Code session 929563bb-972a-4d0a-a219-fa8ac39c7d1b"
-  date_or_range: "2026-11-19 09:04Z–09:37Z（17:04–17:37 Asia/Taipei）"
-  executor: "Claude agent：遠端唯讀檢查、佈署 tailcat、在 Mac 上產生測試 CA 與啟動 derper、在兩台主機啟動與停止測試服務及 tailcat、分析側錄檔、清理。Owner（現場）：在 Mac、5g-linux1-audit、5g-linux2-audit 三台以 sudo 執行與停止 tcpdump；Agent 未使用 sudo，也未經手密碼。"
-  historical_or_current: "當日觀察；09:37Z 清理完成後，主機上已無本次的程序、檔案與金鑰，不代表之後的狀態"
+  date_or_range: "2026-11-19 09:04Z–09:37Z（17:04–17:37 Asia/Taipei）；T8 補做 09:48Z–10:12Z（17:48–18:12）"
+  executor: "Claude agent：遠端唯讀檢查、佈署 tailcat、在 Mac 上產生測試 CA 與啟動 derper、在兩台主機啟動與停止測試服務及 tailcat、分析側錄檔、清理。Owner（現場）：在 Mac、5g-linux1-audit、5g-linux2-audit 三台以 sudo 執行與停止 tcpdump；T8 補做時另以 sudo 在兩台主機加入、讀取與刪除 nftables 規則及自動解除計時器。Agent 未使用 sudo，也未經手密碼。"
+  historical_or_current: "當日觀察；10:12Z 清理完成後，主機上已無本次的程序、檔案、金鑰與防火牆規則（規則刪除由 Owner 回報），不代表之後的狀態"
 
 authorization:
   scope:
@@ -14,13 +14,14 @@ authorization:
     - "T1 遠端唯讀檢查（Level 1）：Agent 依上述授權執行，未用 sudo、未讀 log、未送測試流量。"
     - "Owner 明確核准第 1 批（以 scp 佈署 tailcat 到兩台主機的 ~/lab04-tailcat，回復為刪除該目錄）、第 2 批（Mac 上的測試 CA、IP 憑證與只綁 192.168.250.10 的 derper）、第 3 批（linux2 上只綁 127.0.0.1:8080 的測試服務與 tailcat serve、linux1 上的 tailcat forward、--allow 測試）。第 4 批（tcpdump 側錄）當時延後。"
     - "Owner 其後核准第 4 批，並自行以 sudo 執行三台的 tcpdump。"
+    - "PR #58 合併後，Owner 核准 T8 補做：步驟 0（以第 1～3 批相同範圍重新佈署）、T8a（兩台主機的暫時 nftables 規則，Level 4）、T8b（derper 改用純 HTTP，client 加上 TS_DEBUG_USE_DERP_HTTP=1）。規則由 Owner 以 sudo 加入，附 20 分鐘自動解除計時器，未寫入 /etc。"
     - "genkey 不支援 file:// DERP map，Agent 在 linux2 以只綁 127.0.0.1:18900 的臨時 HTTP 服務提供 derpmap.json 數秒後停止；Agent 視為第 3 批 localhost 測試服務的範圍，事前未個別確認，於同一回合回報 Owner。"
   allowed_mutations:
     - "兩台主機使用者目錄內的 ~/lab04-tailcat/、~/.config/tailcat/、~/.cache/tailcat/（皆於清理時移除）。"
     - "控制端 Mac 上 Repo 外的證據目錄 2026-11-19-Lab04-Tailcat/ 與其中暫存的測試 CA、私鑰（私鑰於清理時刪除）。"
     - "Repo：本 TER、TER 索引、提案狀態與 PROGRESS.md 的 Security 狀態。"
   forbidden:
-    - "Agent 不使用 sudo、不改路由、防火牆、DNS、netplan 或系統信任庫；不啟動 srsRAN；不涉及 RF；不把 tailcat 位址、私鑰或 CA 私鑰寫入 Repo、證據或對話。"
+    - "Agent 不使用 sudo、不改路由、DNS、netplan 或系統信任庫；防火牆只限 T8 經核准、由 Owner 執行的暫時規則；不啟動 srsRAN；不涉及 RF；不把 tailcat 位址、私鑰或 CA 私鑰寫入 Repo、證據或對話。"
     - "舊 Lab04 的偽基地台、UE Scanner、DoS 與識別資訊收集不在範圍內。"
 
 repo_context:
@@ -108,14 +109,14 @@ evidence:
       - "只涵蓋約 20 秒的側錄窗口；09:15Z 第一次啟動時沒有側錄。"
       - "199.232.113.91 的實際程序未查（需要 sudo）。"
   - evidence_id: "LT-09"
-    claim: "Relay 鏈路上看不到標記，但資料本身很可能沒有經過 relay（T8 部分完成）。"
+    claim: "第一次執行時，relay 鏈路上看不到標記，但資料本身很可能沒有經過 relay（後由 LT-12、LT-13 補做）。"
     evidence_type: "FILE_ARTIFACT"
     exact_observation: "mac-en5.pcap 中 relay 流量為 TLS（TCP 8443）與 STUN（UDP 3478），標記 0 次。抓取發生時路徑已改為直連。"
     directness: "PRIMARY"
     confidence: "中。"
     source_location: "Repo 外 pcap/mac-en5.pcap、T4-derper.log"
     limitations:
-      - "未強制只走 relay；要強制需暫時擋直連 UDP，屬 Level 4 防火牆變更，未授權，Owner 決定之後再補。"
+      - "未強制只走 relay；同日以 LT-12、LT-13 補做。"
       - "relay 營運者在 derper 程序內看得到的內容（TLS 內的 WireGuard 封包）未觀察。"
   - evidence_id: "LT-10"
     claim: "位址可能經由程序列表與 log 外洩。"
@@ -136,9 +137,42 @@ evidence:
     limitations:
       - "預先存在的 TCP *:5201 監聽者未處理。"
 
+  - evidence_id: "LT-12"
+    claim: "暫時擋住主機間的直連 UDP 後，Tailcat 只經本地 relay 傳輸，內容仍可送達（T8a）。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "步驟 0 基準（09:49Z，無防火牆、TLS relay）：3／3 取得標記 LAB04-TAILCAT-T8-20261119T174834，ping 先 via DERP(1) 再 via 192.168.250.12:49685，exit 0。兩台主機加入 table inet lab04_t8（output hook，丟棄 skuid 1000、非 lo、目的地不是 192.168.250.10 的 IPv4 UDP，及所有此類 IPv6 UDP）後，09:59Z：3／3 取得標記；7 次 pong 全部 via DERP(1)；tailcat 回報 no direct path to the server after 15s，ping exit 1；forward log 的 via=direct 與 now using 皆 0 次。兩台側錄中主機間 UDP 在有線與熱點上皆 0 個封包；標記只在 lo（每台 3 次）；Mac en5 為 TLS（3 次握手），標記 0。Owner 於 T8b 後讀取的計數器（T8a 與 T8b 累計）：linux1 IPv4 38 封包／5776 bytes、IPv6 0；linux2 IPv4 30 封包／4560 bytes、IPv6 0。"
+    directness: "PRIMARY"
+    confidence: "高；計數器為 Owner 貼上的命令輸出。"
+    source_location: "Repo 外 T8/pcap/*-t8a2.pcap、T8/logs-redacted/、00-session-notes.md"
+    limitations:
+      - "09:52Z 第一次 T8a 無效：兩台主機都沒有建立規則與計時器（推測貼上的內容被 sudo 密碼提示吃掉），直連照常建立；改為先執行 sudo -v 後重做。無效的側錄 *-t8a.pcap 保留並標示。"
+      - "計數器無法區分 T8a 與 T8b。"
+      - "規則同時擋住 user 帳號其他程式的 UDP（約 10 分鐘）；未觀察到 SSH 中斷。"
+  - evidence_id: "LT-13"
+    claim: "Relay 營運者看不到內容，但看得到通訊雙方的公鑰、封包大小與時間（T8b）。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "derper 不設 certmode，在 192.168.250.10:8443 以純 HTTP 服務；兩端加上 TS_DEBUG_USE_DERP_HTTP=1 後仍連上（TLS client 無法連上只講 HTTP 的 relay），防火牆維持。10:05Z：3／3 取得標記，7 次 pong 全部 via DERP(1)，no direct path，exit 1。mac-en5-t8b.pcap：TLS 握手 0、Upgrade: DERP 6 次、GET /derp 3 次、標記 0 次；linux2 server node key 的原始 32 bytes 出現 127 次，linux1 client node key 133 次。對照 mac-en5-t8a2.pcap（TLS）：兩把公鑰皆 0 次。"
+    directness: "PRIMARY"
+    confidence: "高。"
+    source_location: "Repo 外 T8/pcap/mac-en5-t8b.pcap、mac-en5-t8a2.pcap、T8/derper-http.log、T8/linux1-client-nodekey.txt、T8/linux2-server-nodekey.txt"
+    limitations:
+      - "TS_DEBUG_USE_DERP_HTTP 是上游的除錯開關，不是正式功能；確認方式是 tailscale.com v1.104.7 derphttp 原始碼與本次連線成功，未檢查 tailcat v0.7.0 所連結的版本。"
+      - "以位元組搜尋判定公鑰與標記，未以 DERP 協定解析器逐 frame 解碼。"
+      - "測試期間 DERP 中繼資料以明文在有線實驗網段傳送約 5 分鐘。"
+  - evidence_id: "LT-14"
+    claim: "T8 補做後主機與 Mac 已清理。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "10:10Z 遠端確認兩台的 lab04-t8-expire 計時器已不存在；Owner 回報已以 sudo nft delete table inet lab04_t8 刪除兩台的規則並確認。10:11–10:12Z：兩台 tailcat 程序 0、http.server 程序 0，~/lab04-tailcat、~/.config/tailcat、~/.cache/tailcat 已移除，無 8080、18080、18900 監聽者；Mac 的 derper 已停止、8443 無監聽者，T8 的測試 CA 與私鑰已刪除。側錄檔副本雜湊與主機上一致。"
+    directness: "PRIMARY"
+    confidence: "高；規則刪除為 REPORTED。"
+    source_location: "source_thread；Repo 外 00-session-notes.md"
+    limitations:
+      - "Agent 沒有 sudo，無法自行確認 nft 規則已刪除。"
+
 mutations:
   - "兩台主機：建立並於清理時刪除 ~/lab04-tailcat/、~/.config/tailcat/、~/.cache/tailcat/。第一次 scp 因 zsh 的 $h:l 修飾子變成本機 cp 而未複製，只建立了空目錄，改用 ${h} 後重做。"
   - "Mac：於 Repo 外證據目錄建立測試 CA、IP 憑證與 derper 金鑰（清理時刪除），兩次啟動 derper（09:14Z–09:18Z、09:31Z–09:37Z）。"
+  - "T8：重新產生 2 天效期的測試 CA 與憑證（SHA-256 60abddc4…）並重新佈署；derper 以 TLS（09:48Z–10:00Z）與純 HTTP（10:00Z–10:11Z）兩種模式執行；兩台主機在 linux2 加入 up.sh／down.sh、linux1 加入 up.sh／down.sh／probe.sh（皆在 ~/lab04-tailcat，已移除）。Owner 在兩台加入並刪除 table inet lab04_t8 與 lab04-t8-expire 計時器。"
   - "Repo：新增本 TER，更新 TER 索引、提案狀態與 PROGRESS.md。"
 
 recovered_or_observed_claims:
@@ -154,15 +188,18 @@ recovered_or_observed_claims:
   - claim: "Tailcat 優先改走有線直連，relay 只在建立階段使用。"
     status: "OBSERVED"
     supporting_evidence: ["LT-05"]
-  - claim: "Relay 看不到應用內容。"
-    status: "REPORTED_ONLY"
-    supporting_evidence: ["LT-09"]
+  - claim: "直連被擋時 Tailcat 只經本地 relay 傳輸，內容仍可送達。"
+    status: "OBSERVED"
+    supporting_evidence: ["LT-12"]
+  - claim: "Relay 看不到應用內容，但看得到通訊雙方的公鑰。"
+    status: "OBSERVED"
+    supporting_evidence: ["LT-13"]
 
 provenance_gaps:
   - "教授同意的內容只有 Owner 回報，見 DR-016。"
   - "Mac 防火牆開啟，但 derper 的連入未被擋；是否曾跳出允許視窗未確認。"
-  - "T8 未強制只走 relay；Tailscale 文件與 derper README 說 relay 只看得到加密封包，本次未獨立驗證。"
+  - "T8 的 nft 規則刪除由 Owner 回報，Agent 未以 sudo 確認。"
 
 stop_point:
-  result: "T0、T2、T3、T4、T5、T6、T7 通過；T8 部分完成；T1 完成。主機與 Mac 已清理。"
-  next_authority_required: "T8 補做（暫時擋直連 UDP 的 Level 4 防火牆變更）、選項 B（經 LTE bearer，需 RF／Runtime 授權）與任何重跑，都需 Owner 另行授權。"
+  result: "T0、T2～T8 通過，T1 完成；T8 於同日補做（T8a 只經 relay、T8b 明文 relay）。主機與 Mac 已清理。"
+  next_authority_required: "選項 B（經 LTE bearer，需 RF／Runtime 授權）與任何重跑，都需 Owner 另行授權。"
