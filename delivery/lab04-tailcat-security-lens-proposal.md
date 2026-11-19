@@ -2,11 +2,12 @@
 
 [Delivery 入口](README.md) · [PD-02 決策](../docs/decisions/2026-08-18-professor-meeting.md#pd-02security-改為-lab0103-cross-cutting-direction) · [舊 Lab04](../labs/lab04-security/README.md)
 
-狀態：`PROPOSAL / DOCUMENTATION-ONLY / NOT_TESTED / NO RUNTIME AUTHORIZATION`
+狀態：`PROPOSAL / OPTION A EXECUTED 2026-11-19 / T8 PARTIAL / OPTION B NOT AUTHORIZED`
 
 - 撰寫日期：2026-11-19
 - 性質：提案草稿，方向已登錄為 DR-016；內容待 Owner 與教授 Review
-- 不代表：Tailcat 已安裝、已連線、已驗證，或任何保護效果已成立
+- 執行紀錄：選項 A 已於 2026-11-19 執行一次，結果見第 10 節與
+  [TER](../docs/evidence/task-evidence/2026-11-19-lab04-tailcat-security-lens.yaml)；不建立 Owner 驗收
 
 ## 1. 定位
 
@@ -128,7 +129,8 @@ forward 端，不是固定 IP。
 
 ## 6. 驗收計畫草案
 
-以下每一項都是 `NOT_TESTED`，執行前需逐項取得授權，結果寫入 Task Evidence Record。
+以下為原驗收計畫草案；2026-11-19 的實際結果見第 10 節。每次執行前需逐項取得授權，結果寫入
+Task Evidence Record。
 
 | 編號 | 項目 | 通過條件草案 | 對應問題 |
 | --- | --- | --- | --- |
@@ -207,3 +209,24 @@ forward 端，不是固定 IP。
 - [Interactive Lab Lab04 提案視角](../exploration/5g-sdr-interactive-lab/js/data/lab04.js)：`PROPOSED`
 - [Tailcat 理論範例](../exploration/5g-sdr-interactive-lab/js/data/tailcat-example.js)：官方 README 轉錄，2026-10-04
 - [Tailcat 官方 README](https://github.com/tailscale/tailcat)：2026-11-19 查閱 README、INSTALL.md、LICENSE
+
+## 10. 執行結果（2026-11-19，選項 A）
+
+單次執行，細節與限制見
+[TER](../docs/evidence/task-evidence/2026-11-19-lab04-tailcat-security-lens.yaml)。Tailcat v0.7.0、
+derper（Tailscale v1.104.7）。
+
+| 編號 | 結果 | 摘要 |
+| --- | --- | --- |
+| T0 | `PASS` | derper 只綁 192.168.250.10:8443（IP 憑證）與 UDP 3478；DERP map 以 `CertName` 釘選憑證雜湊，主機不需信任測試 CA。側錄期間兩台沒有查詢 Tailscale 或 `tailcat.dev` |
+| T1 | `DONE` | 兩台 x86_64、Ubuntu 24.04.4；同時有有線與熱點兩條路 |
+| T2 | `PASS` | 測試服務只綁 127.0.0.1:8080，從 linux1 直接連被拒絕 |
+| T3 | `PASS` | linux1 經 overlay 取得標記 |
+| T4 | `PASS` | 標記只出現在兩台的 `lo`；有線、熱點與 relay 鏈路皆 0 次 |
+| T5 | `PASS` | 先經本地 relay，隨即改走有線直連；熱點沒有 tailcat 流量 |
+| T6 | `PASS` | 預設位址含 PresharedKey，持有即可連入；`--allow` 後未登記的金鑰被擋，預設 log 沒有拒絕紀錄 |
+| T7 | `PASS` | 主機與 Mac 上的程序、檔案、金鑰、測試 CA 已移除 |
+| T8 | `PARTIAL` | relay 鏈路上沒有標記，但資料已改走直連；強制只走 relay 需防火牆變更，待另行授權 |
+
+執行中另外觀察到：`forward` 只能以命令列參數接收位址，client 主機上的 `ps` 看得到；
+serve 的 log 會寫出完整位址。
