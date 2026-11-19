@@ -119,7 +119,7 @@ Owner 於本輪採用 Delivery Closeout Contract v0.1，Lab03 最低交付以 US
   所需內容。既有 Agent learner draft 保留為 historical material。
 - `ACCEPTED / PENDING MAPPING`：Security 改為未來穿插 Lab01～03 的 cross-cutting direction；
   本次未設計 topic mapping 或 exercise。DR-016 的 Tailcat Security Lens（組內稱 Lab04）選項 A
-  已於 2026-11-19 執行一次，T8 部分完成，見
+  已於 2026-11-19 執行一次（含同日 T8 補做），見
   [TER](docs/evidence/task-evidence/2026-11-19-lab04-tailcat-security-lens.yaml)。
 - `NOT_AUTHORIZED`：任何新的 Runtime、Lab01 recovery、Lab02 execution、persistent network
   change、configuration deployment 或 extended validation。已完成的 Lab02 Session B 是另行
@@ -187,7 +187,7 @@ Owner 於本輪採用 Delivery Closeout Contract v0.1，Lab03 最低交付以 US
 | Lab02 eMBMS | `SESSION B CLOSED / TEACHING EXTENSION PASS_WITH_LIMITATIONS / INCIDENT TRIGGER LOCALIZED` | visible playback 有 bounded photo evidence，stream integrity degraded/intermittent；USB disconnect cause 未定位，Latency deferred |
 | Agent + Git Runbook | `INTERNAL ENGINEERING REFERENCE / STUDENT CURRICULUM SUPERSEDED` | 可保留 Maintainer safety／governance reference；不是 current teaching mainline |
 | Future Teaching | `REPLAN_REQUIRED / NOT ACTIVE COURSE` | student Agent assumptions 已由 PD-03 supersede；Git scope 受 PD-04 限制 |
-| Security curriculum mapping | `CROSS-CUTTING DIRECTION / TAILCAT LENS OPTION A EXECUTED ONCE` | Lab01～03 整體 mapping 未設計；Tailcat Security Lens（DR-016）選項 A 於 2026-11-19 執行一次，T8 部分完成；不授權後續 Runtime |
+| Security curriculum mapping | `CROSS-CUTTING DIRECTION / TAILCAT LENS OPTION A EXECUTED ONCE` | Lab01～03 整體 mapping 未設計；Tailcat Security Lens（DR-016）選項 A 於 2026-11-19 執行一次（T0～T8）；不授權後續 Runtime |
 | Workflow vocabulary | `EXTERNALIZATION REQUIRED / NOT YET DEFINED` | 先定義 internal terms，再另行轉換 external language |
 | 6G LEO / NTN | `RESEARCH_PARKING / CONCEPT_PROTOTYPE / NOT_INTEGRATED` | 不是 Lab01／Lab02 validated mainline |
 | ACP | `PARKING / OBSERVATION` | 不是正式 Protocol、Policy 或 automated gate |
