@@ -1,0 +1,168 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "LAB04-TAILCAT-2026-11-19-SECURITY-LENS-T0-T8"
+  source_thread: "Claude Code session 929563bb-972a-4d0a-a219-fa8ac39c7d1b"
+  date_or_range: "2026-11-19 09:04Z–09:37Z（17:04–17:37 Asia/Taipei）"
+  executor: "Claude agent：遠端唯讀檢查、佈署 tailcat、在 Mac 上產生測試 CA 與啟動 derper、在兩台主機啟動與停止測試服務及 tailcat、分析側錄檔、清理。Owner（現場）：在 Mac、5g-linux1-audit、5g-linux2-audit 三台以 sudo 執行與停止 tcpdump；Agent 未使用 sudo，也未經手密碼。"
+  historical_or_current: "當日觀察；09:37Z 清理完成後，主機上已無本次的程序、檔案與金鑰，不代表之後的狀態"
+
+authorization:
+  scope:
+    - "PR #57 合併後，Owner（並回報教授同意，見 DR-016）授權開始實作組內稱為 Lab04 的 Tailcat Security Lens。"
+    - "T1 遠端唯讀檢查（Level 1）：Agent 依上述授權執行，未用 sudo、未讀 log、未送測試流量。"
+    - "Owner 明確核准第 1 批（以 scp 佈署 tailcat 到兩台主機的 ~/lab04-tailcat，回復為刪除該目錄）、第 2 批（Mac 上的測試 CA、IP 憑證與只綁 192.168.250.10 的 derper）、第 3 批（linux2 上只綁 127.0.0.1:8080 的測試服務與 tailcat serve、linux1 上的 tailcat forward、--allow 測試）。第 4 批（tcpdump 側錄）當時延後。"
+    - "Owner 其後核准第 4 批，並自行以 sudo 執行三台的 tcpdump。"
+    - "genkey 不支援 file:// DERP map，Agent 在 linux2 以只綁 127.0.0.1:18900 的臨時 HTTP 服務提供 derpmap.json 數秒後停止；Agent 視為第 3 批 localhost 測試服務的範圍，事前未個別確認，於同一回合回報 Owner。"
+  allowed_mutations:
+    - "兩台主機使用者目錄內的 ~/lab04-tailcat/、~/.config/tailcat/、~/.cache/tailcat/（皆於清理時移除）。"
+    - "控制端 Mac 上 Repo 外的證據目錄 2026-11-19-Lab04-Tailcat/ 與其中暫存的測試 CA、私鑰（私鑰於清理時刪除）。"
+    - "Repo：本 TER、TER 索引、提案狀態與 PROGRESS.md 的 Security 狀態。"
+  forbidden:
+    - "Agent 不使用 sudo、不改路由、防火牆、DNS、netplan 或系統信任庫；不啟動 srsRAN；不涉及 RF；不把 tailcat 位址、私鑰或 CA 私鑰寫入 Repo、證據或對話。"
+    - "舊 Lab04 的偽基地台、UE Scanner、DoS 與識別資訊收集不在範圍內。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "main（執行期間）；本 TER 於 docs/lab04-tailcat-ter-1119 撰寫"
+  start_head: "e05b8282961be9b4a999b59ade28651fb20ec064"
+  end_head: "e05b8282961be9b4a999b59ade28651fb20ec064"
+
+evidence:
+  - evidence_id: "LT-01"
+    claim: "執行前兩台主機與控制端 Mac 的狀態（T1）。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "09:04Z 兩台皆 x86_64、Ubuntu 24.04.4、使用者 user，tailcat／derper／go 不存在，srsepc／srsenb／srsue 未執行。兩台皆有有線 192.168.250.11／.12（/24）與手機熱點 172.20.10.11／.12（/28，預設路由）。兩台都已有 TCP *:5201 監聽者（非 Agent 啟動，未處理）。Mac：arm64、en5 192.168.250.10、en0 172.20.10.2，應用程式防火牆開啟，TCP 80／443 與 UDP 3478 無本機監聽者。"
+    directness: "PRIMARY"
+    confidence: "高；限當次命令輸出。"
+    source_location: "Repo 外 2026-11-19-Lab04-Tailcat/T1-*.txt"
+    limitations:
+      - "兩台主機回報相同的 hostname 字串，本紀錄以 SSH 別名與 IP 區分。"
+      - "Mac 的 lsof 輸出順帶列出無關 App 的對外連線，已自證據檔刪除。"
+  - evidence_id: "LT-02"
+    claim: "使用的軟體版本與來源。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "tailcat v0.7.0（GitHub Release 2026-09-20T00:37Z），tailcat_0.7.0_linux_amd64.tar.gz 的 SHA-256 與 checksums.txt 相符（23c0b1887a5ec422…）；解出的執行檔 SHA-256 75da81231e01f2a5… 在兩台主機上與本機一致，./tailcat version 為 v0.7.0。derper 由 tailscale.com/cmd/derper@v1.104.7 以 Go 1.27.3 darwin/arm64 編譯（SHA-256 fa0ba42e50113121…）。"
+    directness: "PRIMARY"
+    confidence: "高。"
+    source_location: "Repo 外 downloads/、00-session-notes.md"
+    limitations:
+      - "Release 頁面未見 asset 簽章檔，只能以 checksums.txt 驗證完整性。"
+  - evidence_id: "LT-03"
+    claim: "本地 DERP relay 可以在實驗室內運作，不需要網域、Let's Encrypt、root 或修改主機信任庫（T0）。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "derper -a 192.168.250.10:8443 -certmode manual -hostname 192.168.250.10 -http-port -1 -stun-port 3478，憑證為 7 天測試 CA 簽發、SAN IP:192.168.250.10。derper 回報 serving on 192.168.250.10:8443 with TLS、STUN 在 192.168.250.10:3478，並提示 CertName sha256-raw:fee23432…，與憑證 DER 的 SHA-256 相同。Mac 以 curl --cacert 驗證 https://192.168.250.10:8443/derp/probe 得 200、verify=0。DERP map（RegionID 900，IPv4 192.168.250.10，DERPPort 8443，STUNPort 3478，CertName 釘選）經 genkey --embed-derp-map 嵌入位址；tailcat parse 顯示該 node。tailcat serve 回報 Selected bootstrap relay region 900, Lab04 control Mac。"
+    directness: "PRIMARY"
+    confidence: "高。"
+    source_location: "Repo 外 T0-derper.log、derpmap.json、logs-redacted/"
+    limitations:
+      - "genkey 的 --derpmap-url 不支援 file://；以 linux2 上只綁 127.0.0.1:18900 的臨時 HTTP 服務提供，數秒後停止。"
+      - "主機以釘選憑證雜湊信任 relay，不是 CA 信任鏈；未測試 SSL_CERT_FILE 的方式。"
+  - evidence_id: "LT-04"
+    claim: "測試服務只在 linux2 本機可用，經 Tailcat overlay 可從 linux1 存取（T2、T3）。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "linux2 的 python3 http.server 只監聽 127.0.0.1:8080，內容為標記 LAB04-TAILCAT-TEST-20261119T171547。linux1 直接 curl 192.168.250.12:8080 得 Couldn't connect（exit 7）。linux1 執行 tailcat forward <tc-address> 18080:8080 後，curl 127.0.0.1:18080/marker.txt 取得標記（09:16Z 一次；09:32Z 三次）。"
+    directness: "PRIMARY"
+    confidence: "高。"
+    source_location: "source_thread；Repo 外 logs-redacted/"
+    limitations:
+      - "測試內容只有一個自行產生的標記字串。"
+  - evidence_id: "LT-05"
+    claim: "Tailcat 先經本地 relay 建立聯繫，再改走有線直連；沒有走手機熱點（T5）。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "forward 的 log：new contact via=derp，隨即 now using 192.168.250.12:50875、via=direct。tailcat ping --until-direct：09:17Z 為 pong in 1.89ms via DERP(1)、pong in 2.19ms via 192.168.250.12:50875；09:33Z 為 4 次 via DERP(1)（2.01–2.86 ms）後 1.14ms via 192.168.250.12:55287。側錄中 linux1 與 linux2 間的 UDP 在有線介面上；兩台的 wlo1 上沒有 tailcat 流量。"
+    directness: "PRIMARY"
+    confidence: "高；限兩次執行。"
+    source_location: "Repo 外 logs-redacted/、pcap/"
+    limitations:
+      - "未測試有線斷開時是否改走熱點。"
+  - evidence_id: "LT-06"
+    claim: "預設位址是持有即可連入的憑證；--allow 可限制只有登記的 client 金鑰能連入（T6）。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "tailcat parse 的頂層欄位為 PresharedKey、Region、ServerDiscoPublic、ServerPublic（只列欄位名稱，未顯示值）。T3 的 forward 使用臨時金鑰即成功連入。serve --allow=nodekey:31c88aea…（linux1 的 client-default 公鑰）後：用該金鑰的 forward 取得標記；以 --key=new 的 forward 持有同一位址，curl 10 秒逾時（exit 28）。未開 --verbose 的 serve log 沒有拒絕紀錄。"
+    directness: "PRIMARY"
+    confidence: "高。"
+    source_location: "source_thread；Repo 外 logs-redacted/*allow*"
+    limitations:
+      - "未測試第三台主機或其他使用者帳號。"
+      - "開 --verbose 時是否有拒絕紀錄未查。"
+  - evidence_id: "LT-07"
+    claim: "Overlay 的加密只涵蓋兩個 tailcat process 之間；兩端的 loopback 段是明文（T4）。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "09:32:48Z–09:33:05Z 期間 Owner 以 tcpdump -i any（主機）與 -i en5（Mac）側錄，排除 port 22。以主機自己的 tcpdump -A 分析：標記在 linux1 與 linux2 皆只出現在 lo（各 3 次，對應 3 次抓取），有線介面與 wlo1 皆 0 次；mac-en5.pcap 0 次。"
+    directness: "PRIMARY"
+    confidence: "高；限這段側錄。"
+    source_location: "Repo 外 pcap/linux1-any.pcap（SHA-256 4b60ab6b…）、pcap/linux2-any.pcap（f053d2fc…）、pcap/mac-en5.pcap"
+    limitations:
+      - "Mac 的 tcpdump 讀 Linux any 側錄時會把介面編號對應成 Mac 的介面名稱，分析改在主機上進行。"
+      - "側錄檔留在 Repo 外，含主機的其他流量。"
+  - evidence_id: "LT-08"
+    claim: "側錄期間主機沒有連到 Tailscale 或 tailcat.dev（T0 不連外）。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "兩台的 DNS 查詢只有 connectivity-check.ubuntu.com。tailcat 程序（使用者 user）的 socket 只有 UDP 與連到 192.168.250.10:8443 的 TCP。linux2 的 wlo1 上另有一條到 199.232.113.91:443 的 TLS 流，最早封包 09:32:44Z，早於 tailcat 啟動；ss 對 user 擁有的程序都會列出名稱，該 socket 沒有顯示程序。"
+    directness: "PRIMARY"
+    confidence: "中高；199.232.113.91 的歸屬為推論。"
+    source_location: "Repo 外 pcap/、00-session-notes.md"
+    limitations:
+      - "只涵蓋約 20 秒的側錄窗口；09:15Z 第一次啟動時沒有側錄。"
+      - "199.232.113.91 的實際程序未查（需要 sudo）。"
+  - evidence_id: "LT-09"
+    claim: "Relay 鏈路上看不到標記，但資料本身很可能沒有經過 relay（T8 部分完成）。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "mac-en5.pcap 中 relay 流量為 TLS（TCP 8443）與 STUN（UDP 3478），標記 0 次。抓取發生時路徑已改為直連。"
+    directness: "PRIMARY"
+    confidence: "中。"
+    source_location: "Repo 外 pcap/mac-en5.pcap、T4-derper.log"
+    limitations:
+      - "未強制只走 relay；要強制需暫時擋直連 UDP，屬 Level 4 防火牆變更，未授權，Owner 決定之後再補。"
+      - "relay 營運者在 derper 程序內看得到的內容（TLS 內的 WireGuard 封包）未觀察。"
+  - evidence_id: "LT-10"
+    claim: "位址可能經由程序列表與 log 外洩。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "tailcat forward --help 的用法只有 tailcat forward [flags] <tc-addr> …，位址只能放在命令列參數；serve 的 stderr log 含完整位址（grep 命中 serve.log 1 次）。帶回的 log 已遮罩，證據目錄以完整位址 grep 為 0 次。"
+    directness: "PRIMARY"
+    confidence: "高。"
+    source_location: "source_thread；Repo 外 logs-redacted/"
+    limitations:
+      - "未以第二個帳號實際執行 ps 驗證可見性。"
+  - evidence_id: "LT-11"
+    claim: "清理後主機與 Mac 上沒有本次的程序、檔案與金鑰（T7）。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "09:35–09:37Z：兩台以 tailcat genkey --delete 刪除金鑰，移除 ~/lab04-tailcat、~/.config/tailcat、~/.cache/tailcat；無 tailcat 或 http.server 程序；無 8080、18080、18081、18900 監聽者。Mac 的 derper 已停止、8443 無監聽者，測試 CA 私鑰、伺服器私鑰與 derper.json 已刪除。側錄檔在刪除前已確認副本雜湊與主機上一致。"
+    directness: "PRIMARY"
+    confidence: "高。"
+    source_location: "source_thread；Repo 外 00-session-notes.md"
+    limitations:
+      - "預先存在的 TCP *:5201 監聽者未處理。"
+
+mutations:
+  - "兩台主機：建立並於清理時刪除 ~/lab04-tailcat/、~/.config/tailcat/、~/.cache/tailcat/。第一次 scp 因 zsh 的 $h:l 修飾子變成本機 cp 而未複製，只建立了空目錄，改用 ${h} 後重做。"
+  - "Mac：於 Repo 外證據目錄建立測試 CA、IP 憑證與 derper 金鑰（清理時刪除），兩次啟動 derper（09:14Z–09:18Z、09:31Z–09:37Z）。"
+  - "Repo：新增本 TER，更新 TER 索引、提案狀態與 PROGRESS.md。"
+
+recovered_or_observed_claims:
+  - claim: "自建 DERP 可完全在實驗室內運作，主機以釘選憑證雜湊信任 relay。"
+    status: "OBSERVED"
+    supporting_evidence: ["LT-03", "LT-08"]
+  - claim: "Overlay 的保護只涵蓋 tailcat 程序之間，loopback 段為明文。"
+    status: "OBSERVED"
+    supporting_evidence: ["LT-04", "LT-07"]
+  - claim: "預設位址是持有即可連入的憑證，--allow 可加上 client 身分限制。"
+    status: "OBSERVED"
+    supporting_evidence: ["LT-06", "LT-10"]
+  - claim: "Tailcat 優先改走有線直連，relay 只在建立階段使用。"
+    status: "OBSERVED"
+    supporting_evidence: ["LT-05"]
+  - claim: "Relay 看不到應用內容。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["LT-09"]
+
+provenance_gaps:
+  - "教授同意的內容只有 Owner 回報，見 DR-016。"
+  - "Mac 防火牆開啟，但 derper 的連入未被擋；是否曾跳出允許視窗未確認。"
+  - "T8 未強制只走 relay；Tailscale 文件與 derper README 說 relay 只看得到加密封包，本次未獨立驗證。"
+
+stop_point:
+  result: "T0、T2、T3、T4、T5、T6、T7 通過；T8 部分完成；T1 完成。主機與 Mac 已清理。"
+  next_authority_required: "T8 補做（暫時擋直連 UDP 的 Level 4 防火牆變更）、選項 B（經 LTE bearer，需 RF／Runtime 授權）與任何重跑，都需 Owner 另行授權。"
