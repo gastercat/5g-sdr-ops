@@ -14,6 +14,10 @@ teaching model；未來方向是將 Security cross-cutting 地對應至 Lab01、
 curriculum、execution plan 或 Runtime authority。任何 false base station、DoS、OTA、RF 或
 security exercise 都需要另行 scope、合法性／隔離審查與明確 Human authorization。
 
+Current Security Lens 提案（組內仍稱 Lab04，非獨立 Lab）：
+[Tailcat Security Lens 提案](../../delivery/lab04-tailcat-security-lens-proposal.md)，
+`PROPOSAL / NOT_TESTED`。本目錄的偽基地台材料不屬於該提案範圍。
+
 Canonical decision source：
 [`2026-08-18 Professor Meeting Decision Record`](../../docs/decisions/2026-08-18-professor-meeting.md)。
 

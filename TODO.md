@@ -32,6 +32,8 @@
   reliability／latency trade-off 的學生紀錄；不要求完整 3GPP-grade URLLC validation。
 - [ ] **Security cross-cutting mapping。** Lab01 手冊已有 Security Lens；仍需另行盤點
   Lab01～03 整體 topics、來源與 safety boundary，舊 Lab04 不恢復成獨立必做 Runtime。
+  [Tailcat Security Lens 提案](delivery/lab04-tailcat-security-lens-proposal.md)（組內稱
+  Lab04）待 Owner／教授 Review；執行需另行授權。
 - [ ] **Student-safe minimum Git scope。** 另行定義安全完成實驗所需概念與 commands；
   學生不教 Agent，不把 Maintainer governance 改成完整 Git curriculum。
 

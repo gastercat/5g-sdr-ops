@@ -176,6 +176,25 @@ Repository、Runtime 或 Lab authority。
 - Boundary：本決策不變更 RF Safety、Runtime Authorization、default-deny 或 Gate Acceptance。任何 RF Runtime 操作仍須另行明確授權；mock success 不等於 Physical RF PASS，也不建立 B0.6 Gate PASS 或 Owner Acceptance。
 - Materialization：[AGENTS.md](../AGENTS.md#current-delivery-goal)、[PROGRESS.md](../PROGRESS.md#current-status)。本次僅授權六份既有文件的受控更新；不授權 Commit、Push 或後續工程階段，也不將文件更新設為 G3-3H／B0.6 的新前置 Gate。
 
+### DR-016｜Tailcat Security Lens 作為 Security cross-cutting 的實作方向
+
+- Status：`ACCEPTED / REPORTED_BY_OWNER / PROPOSAL STAGE`
+- Decision Date：2026-11-19。
+- Authority：Owner 於 2026-11-19 回報教授同意：在不開獨立 Lab04 的前提下，可實作原先提出的
+  Tailscale／Tailcat 架構作為 Security Lens；Owner 同日指示補登本紀錄。本紀錄保存 Owner 的
+  回報，Repository 沒有可獨立重驗的會議紀錄或教授書面意見。
+- Decision：Security cross-cutting 方向下，以兩台實驗室主機之間的 Tailcat overlay 作為一項
+  Security Lens 實作；組內稱為「Lab04」，此稱呼不恢復 DR-011 已 supersede 的獨立 Lab04。
+- Owner choices（2026-11-19）：先做選項 A（有線實驗室網路，不啟動 SDR），主機為
+  `5g-linux1-audit` 與 `5g-linux2-audit`；兩台主機以手機熱點連外；不指定 Tailcat 版本，
+  安裝方式交由 Agent 提案、執行時記錄實際版本；自建本地 DERP relay，放在控制端 Mac（192.168.250.10），可行性以提案的
+  T0 驗證。
+- Boundary：只在本組兩台主機與實驗室網路內進行；舊 Lab04 的偽基地台、UE Scanner、DoS 與
+  識別資訊收集不在範圍內。本決策不授權遠端存取、軟體安裝、Runtime、封包擷取或 RF 操作，
+  每類動作仍須 Owner 當次明確授權；選項 B（經 LTE bearer）另需 RF／Runtime 授權。
+- Relationship：延伸 DR-011，不修改其內容。
+- Evidence：[Tailcat Security Lens 提案](../delivery/lab04-tailcat-security-lens-proposal.md)。
+
 ## Historical but Still Relevant
 
 - Repo 最早可達 materialization commit：
