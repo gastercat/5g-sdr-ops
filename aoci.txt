@@ -1,7 +1,7 @@
 #AOCI-ROOT-MANIFEST: 1
 #Format-Version: cognition-volumes/v1
 #Locale: en-US
-#Project: 5g-sdr-ops
-#Global-Invariants: -
+#Project: Documentation and governance repo for a 5G SDR course project: Lab01-03 delivery, srsRAN_4G LTE teaching configs, task evidence, decisions, and exploration tools and an interactive lab site
+#Global-Invariants: The repo never operates the lab: any Runtime, RF, network or config deployment needs separate explicit human approval. Keep KNOWN/OBSERVED, REPORTED_ONLY and UNKNOWN distinct; never upgrade claims or manufacture PASS. Historical evidence is not current Runtime truth. No secrets, subscriber data or private aliases in Git. Never use git checkout/reset as runtime rollback in /etc/srsran. Preserve archived payload bytes and original evidence paths.
 #Volume: id=meta kind=meta path=aoci.meta.txt format=meta-v1 depends=- state=enabled
 #Volume: id=code kind=code path=aoci.code.txt format=object-fras-v2 depends=meta state=enabled
