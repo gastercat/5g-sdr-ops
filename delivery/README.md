@@ -33,6 +33,8 @@ Instructor／TA 另讀 [目前進度](../PROGRESS.md) 與 [已知限制](../docs
   不要求閱讀整套 Maintainer Agent + Git Runbook。
 
 以上是本次文件分類的範圍說明；未定的成功門檻與課程驗收由後續獨立 Work Unit 處理。
+Lab01 的完成範圍與完成標準已有[提案](lab01-completion-criteria-proposal.md)，狀態為
+`PROPOSAL / PENDING PROFESSOR REVIEW`，教授 Review 前不改變上述界線。
 
 ## Delivery supporting
 
