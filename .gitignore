@@ -11,3 +11,6 @@ __pycache__/
 # AOCI agent host integration (machine-bound; do not commit)
 .mcp.json
 .mcp.json.backup.*
+
+# Serena MCP server project data (machine-local; do not commit)
+.serena/
