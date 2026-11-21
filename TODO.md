@@ -12,7 +12,8 @@
 
 - [ ] **Lab01 completion scope／criteria。** 依 existing evidence 與 Human Review 收斂完成
   範圍；EV-2 R5 仍為 `FAIL / UNLOCALIZED`。R5A 是另行授權的工程定位，不是學生 debugging
-  必修，也不因這份待辦而啟動。
+  必修，也不因這份待辦而啟動。2026-11-21 已提出
+  [完成標準提案](delivery/lab01-completion-criteria-proposal.md)，待教授 Review。
 - [ ] **Lab01 手冊 Review 與 completion criteria。** [學生手冊](labs/lab01-small-cell/student-manual.md)
   已有 `DRAFT / HUMAN REVIEW REQUIRED` 正文，[教學設定](labs/lab01-small-cell/student-config/README.md)
   已有 static consistency review；後續需核對章節、來源與交付要求，不再把「建立檔案」當成
