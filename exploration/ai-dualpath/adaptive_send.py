@@ -102,7 +102,7 @@ def run(a, emit=None):
             extra = leo.sample(t0 - start, rng) if leo and tag == "B" else 0.0
             sent[tag].append(pid)
             queue(t0 + a.timeout / 1000.0, pid, tag, None)   # ignored if an echo is shown first
-            emit({"event": "tx", "id": pid, "path": tag})
+            emit({"event": "tx", "id": pid, "path": tag, "utc": time.time()})   # wall clock, to align with netem phases
             if extra is None:
                 continue                                      # emulated loss: nothing goes on the wire
             if tag == "B" and leo:

@@ -1,0 +1,10 @@
+{
+  "name": "comparison-burst",
+  "note": "策略比較用：重度階段為 Gilbert-Elliott 突發遺失（平均約 33%，一次連續約 10 個封包）。數值為設定值，不代表任何真實鏈路",
+  "repeat": true,
+  "phases": [
+    {"label": "normal", "seconds": 40, "netem": "loss 0%"},
+    {"label": "mild", "seconds": 15, "netem": "loss 5% delay 15ms 10ms"},
+    {"label": "severe", "seconds": 5, "netem": "loss gemodel 5% 10% 100% 0% delay 40ms 20ms"}
+  ]
+}
