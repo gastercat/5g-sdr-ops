@@ -56,6 +56,9 @@ elif verb == "change":
         sys.exit(2)
 elif verb == "del":
     open(state_file, "w").write("none")
+if os.environ.get("FAKE_TC_HANG") == verb:     # the change is applied, then tc hangs past the timeout
+    import time
+    time.sleep(10)
 '''
 
 
@@ -86,10 +89,11 @@ class Fake(unittest.TestCase):
         self.calls_file = os.path.join(d, "calls.jsonl")
         self.state_file = os.path.join(d, "state")
         self.env = {"FAKE_TC_LOG": self.calls_file, "FAKE_TC_STATE": self.state_file}
-        old = {k: os.environ.get(k) for k in list(self.env) + ["FAKE_TC_FAIL", "FAKE_TC_RACE"]}
+        extra = ["FAKE_TC_FAIL", "FAKE_TC_RACE", "FAKE_TC_HANG"]
+        old = {k: os.environ.get(k) for k in list(self.env) + extra}
         os.environ.update(self.env)
-        os.environ.pop("FAKE_TC_FAIL", None)
-        os.environ.pop("FAKE_TC_RACE", None)
+        for k in extra:
+            os.environ.pop(k, None)
         self.addCleanup(lambda: [os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
                                  for k, v in old.items()])
 
@@ -106,12 +110,12 @@ class Fake(unittest.TestCase):
     def mutating(self):
         return [c for c in self.calls() if c[1] != "show"]
 
-    def run_main(self, *argv, clock=None, schedule=EXAMPLE):
+    def run_main(self, *argv, clock=None, schedule=EXAMPLE, **runner_kw):
         clock = clock or Clock()
         out, err = io.StringIO(), io.StringIO()
         code = N.main([schedule, "--dev", "tun_srsue", "--tc", self.tc] + list(argv),
                       tc_prefix=[sys.executable], clock=clock, sleep=clock.sleep,
-                      wall=lambda: 1795000000.0 + clock.now, out=out, err=err)
+                      wall=lambda: 1795000000.0 + clock.now, out=out, err=err, **runner_kw)
         events = [json.loads(line) for line in out.getvalue().splitlines()]
         return code, events, err.getvalue()
 
@@ -148,6 +152,21 @@ class Validation(unittest.TestCase):
     def test_accepts_minimum_phase(self):
         sched, _ = self.load(self.base(phases=[{"label": "a", "seconds": N.MIN_PHASE_S, "netem": "loss 1%"}]))
         self.assertEqual(sched["cycle_s"], N.MIN_PHASE_S)
+
+    def test_rejects_correlations(self):
+        for netem in ("loss 40% 25%", "delay 40ms 20ms 25%", "duplicate 1% 10%",
+                      "loss 5% delay 15ms 10ms 5%", "delay 10ms loss 1% 50%"):
+            with self.subTest(netem=netem):
+                with self.assertRaises(N.ScheduleError) as cm:
+                    self.load(self.base(phases=[{"label": "a", "seconds": 1, "netem": netem}]))
+                self.assertIn("相關係數", str(cm.exception))
+
+    def test_accepts_values_without_correlation(self):
+        for netem in ("loss 5% delay 15ms 10ms", "delay 40ms", "duplicate 1%",
+                      "loss gemodel 1% 10% 70% 0.1%", "loss state 1% 2% 3% 4% 5%",
+                      "corrupt 1% 25%", "reorder 25% 50% delay 10ms", "rate 1mbit"):
+            with self.subTest(netem=netem):
+                self.load(self.base(phases=[{"label": "a", "seconds": 1, "netem": netem}]))
 
     def test_rejects_duplicate_label(self):
         p = {"label": "a", "seconds": 1, "netem": "loss 1%"}
@@ -412,6 +431,38 @@ class Run(Fake):
         self.assertEqual(code, N.EXIT_OK)
         self.assertEqual(self.mutating()[-1][1], "del")
         self.assertIn("schedule_end", err.getvalue())
+
+    def test_timed_out_add_is_cleaned_up(self):
+        os.environ["FAKE_TC_HANG"] = "add"        # kernel applied the add, tc killed on timeout
+        code, events, err = self.run_main("--cycles", "1", tc_timeout=0.5)
+        self.assertEqual(code, N.EXIT_TC)
+        self.assertEqual([c[1] for c in self.mutating()], ["add", "del"])
+        self.assertTrue(events[-1]["removed"])
+        self.assertEqual(events[-1]["note"], "deleted")
+        self.assertIn("timeout", err)
+
+    def test_signals_during_cleanup_are_ignored(self):
+        clock = Clock(on_sleep=lambda n: os.kill(os.getpid(), signal.SIGTERM) if n == 2 else None)
+
+        def hook(args, result):                    # more signals while cleanup deletes the qdisc
+            if args[1] == "del":
+                os.kill(os.getpid(), signal.SIGINT)
+                os.kill(os.getpid(), signal.SIGHUP)
+            return result
+        self.patch_call(hook)
+        before = {s: signal.getsignal(s) for s in N.HANDLED}
+        code, events, _ = self.run_main("--cycles", "1", clock=clock)
+        self.assertEqual(code, 128 + signal.SIGTERM)
+        self.assertEqual(events[-1]["reason"], "signal_SIGTERM")
+        self.assertEqual(events[-1]["note"], "deleted")
+        self.assertEqual({s: signal.getsignal(s) for s in N.HANDLED}, before)
+
+    def test_only_the_first_signal_raises(self):
+        r = N.Runner([], "x", lambda _: None)
+        with self.assertRaises(N.Stop):
+            r._on_signal(signal.SIGTERM, None)
+        self.assertIsNone(r._on_signal(signal.SIGINT, None))     # dropped, cannot cut cleanup short
+        self.assertIsNone(r._on_signal(signal.SIGHUP, None))
 
     def test_dry_run_never_calls_tc(self):
         code, events, _ = self.run_main("--cycles", "1", "--dry-run")

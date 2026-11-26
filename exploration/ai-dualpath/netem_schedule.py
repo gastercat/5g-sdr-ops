@@ -38,11 +38,19 @@ KEYWORDS = {"loss", "delay", "gemodel", "state", "duplicate", "reorder", "corrup
 VALUE = re.compile(r"^[0-9]+(\.[0-9]+)?(%|ms|us|kbit|mbit)?$")
 DEV = re.compile(r"^[A-Za-z0-9_.:][A-Za-z0-9_.:-]{0,14}$")
 # `tc qdisc change` resends these netem attributes only when the phase names them, and the kernel
-# keeps the previous value when an attribute is absent, so they can leak into later phases.
-# (loss, delay, duplicate and the loss model live in the always-sent base options and do reset.)
+# keeps the previous value when an attribute is absent, so they can leak into later phases
+# (observed on Linux2, TER NM-11). The loss, delay and duplicate values themselves are in the
+# always-sent base options and reset; the loss model resets to random when no gemodel/state is given.
 STICKY = ("rate", "corrupt", "reorder")
+# The loss, delay and duplicate correlations travel in a separate attribute that is likewise sent
+# only when written, so they are expected to leak the same way (not yet tested on the host). They
+# are refused outright: the most values each keyword may take is its own value(s), no correlation.
+# (`loss gemodel ...` / `loss state ...` put their values after the gemodel/state keyword.)
+NO_CORR = {"loss": 1, "delay": 2, "duplicate": 1}
 
 EXIT_OK, EXIT_CLEANUP, EXIT_USAGE, EXIT_REFUSED, EXIT_TC = 0, 1, 2, 3, 4
+RC_TIMEOUT, RC_NOEXEC = 124, 127    # Runner.call() results that are not tc's own exit status
+HANDLED = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)
 
 
 class ScheduleError(ValueError):
@@ -66,6 +74,15 @@ def netem_tokens(text):
             raise ScheduleError("netem 參數含不允許的 token：%r" % tok)
     if tokens[0] not in KEYWORDS:
         raise ScheduleError("netem 參數必須以關鍵字開頭：%r" % text)
+    i = 0
+    while i < len(tokens):                      # count the values that follow each keyword
+        j = i + 1
+        while j < len(tokens) and tokens[j] not in KEYWORDS:
+            j += 1
+        if tokens[i] in NO_CORR and j - i - 1 > NO_CORR[tokens[i]]:
+            raise ScheduleError("netem 參數 %r 帶有相關係數（%s 之後的值太多）；tc qdisc change 會沿用沒寫出的"
+                                "相關係數，本工具不接受" % (text, tokens[i]))
+        i = j
     return tokens
 
 
@@ -153,15 +170,23 @@ def timeline(sched, cycles=None, duration=None):
 
 
 class Runner:
-    def __init__(self, tc, dev, emit, clock=time.monotonic, sleep=time.sleep, wall=time.time, err=sys.stderr):
+    def __init__(self, tc, dev, emit, clock=time.monotonic, sleep=time.sleep, wall=time.time, err=sys.stderr,
+                 tc_timeout=15.0):
         self.tc, self.dev, self.emit = list(tc), dev, emit
         self.clock, self.sleep, self.wall, self.err = clock, sleep, wall, err
+        self.tc_timeout = tc_timeout
+        self._fired = False
 
     def call(self, *args):
+        """Run tc; return (rc, stdout, stderr). rc is RC_TIMEOUT when tc was killed after
+        tc_timeout seconds (the kernel may already have applied the change) and RC_NOEXEC when
+        tc could not be started (nothing was applied)."""
         try:
-            r = subprocess.run(self.tc + list(args), capture_output=True, text=True, timeout=15)
-        except (OSError, subprocess.TimeoutExpired) as e:
-            return 127, "", str(e)
+            r = subprocess.run(self.tc + list(args), capture_output=True, text=True, timeout=self.tc_timeout)
+        except subprocess.TimeoutExpired as e:
+            return RC_TIMEOUT, "", "timeout after %ss: %s" % (self.tc_timeout, e)
+        except OSError as e:
+            return RC_NOEXEC, "", str(e)
         return r.returncode, r.stdout, r.stderr
 
     def qdisc_state(self):
@@ -194,16 +219,18 @@ class Runner:
         if refused:
             return EXIT_REFUSED
 
-        # owned: an add succeeded. adding: an add was issued and has not returned, so a signal may
-        # have cut it short after the kernel applied it. Cleanup acts only in these two cases; a
-        # failed add leaves whatever is on the interface (possibly someone else's netem) alone.
+        # added: an add succeeded. adding: an add was issued and did not come back with a known
+        # result (still in flight when a signal arrived, or killed on timeout), so the kernel may
+        # have applied it. Cleanup acts only in these two cases; an add that tc itself rejected
+        # leaves whatever is on the interface (possibly someone else's netem) alone.
         added = adding = False
         reason, code, error = "error", EXIT_TC, None
+        self._fired = False
         old = {}
         try:
             try:
-                for s in (signal.SIGTERM, signal.SIGHUP):
-                    old[s] = signal.signal(s, self._stop)
+                for s in HANDLED:
+                    old[s] = signal.signal(s, self._on_signal)
                 for offset, cycle, idx in steps:
                     wait = start + offset - self.clock()
                     if wait > 0:
@@ -212,7 +239,8 @@ class Runner:
                     verb = "change" if added else "add"
                     adding = not added
                     rc, _, stderr = self.call("qdisc", verb, "dev", self.dev, "root", "netem", *p["tokens"])
-                    adding = False
+                    if rc != RC_TIMEOUT:
+                        adding = False
                     if rc != 0:
                         self.err.write("tc qdisc %s 失敗（%d）：%s\n" % (verb, rc, stderr.strip()))
                         break
@@ -234,29 +262,27 @@ class Runner:
                 reason, code = "signal_%s" % signal.Signals(s.signum).name, 128 + s.signum
             except Exception as e:  # noqa: BLE001  any failure still has to remove the qdisc
                 reason, code, error = "error", EXIT_TC, e
-        except (KeyboardInterrupt, Stop):       # a second signal while the first was being handled
-            pass                                # keep the first reason; cleanup below still runs
-        finally:
-            for s in old:                       # cleanup must not be cut short by a further signal
-                signal.signal(s, signal.SIG_IGN)
-            prev_int = signal.signal(signal.SIGINT, signal.SIG_IGN)
-            try:
-                removed, note = self.cleanup(added or adding)
             finally:
-                signal.signal(signal.SIGINT, prev_int)
-                for s, h in old.items():
-                    signal.signal(s, h)
-        if error is not None:
-            self.err.write("執行中發生例外：%r\n" % error)
-        try:
-            self.emit({"event": "schedule_end", "utc": self.wall(), "t": t(), "reason": reason,
-                       "removed": removed, "note": note})
-        except Exception as e:  # noqa: BLE001  the exit status below must still describe the cleanup
-            self.err.write("無法寫入 schedule_end：%r\n" % e)
-        if not removed:
-            self.err.write("無法確認 netem 已移除，請手動執行：\n  %s\n" % self.restore_hint())
-            return EXIT_CLEANUP
-        return code
+                # Plain assignment first: no call before it, so no signal handler can run here.
+                # From now on _on_signal only returns, so nothing can cut cleanup short.
+                self._fired = True
+                for s in old:                   # tc children inherit SIG_IGN, so a Ctrl-C sent to the
+                    signal.signal(s, signal.SIG_IGN)   # process group cannot kill the del either
+            removed, note = self.cleanup(added or adding)
+            if error is not None:
+                self.err.write("執行中發生例外：%r\n" % error)
+            try:
+                self.emit({"event": "schedule_end", "utc": self.wall(), "t": t(), "reason": reason,
+                           "removed": removed, "note": note})
+            except Exception as e:  # noqa: BLE001  the exit status below must still describe the cleanup
+                self.err.write("無法寫入 schedule_end：%r\n" % e)
+            if not removed:
+                self.err.write("無法確認 netem 已移除，請手動執行：\n  %s\n" % self.restore_hint())
+                return EXIT_CLEANUP
+            return code
+        finally:                                # handlers come back only once the exit code is settled
+            for s, h in old.items():
+                signal.signal(s, h)
 
     def preflight(self, base):
         """Return True (after logging why) when the run must stop without touching the interface."""
@@ -272,7 +298,17 @@ class Runner:
         self.emit(dict(event="schedule_refused", reason=reason, utc=self.wall(), **base))
         return True
 
-    def _stop(self, signum, _frame):
+    def _on_signal(self, signum, _frame):
+        """Turn the first SIGINT/SIGTERM/SIGHUP of a run into an exception; ignore the rest.
+
+        One exception per run is enough to leave the schedule loop. A second one could land in
+        an except or finally block and skip cleanup, so later signals are dropped.
+        """
+        if self._fired:
+            return
+        self._fired = True
+        if signum == signal.SIGINT:
+            raise KeyboardInterrupt
         raise Stop(signum)
 
     def cleanup(self, may_own):

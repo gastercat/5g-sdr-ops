@@ -95,8 +95,10 @@ sudo tc qdisc add dev tun_srsue root netem loss gemodel 1% 10% 70% 0.1%
 正常結束、Ctrl-C、`SIGTERM`、`SIGHUP` 或任何錯誤都會移除 qdisc 並再讀一次確認；無法確認時以狀態 1 結束，
 並在 stderr 印出還原指令。`tc qdisc show` 讀不到狀態（逾時、找不到 `tc` 等，但不是「介面不存在」）時，
 清理不執行刪除，同樣以狀態 1 結束。介面不存在、root qdisc 已經是 netem，或執行前就讀不到狀態時，
-它不做任何變更就停止。第一次 `tc qdisc add` 失敗時也不清理，避免刪掉別人在預檢之後才加上的 netem。
-每個階段至少 0.5 秒。
+它不做任何變更就停止。第一次 `tc qdisc add` 被 `tc` 拒絕時也不清理，避免刪掉別人在預檢之後才加上的 netem；
+但 `tc` 超過 15 秒沒有回應而被終止時，kernel 可能已經套用，這種情況仍會檢查並移除 root netem。
+每個階段至少 0.5 秒。執行中只有第一個 Ctrl-C、`SIGTERM` 或 `SIGHUP` 會中斷排程，之後的訊號在清理完成、
+結束狀態確定前都被忽略。
 
 結束狀態：0 正常完成、1 無法確認已移除、2 參數錯誤、3 拒絕執行（未做變更）、4 `tc` 錯誤；
 被中斷時為 128 加訊號編號（Ctrl-C 為 130、`SIGTERM` 為 143、`SIGHUP` 為 129），此時 qdisc 已移除。
@@ -107,13 +109,18 @@ sudo tc qdisc add dev tun_srsue root netem loss gemodel 1% 10% 70% 0.1%
 尚未用它執行策略比較。該次執行的是 SHA-256 `421420b2…` 的版本。之後加入結束狀態、新增失敗時不清理、
 階段長度下限與下述參數檢查的版本（`c4c2302`，SHA-256 `b1e17c8f…`）在同日重新於兩種介面上執行，結束狀態
 0／129／130／143／2／3、清理與保留他人 netem 皆符合預期（同一份 TER 的 NM-09～NM-13）。讀取失敗（`state_unknown`）
-與新增失敗的路徑沒有在主機上觸發，只以替身 `tc` 測試。
+與新增失敗的路徑沒有在主機上觸發，只以替身 `tc` 測試。其後加入的 `add` 逾時處理、相關係數拒絕與訊號處理
+（`c4c2302` 之後的版本）同樣只以替身 `tc` 測試，尚未在實驗主機上執行。
 
 `tc qdisc change` 不會重設新階段沒寫到的 `rate`、`corrupt`、`reorder`，會沿用上一階段的值。因此排程只要有
 任一階段用到其中一個，每個階段都必須寫出它，例如正常階段寫 `loss 0% rate 0`，否則載入排程時就會被拒絕。
 2026-11-26 在 Linux2（kernel 6.8.0-149、iproute2-6.1.0）以 `tc qdisc show` 觀察到這個行為（`OBSERVED`，TER NM-11）：
 `change` 成 `loss 5%` 後 `reorder`、`corrupt`、`rate` 都留著，`delay` 被重設。`rate 0`、`corrupt 0%` 等歸零寫法
 尚未測試，第一次使用時需確認 `tc` 接受且確實清除。
+
+`loss`、`delay`、`duplicate` 的相關係數（例如 `loss 40% 25%` 的 25%、`delay 40ms 20ms 25%` 的 25%）放在另一個
+同樣只在寫出時才送出的屬性，預期也會沿用上一階段的值（`NEEDS_CONFIRMATION`，NM-11 沒有測試相關係數）。
+工具一律拒絕帶相關係數的排程；需要突發性遺失時改用 `loss gemodel` 或 `loss state`，這兩種寫法每段都會重設。
 
 先檢查排程（不需要 `sudo`，不碰介面）：
 
