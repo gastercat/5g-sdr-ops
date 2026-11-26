@@ -12,6 +12,8 @@ so packet logs can be aligned with the phase that was active.
 Safety:
 - the schedule's netem arguments are checked against a keyword allow-list and handed to tc
   as an argument list, never through a shell;
+- rate, corrupt and reorder are not reset by `tc qdisc change` when a phase omits them, so a
+  schedule using any of them must name it in every phase;
 - the run stops without touching the interface if it is missing or its root qdisc is
   already netem;
 - the root qdisc is deleted on normal end, Ctrl-C, SIGTERM, SIGHUP and any error, and
@@ -28,6 +30,10 @@ MAX_RUN_S = 6 * 3600.0        # a whole run, whichever of --cycles / --duration 
 KEYWORDS = {"loss", "delay", "gemodel", "state", "duplicate", "reorder", "corrupt", "rate"}
 VALUE = re.compile(r"^[0-9]+(\.[0-9]+)?(%|ms|us|kbit|mbit)?$")
 DEV = re.compile(r"^[A-Za-z0-9_.:][A-Za-z0-9_.:-]{0,14}$")
+# `tc qdisc change` resends these netem attributes only when the phase names them, and the kernel
+# keeps the previous value when an attribute is absent, so they can leak into later phases.
+# (loss, delay, duplicate and the loss model live in the always-sent base options and do reset.)
+STICKY = ("rate", "corrupt", "reorder")
 
 EXIT_OK, EXIT_CLEANUP, EXIT_USAGE, EXIT_REFUSED, EXIT_TC = 0, 1, 2, 3, 4
 
@@ -54,6 +60,22 @@ def netem_tokens(text):
     if tokens[0] not in KEYWORDS:
         raise ScheduleError("netem 參數必須以關鍵字開頭：%r" % text)
     return tokens
+
+
+def check_sticky(phases):
+    """Raise ScheduleError unless every STICKY keyword used by any phase is named in every phase.
+
+    Conservative on purpose: it also rejects some safe schedules (e.g. a first phase without
+    rate followed by one with it), but each phase then states its full setting on its own and
+    nothing can carry over, including the wrap from the last phase back to phase 0.
+    """
+    used = [k for k in STICKY if any(k in p["tokens"] for p in phases)]
+    for p in phases:
+        missing = [k for k in used if k not in p["tokens"]]
+        if missing:
+            raise ScheduleError("階段 %r 缺少 %s：只要有任一階段使用這些參數，每個階段都必須寫出"
+                                "（例如 rate 0、corrupt 0%%），否則 tc qdisc change 會沿用上一階段的值"
+                                % (p["label"], "、".join(missing)))
 
 
 def load_schedule(raw):
@@ -92,6 +114,7 @@ def load_schedule(raw):
         out.append({"label": label, "seconds": float(sec), "netem": " ".join(tokens), "tokens": tokens})
     if total > MAX_CYCLE_S:
         raise ScheduleError("一個循環 %.1f 秒，超過上限 %.0f 秒" % (total, MAX_CYCLE_S))
+    check_sticky(out)
     return {"name": name, "repeat": repeat, "phases": out, "cycle_s": total}, sha
 
 
@@ -134,12 +157,17 @@ class Runner:
             return 127, "", str(e)
         return r.returncode, r.stdout, r.stderr
 
-    def root_is_netem(self):
-        """True / False, or None when the interface cannot be read (gone or never existed)."""
-        rc, out, _ = self.call("qdisc", "show", "dev", self.dev)
+    def qdisc_state(self):
+        """Root qdisc state: "netem" or "other" when read, "gone" when tc says the device does not
+        exist, "unknown" for any other failure (timeout, tc missing, unexpected error).
+
+        Only "gone" may be taken as proof that no netem is left; "unknown" never is.
+        """
+        rc, out, stderr = self.call("qdisc", "show", "dev", self.dev)
         if rc != 0:
-            return None
-        return any(line.startswith("qdisc netem ") and " root " in line + " " for line in out.splitlines())
+            return "gone" if "Cannot find device" in stderr else "unknown"
+        netem = any(line.startswith("qdisc netem ") and " root " in line + " " for line in out.splitlines())
+        return "netem" if netem else "other"
 
     def restore_hint(self):
         return "tc qdisc del dev %s root && tc qdisc show dev %s" % (self.dev, self.dev)
@@ -148,12 +176,16 @@ class Runner:
         start = self.clock()
         t = lambda: round(self.clock() - start, 3)
         base = {"dev": self.dev, "schedule": sched["name"], "sha256": sha}
-        state = self.root_is_netem()
-        if state is None:
+        state = self.qdisc_state()
+        if state == "gone":
             self.err.write("找不到介面 %s，未做任何變更。\n" % self.dev)
             self.emit(dict(event="schedule_refused", reason="no_device", utc=self.wall(), **base))
             return EXIT_REFUSED
-        if state:
+        if state == "unknown":
+            self.err.write("無法讀取 %s 的 qdisc（tc 失敗或逾時），未做任何變更。\n" % self.dev)
+            self.emit(dict(event="schedule_refused", reason="state_unknown", utc=self.wall(), **base))
+            return EXIT_REFUSED
+        if state == "netem":
             self.err.write("%s 的 root qdisc 已經是 netem，不覆蓋，未做任何變更。\n" % self.dev)
             self.emit(dict(event="schedule_refused", reason="netem_present", utc=self.wall(), **base))
             return EXIT_REFUSED
@@ -217,22 +249,27 @@ class Runner:
 
         The preflight saw no netem root, so a netem root found here is ours, even when a signal
         arrived between a successful add and its bookkeeping. Anything else is left untouched.
+        A state that cannot be read is never counted as removed: without a confirmed netem root
+        nothing is deleted, and the caller exits 1 with the restore command.
         """
         if not attempted:
             return True, "nothing_added"
-        state = self.root_is_netem()
-        if state is None:
+        state = self.qdisc_state()
+        if state == "gone":
             return True, "device_gone"       # the qdisc disappears with tun_srsue when srsue exits
-        if not state:
+        if state == "other":
             return True, "nothing_added"
+        if state == "unknown":
+            self.err.write("無法讀取 %s 的 qdisc，未執行刪除。\n" % self.dev)
+            return False, "state_unknown"
         rc, _, stderr = self.call("qdisc", "del", "dev", self.dev, "root")
-        state = self.root_is_netem()
-        if state is None:
-            return True, "device_gone"       # the qdisc disappears with tun_srsue when srsue exits
-        if state:
-            self.err.write("tc qdisc del 失敗（%d）：%s\n" % (rc, stderr.strip()))
-            return False, "netem_still_present"
-        return True, "deleted" if rc == 0 else "absent_after_failed_del"
+        state = self.qdisc_state()
+        if state == "gone":
+            return True, "device_gone"
+        if state == "other":
+            return True, "deleted" if rc == 0 else "absent_after_failed_del"
+        self.err.write("tc qdisc del 失敗（%d）：%s\n" % (rc, stderr.strip()))
+        return False, "netem_still_present" if state == "netem" else "state_unknown"
 
 
 def parser():

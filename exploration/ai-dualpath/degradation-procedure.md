@@ -93,11 +93,19 @@ sudo tc qdisc add dev tun_srsue root netem loss gemodel 1% 10% 70% 0.1%
 [`schedules/example-cycle.json`](schedules/example-cycle.json)：每 60 秒循環一次，40 秒正常、15 秒輕度劣化、
 5 秒重度劣化），每次執行都從相位 0 開始，每次切換寫一行帶 UTC 的事件，並記錄排程檔的 SHA-256。
 正常結束、Ctrl-C、`SIGTERM`、`SIGHUP` 或任何錯誤都會移除 qdisc 並再讀一次確認；無法確認時以狀態 1 結束，
-並在 stderr 印出還原指令。介面不存在或 root qdisc 已經是 netem 時，它不做任何變更就停止。
+並在 stderr 印出還原指令。`tc qdisc show` 讀不到狀態（逾時、找不到 `tc` 等，但不是「介面不存在」）時，
+清理不執行刪除，同樣以狀態 1 結束。介面不存在、root qdisc 已經是 netem，或執行前就讀不到狀態時，
+它不做任何變更就停止。
 它不呼叫 `sudo`；`sudo` 由操作者自己加。2026-11-26 已在 Linux2 的 dummy 介面與 `tun_srsue` 上各執行過一次，
 確認切換、中斷清理與拒絕覆蓋的行為，見
 [2026-11-26 TER](../../docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml)；
-尚未用它執行策略比較。
+尚未用它執行策略比較。該次執行的是 SHA-256 `421420b2…` 的版本；之後加入的讀取失敗處理與下述參數檢查
+只以替身 `tc` 測試過，尚未在實驗主機上執行。
+
+`tc qdisc change` 不會重設新階段沒寫到的 `rate`、`corrupt`、`reorder`，會沿用上一階段的值。因此排程只要有
+任一階段用到其中一個，每個階段都必須寫出它，例如正常階段寫 `loss 0% rate 0`，否則載入排程時就會被拒絕。
+這是依 iproute2 與 kernel 行為的理解（`NEEDS_CONFIRMATION`），尚未在主機上以 `tc -s qdisc show` 驗證；
+`rate 0`、`corrupt 0%` 等歸零寫法也需在第一次使用時確認 `tc` 接受。
 
 先檢查排程（不需要 `sudo`，不碰介面）：
 

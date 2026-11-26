@@ -16,7 +16,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 EXAMPLE = os.path.join(HERE, "schedules", "example-cycle.json")
 
 # Stand-in tc: appends its argv to FAKE_TC_LOG and keeps the root qdisc state in FAKE_TC_STATE.
-# FAKE_TC_FAIL="<verb>:<n>" makes the n-th call of that verb fail (n=0: every call).
+# FAKE_TC_FAIL="<verb>:<n>" makes the n-th call of that verb fail (n=0: every call; "<n>+": the
+# n-th and every later call). The failure is a generic tc error, never "Cannot find device".
 FAKE_TC = r'''
 import json, os, sys
 args = sys.argv[1:]
@@ -32,7 +33,9 @@ json.dump(counts, open(counts_file, "w"))
 fail = os.environ.get("FAKE_TC_FAIL", "")
 if fail:
     fverb, n = fail.split(":")
-    if fverb == verb and (int(n) == 0 or int(n) == counts[verb]):
+    later = n.endswith("+")
+    n = int(n.rstrip("+"))
+    if fverb == verb and (n == 0 or n == counts[verb] or (later and counts[verb] > n)):
         sys.stderr.write("RTNETLINK answers: Operation not permitted\n")
         sys.exit(2)
 if state == "gone":
@@ -153,9 +156,39 @@ class Validation(unittest.TestCase):
 
     def test_accepts_gemodel_and_rate(self):
         sched, _ = self.load(self.base(phases=[
-            {"label": "ge", "seconds": 1, "netem": "loss gemodel 1% 10% 70% 0.1%"},
+            {"label": "ge", "seconds": 1, "netem": "loss gemodel 1% 10% 70% 0.1% rate 0"},
             {"label": "rate", "seconds": 1, "netem": "rate 512kbit delay 20ms"}]))
-        self.assertEqual(sched["phases"][0]["tokens"], ["loss", "gemodel", "1%", "10%", "70%", "0.1%"])
+        self.assertEqual(sched["phases"][0]["tokens"], ["loss", "gemodel", "1%", "10%", "70%", "0.1%", "rate", "0"])
+
+    def test_sticky_keyword_must_be_in_every_phase(self):
+        rejected = (
+            ["loss 0%", "rate 512kbit delay 20ms", "loss 0%"],     # rate would leak into the second normal
+            ["rate 512kbit", "loss 0%"],                           # ... or, with repeat, into phase 0 again
+            ["loss 0%", "corrupt 1%"],                             # conservative: rejected although safe once
+            ["corrupt 1% rate 1mbit", "corrupt 0%"],
+        )
+        for netems in rejected:
+            with self.subTest(netems=netems):
+                phases = [{"label": "p%d" % i, "seconds": 1, "netem": n} for i, n in enumerate(netems)]
+                with self.assertRaises(N.ScheduleError) as cm:
+                    self.load(self.base(phases=phases))
+                self.assertIn("p", str(cm.exception))
+        accepted = (
+            ["rate 512kbit", "rate 10mbit"],
+            ["loss 0% rate 0 corrupt 0%", "loss 5% rate 512kbit corrupt 1%"],
+            ["rate 512kbit"],
+        )
+        for netems in accepted:
+            with self.subTest(netems=netems):
+                phases = [{"label": "p%d" % i, "seconds": 1, "netem": n} for i, n in enumerate(netems)]
+                self.load(self.base(phases=phases))
+
+    def test_sticky_error_names_phase_and_keyword(self):
+        with self.assertRaises(N.ScheduleError) as cm:
+            self.load(self.base(phases=[{"label": "congest", "seconds": 1, "netem": "rate 512kbit"},
+                                        {"label": "normal", "seconds": 1, "netem": "loss 0%"}]))
+        self.assertIn("'normal'", str(cm.exception))
+        self.assertIn("rate", str(cm.exception))
 
     def test_rejects_cycle_over_limit(self):
         with self.assertRaises(N.ScheduleError):
@@ -296,6 +329,30 @@ class Run(Fake):
         self.assertEqual(code, N.EXIT_TC)
         self.assertTrue(events[-1]["removed"])
         self.assertEqual(events[-1]["note"], "device_gone")
+
+    def test_unreadable_state_at_cleanup_is_not_removed(self):
+        os.environ["FAKE_TC_FAIL"] = "show:2+"     # preflight read works, every later read fails
+        code, events, err = self.run_main("--cycles", "1")
+        self.assertEqual(code, N.EXIT_CLEANUP)
+        self.assertFalse(events[-1]["removed"])
+        self.assertEqual(events[-1]["note"], "state_unknown")
+        self.assertNotIn("del", [c[1] for c in self.mutating()])   # no del without a confirmed netem root
+        self.assertIn("tc qdisc del dev tun_srsue root", err)
+
+    def test_unreadable_state_after_del_is_not_removed(self):
+        os.environ["FAKE_TC_FAIL"] = "show:3+"     # the confirming read after del fails
+        code, events, err = self.run_main("--cycles", "1")
+        self.assertEqual(code, N.EXIT_CLEANUP)
+        self.assertEqual(self.mutating()[-1][1], "del")
+        self.assertFalse(events[-1]["removed"])
+        self.assertEqual(events[-1]["note"], "state_unknown")
+
+    def test_unreadable_state_at_preflight_refuses(self):
+        os.environ["FAKE_TC_FAIL"] = "show:1"
+        code, events, _ = self.run_main("--cycles", "1")
+        self.assertEqual(code, N.EXIT_REFUSED)
+        self.assertEqual(self.mutating(), [])
+        self.assertEqual(events[-1]["reason"], "state_unknown")
 
     def test_dry_run_never_calls_tc(self):
         code, events, _ = self.run_main("--cycles", "1", "--dry-run")
