@@ -104,13 +104,16 @@ sudo tc qdisc add dev tun_srsue root netem loss gemodel 1% 10% 70% 0.1%
 它不呼叫 `sudo`；`sudo` 由操作者自己加。2026-11-26 已在 Linux2 的 dummy 介面與 `tun_srsue` 上各執行過一次，
 確認切換、中斷清理與拒絕覆蓋的行為，見
 [2026-11-26 TER](../../docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml)；
-尚未用它執行策略比較。該次執行的是 SHA-256 `421420b2…` 的版本；之後加入的讀取失敗處理、結束狀態、
-新增失敗時不清理、階段長度下限與下述參數檢查，只以替身 `tc` 測試過，尚未在實驗主機上執行。
+尚未用它執行策略比較。該次執行的是 SHA-256 `421420b2…` 的版本。之後加入結束狀態、新增失敗時不清理、
+階段長度下限與下述參數檢查的版本（`c4c2302`，SHA-256 `b1e17c8f…`）在同日重新於兩種介面上執行，結束狀態
+0／129／130／143／2／3、清理與保留他人 netem 皆符合預期（同一份 TER 的 NM-09～NM-13）。讀取失敗（`state_unknown`）
+與新增失敗的路徑沒有在主機上觸發，只以替身 `tc` 測試。
 
 `tc qdisc change` 不會重設新階段沒寫到的 `rate`、`corrupt`、`reorder`，會沿用上一階段的值。因此排程只要有
 任一階段用到其中一個，每個階段都必須寫出它，例如正常階段寫 `loss 0% rate 0`，否則載入排程時就會被拒絕。
-這是依 iproute2 與 kernel 行為的理解（`NEEDS_CONFIRMATION`），尚未在主機上以 `tc -s qdisc show` 驗證；
-`rate 0`、`corrupt 0%` 等歸零寫法也需在第一次使用時確認 `tc` 接受。
+2026-11-26 在 Linux2（kernel 6.8.0-149、iproute2-6.1.0）以 `tc qdisc show` 觀察到這個行為（`OBSERVED`，TER NM-11）：
+`change` 成 `loss 5%` 後 `reorder`、`corrupt`、`rate` 都留著，`delay` 被重設。`rate 0`、`corrupt 0%` 等歸零寫法
+尚未測試，第一次使用時需確認 `tc` 接受且確實清除。
 
 先檢查排程（不需要 `sudo`，不碰介面）：
 
