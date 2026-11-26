@@ -2,7 +2,7 @@ teh_version: "0.1"
 record_type: "Task Evidence Record"
 
 identity:
-  task_id: "AI-DUALPATH-2026-11-26-NETEM-SCHEDULE-FIRST-RUN"
+  task_id: "AI-DUALPATH-2026-11-26-NETEM-SCHEDULE-RUNS"
   source_thread: "Claude Code session aa494b03-8965-4b84-87f9-d7486257fbd7（NM-01～NM-08）；NM-09～NM-13 見各項的 source_location"
   date_or_range: "2026-11-26 08:28Z–09:20Z（16:28–17:20 Asia/Taipei）；新版工具驗證 10:13Z–10:23Z（18:13–18:23）"
   executor: "Claude agent：兩台主機的遠端唯讀檢查、把工具複製到 Linux2 並於結束後刪除、讀取與分析紀錄、撰寫需要 sudo 的指令。Owner 與組員（現場）：執行所有 sudo 指令與 ping；EPC／eNB／UE 由現場啟動並維持執行。Agent 未啟動、停止或調整任何 Runtime 程序，未使用 sudo。"
