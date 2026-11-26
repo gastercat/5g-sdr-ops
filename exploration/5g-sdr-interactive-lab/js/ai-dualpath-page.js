@@ -1,6 +1,8 @@
 // AI dual-path page: draws the saved 2026-11-16 OTA policy comparison, the offline replay with
-// simulated degradation, and the path A gain steps. Static data only; nothing talks to a network.
+// simulated degradation, the path A gain steps, and the 2026-11-26 netem injection check.
+// Static data only; nothing talks to a network.
 import { POLICIES, online, replay, gains, outage } from './data/ai-dualpath-measured.js';
+import { SCHEDULE, RUNS, PING_INTERVAL_S } from './data/ai-dualpath-netem.js';
 
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const $ = id => document.getElementById(id);
@@ -250,6 +252,98 @@ outageCanvas.addEventListener('pointermove', event => {
 outageCanvas.addEventListener('pointerleave', () => { drawOutage(); hideTip(outageCanvas); });
 redraws.push(() => drawOutage());
 drawOutage();
+
+// --- 4. Path A degradation injection (INJECTED_IP, 2026-11-26) ---------------------------------
+// Each ping is assigned to the phase in force at its estimated send time, the same way as
+// analysis/phase_loss.py, so the per-phase numbers match the Task Evidence Record.
+const PHASE = Object.fromEntries(SCHEDULE.map(p => [p.label, p]));
+function packetsOf(run) {
+  return run.rtt.map((rtt, i) => {
+    const t = run.pingStart + i * PING_INTERVAL_S;
+    const phase = t >= run.phases[0][0] && t < run.end ? run.phases.filter(([start]) => start <= t).at(-1)[1] : 'after';
+    return { seq: i + 1, t, rtt, phase };
+  });
+}
+function phaseRows(run) {
+  const rows = new Map([...SCHEDULE.map(p => [p.label, []]), ['after', []]]);
+  for (const p of packetsOf(run)) rows.get(p.phase).push(p);
+  return [...rows].map(([label, list]) => {
+    const got = list.filter(p => p.rtt != null).map(p => p.rtt).sort((a, b) => a - b);
+    return { label, sent: list.length, received: got.length, p50: got.length ? got[Math.floor(got.length / 2)] : null };
+  });
+}
+let netemIndex = 0;
+const netemCanvas = $('chart-netem');
+let netemPoints = [];
+function drawNetem(hoverSeq = null) {
+  const run = RUNS[netemIndex];
+  const [g, W, H] = setup(netemCanvas);
+  const L = 46, R = 12, T = 22, B = 52, pw = W - L - R, ph = H - T - B;
+  const x1 = 21, y1 = 100, lostY = T + ph + 12;
+  const X = t => L + t / x1 * pw;
+  const Y = v => T + ph - Math.min(v, y1) / y1 * ph;
+  // Phase bands, taken from the logged switch times, not the plan.
+  run.phases.forEach(([start, label], i) => {
+    const stop = i + 1 < run.phases.length ? run.phases[i + 1][0] : run.end;
+    if (label !== 'normal') { g.fillStyle = css(`--band-${label}`); g.fillRect(X(start), T, X(stop) - X(start), ph); }
+    g.fillStyle = css('--muted'); g.font = SANS; g.textAlign = 'left'; g.textBaseline = 'bottom';
+    if (X(stop) - X(start) > 26) g.fillText(PHASE[label].name, X(start) + 4, T - 4);
+  });
+  g.font = MONO; g.lineWidth = 1; g.strokeStyle = css('--grid'); g.fillStyle = css('--muted');
+  g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (const v of niceTicks(0, y1, 4)) { g.beginPath(); g.moveTo(L, Y(v)); g.lineTo(W - R, Y(v)); g.stroke(); g.fillText(String(v), L - 6, Y(v)); }
+  g.fillText('遺失', L - 6, lostY);
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let t = 0; t <= 20; t += W < 520 ? 5 : 2) g.fillText(String(t), X(t), lostY + 10);
+  g.font = SANS; g.fillText('排程開始後的秒數（縱軸 RTT，ms）', L + pw / 2, H - 16);
+  g.strokeStyle = css('--muted'); g.setLineDash([3, 3]);
+  g.beginPath(); g.moveTo(X(run.end), T); g.lineTo(X(run.end), lostY + 6); g.stroke(); g.setLineDash([]);
+  netemPoints = packetsOf(run).map(p => ({ ...p, x: X(p.t), y: p.rtt == null ? lostY : Y(p.rtt) }));
+  for (const p of netemPoints) {
+    const hover = p.seq === hoverSeq;
+    if (p.rtt == null) {
+      g.strokeStyle = css('--late'); g.lineWidth = hover ? 2.5 : 1.8; const s = hover ? 5 : 3.5;
+      g.beginPath(); g.moveTo(p.x - s, p.y - s); g.lineTo(p.x + s, p.y + s); g.moveTo(p.x + s, p.y - s); g.lineTo(p.x - s, p.y + s); g.stroke();
+    } else {
+      g.fillStyle = css('--path-a'); g.strokeStyle = css('--page'); g.lineWidth = 1.5;
+      g.beginPath(); g.arc(p.x, p.y, hover ? 5 : 3, 0, 7); g.fill(); g.stroke();
+    }
+  }
+}
+netemCanvas.addEventListener('pointermove', event => {
+  const box = netemCanvas.getBoundingClientRect();
+  const x = event.clientX - box.left, y = event.clientY - box.top;
+  const near = netemPoints.map(p => [p, Math.abs(p.x - x)]).sort((a, b) => a[1] - b[1])[0];
+  if (!near || near[1] > 12) { drawNetem(); hideTip(netemCanvas); return; }
+  const p = near[0];
+  drawNetem(p.seq);
+  const phase = p.phase === 'after' ? '排程結束後' : `${PHASE[p.phase].name}（${PHASE[p.phase].netem}）`;
+  showTip(netemCanvas, x, y, [`icmp_seq ${p.seq} · 約 ${p.t.toFixed(2)} s`, phase, p.rtt == null ? '遺失（沒有回覆）' : `RTT ${p.rtt.toFixed(1)} ms`]);
+});
+netemCanvas.addEventListener('pointerleave', () => { drawNetem(); hideTip(netemCanvas); });
+function renderNetem() {
+  const run = RUNS[netemIndex];
+  const planned = [0, 5, 8, 10, 15, 18];
+  const drift = Math.max(...run.phases.map(([t], i) => Math.abs(t - planned[i]))) * 1000;
+  const [sent, received] = run.fixed;
+  $('netem-facts').innerHTML = [
+    [`${sent - received}／${run.dropped}`, '固定 20%：ping 遺失／netem 丟棄計數'],
+    [`≤ ${Math.round(drift)} ms`, '6 次切換與計劃時間的最大差距'],
+    [`${run.baseline[1]}／${run.baseline[0]}`, `注入前對照收到／送出，RTT 中位數 ${fmt(run.baseline[2], 1)} ms`],
+    [run.tool, `工具 SHA-256 前 8 碼 · ${run.time}`],
+  ].map(([v, k]) => `<div><b>${v}</b><span>${k}</span></div>`).join('');
+  const head = '<thead><tr><th>階段</th><th class="is-text">netem 設定</th><th>送出</th><th>收到</th><th>遺失 %</th><th>RTT 中位數 ms</th></tr></thead>';
+  const body = phaseRows(run).map(r => {
+    const name = r.label === 'after' ? '排程結束後' : PHASE[r.label].name;
+    const setting = r.label === 'after' ? '已移除' : `<code>${PHASE[r.label].netem}</code>`;
+    return `<tr><td>${name}</td><td class="is-text">${setting}</td><td>${r.sent}</td><td>${r.received}</td><td>${fmt(100 * (r.sent - r.received) / r.sent, 1)}</td><td>${fmt(r.p50, 1)}</td></tr>`;
+  }).join('');
+  $('netem-table').innerHTML = head + '<tbody>' + body + '</tbody>';
+  drawNetem();
+}
+tabs('netem-tabs', RUNS, index => { netemIndex = index; renderNetem(); });
+redraws.push(() => drawNetem());
+renderNetem();
 
 let resizeTimer = 0;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => redraws.forEach(f => f()), 120); });

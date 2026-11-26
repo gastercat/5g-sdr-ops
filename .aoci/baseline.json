@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-26T11:07:28Z",
+  "updated_at": "2026-11-26T11:33:50Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "ff9e0f457b7149391bbab7a07500711b2eaf6107b5d954a2f1ee4ca63d449832",
-      "size": 52035,
-      "normalized_sha256": "ff9e0f457b7149391bbab7a07500711b2eaf6107b5d954a2f1ee4ca63d449832"
+      "sha256": "6ca91f858a42b1d6a2b91825e90ccac43e245dea918055f96c65b8720e6ee76d",
+      "size": 52763,
+      "normalized_sha256": "6ca91f858a42b1d6a2b91825e90ccac43e245dea918055f96c65b8720e6ee76d"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -688,9 +688,9 @@
     },
     "exploration/5g-sdr-interactive-lab/ai-dualpath.html": {
       "role": "index",
-      "sha256": "ef48859927de7282c6cdcc45116decc4afd8462d896ef37660da90884612fb58",
-      "size": 15148,
-      "normalized_sha256": "ef48859927de7282c6cdcc45116decc4afd8462d896ef37660da90884612fb58"
+      "sha256": "0799b9d541599a6667fadc54f9922f0d130b91773bc6dbe02106a3220ead6d87",
+      "size": 18572,
+      "normalized_sha256": "0799b9d541599a6667fadc54f9922f0d130b91773bc6dbe02106a3220ead6d87"
     },
     "exploration/5g-sdr-interactive-lab/assets/favicon.svg": {
       "role": "observe",
@@ -700,9 +700,9 @@
     },
     "exploration/5g-sdr-interactive-lab/css/ai-dualpath.css": {
       "role": "index",
-      "sha256": "c49133cb56b81165c283ee09af69cee142c092156a06dc52eaaf302b8277b60c",
-      "size": 2570,
-      "normalized_sha256": "c49133cb56b81165c283ee09af69cee142c092156a06dc52eaaf302b8277b60c"
+      "sha256": "4e500bbd03f41a728f48bc6cbe045b01db5d8b75d606ac20818b93ae2398a795",
+      "size": 3235,
+      "normalized_sha256": "4e500bbd03f41a728f48bc6cbe045b01db5d8b75d606ac20818b93ae2398a795"
     },
     "exploration/5g-sdr-interactive-lab/css/lab03-ota.css": {
       "role": "index",
@@ -736,9 +736,9 @@
     },
     "exploration/5g-sdr-interactive-lab/js/ai-dualpath-page.js": {
       "role": "index",
-      "sha256": "3843b4de63f9ac989f1c84d40cbc7d7203d7114917335dd008efaf47e783e8ed",
-      "size": 14801,
-      "normalized_sha256": "3843b4de63f9ac989f1c84d40cbc7d7203d7114917335dd008efaf47e783e8ed"
+      "sha256": "a0bc502169a9a1fe651577aad2785cad17712c24199a649a59a6d7d96a156062",
+      "size": 20486,
+      "normalized_sha256": "a0bc502169a9a1fe651577aad2785cad17712c24199a649a59a6d7d96a156062"
     },
     "exploration/5g-sdr-interactive-lab/js/animation/playback.js": {
       "role": "index",
@@ -763,6 +763,12 @@
       "sha256": "28c7d0274f06715b58381bd98af2e459a0362fae2edb627cd1ebed599dcb5042",
       "size": 6370,
       "normalized_sha256": "28c7d0274f06715b58381bd98af2e459a0362fae2edb627cd1ebed599dcb5042"
+    },
+    "exploration/5g-sdr-interactive-lab/js/data/ai-dualpath-netem.js": {
+      "role": "index",
+      "sha256": "4cf0fe73298b07d059c551370ae4eef3c9f24f71b8147c5683ab56cc4504c57a",
+      "size": 3281,
+      "normalized_sha256": "4cf0fe73298b07d059c551370ae4eef3c9f24f71b8147c5683ab56cc4504c57a"
     },
     "exploration/5g-sdr-interactive-lab/js/data/ai-dualpath-traces.js": {
       "role": "index",
