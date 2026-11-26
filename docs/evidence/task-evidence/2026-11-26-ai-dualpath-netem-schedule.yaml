@@ -3,7 +3,7 @@ record_type: "Task Evidence Record"
 
 identity:
   task_id: "AI-DUALPATH-2026-11-26-NETEM-SCHEDULE-FIRST-RUN"
-  source_thread: "Claude Code session aa494b03-8965-4b84-87f9-d7486257fbd7"
+  source_thread: "Claude Code session aa494b03-8965-4b84-87f9-d7486257fbd7（NM-01～NM-08）；NM-09～NM-13 見各項的 source_location"
   date_or_range: "2026-11-26 08:28Z–09:20Z（16:28–17:20 Asia/Taipei）；新版工具驗證 10:13Z–10:23Z（18:13–18:23）"
   executor: "Claude agent：兩台主機的遠端唯讀檢查、把工具複製到 Linux2 並於結束後刪除、讀取與分析紀錄、撰寫需要 sudo 的指令。Owner 與組員（現場）：執行所有 sudo 指令與 ping；EPC／eNB／UE 由現場啟動並維持執行。Agent 未啟動、停止或調整任何 Runtime 程序，未使用 sudo。"
   historical_or_current: "當日觀察；結束時 Runtime 仍由現場維持執行，不代表之後的狀態"
@@ -14,7 +14,7 @@ authorization:
     - "Owner 提議在實驗主機上實測，並說明需要 sudo 的指令交由 Owner 執行。Agent 提出四個步驟（0 唯讀檢查、1 複製工具到 Linux2 的 ~/netem-test/、2 以暫時的 dummy 介面 nmtest0 測試、3 在 tun_srsue 上測試），Owner 以選項核准 0 到 3 全部。"
     - "第 0 步發現 EPC／eNB／UE 已在執行，Agent 停止並詢問；Owner 確認是為這次實測啟動、屏蔽與增益已確認、沒有其他人使用，同意繼續。"
     - "Owner 其後同意刪除 Linux2 上的 ~/netem-test/、撰寫本 TER 並開 PR。"
-    - "新版工具驗證（NM-09～NM-13，另一個 Claude Code session）：Owner 以選項核准「dummy + tun_srsue」範圍（0 唯讀檢查、1 複製、2 nmtest0、3 tun_srsue）。第 0 步發現 EPC／eNB／UE 自下午持續執行，Agent 於第 3 步前詢問；Owner 回覆屏蔽與天線維持下午狀態、沒有其他人使用、可在路徑 A 送 ping。結果補進本 TER 亦由 Owner 選定。"
+    - "新版工具驗證（NM-09～NM-13，Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1）：Owner 以選項核准「dummy + tun_srsue」範圍（0 唯讀檢查、1 複製、2 nmtest0、3 tun_srsue）。第 0 步發現 EPC／eNB／UE 自下午持續執行，Agent 於第 3 步前詢問；Owner 回覆屏蔽與天線維持下午狀態、沒有其他人使用、可在路徑 A 送 ping。結果補進本 TER 亦由 Owner 選定。"
   allowed_mutations:
     - "Linux2：建立 ~/netem-test/ 並放入工具、兩份排程與 SHA256SUMS，結束後刪除。"
     - "Linux2（Owner 以 sudo 執行）：暫時的 dummy 介面 nmtest0，以及 nmtest0 與 tun_srsue 上的 netem root qdisc；結束後刪除。"
@@ -115,16 +115,16 @@ evidence:
     exact_observation: "10:13Z 唯讀檢查：兩台 iproute2-6.1.0、NTPSynchronized=yes、皆無 ~/netem-test；tc qdisc show dev nmtest-none 的 stderr 為 Cannot find device \"nmtest-none\"、結束狀態 1；tun_srsue 172.16.0.3/24 與 srs_spgw_sgi 172.16.0.1/24 的 root qdisc 皆為 fq_codel；srsepc 3414、srsenb 3485、srsue 7712 仍在執行。複製 netem_schedule.py b1e17c8fea237487dacadf36ca0e485f7a215ffad89986b7ba7ee359ade26d62、quick.json fd373794…、loss-fixed.json 53f954a3…（與 NM-03 相同）及 sticky-missing.json a86e09c3…，Linux2 上 sha256sum -c 皆成功；結束時帶回的 39 個檔案在本機核對皆成功。"
     directness: "PRIMARY"
     confidence: "高；限該時點。"
-    source_location: "source_thread；2026-11-26-AI-Dualpath-netem/linux2-netem-v2/SHA256SUMS、SHA256SUMS-remote.txt"
+    source_location: "Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1；2026-11-26-AI-Dualpath-netem/linux2-netem-v2/SHA256SUMS、SHA256SUMS-remote.txt"
     limitations:
-      - "唯讀檢查的命令輸出只存在 source_thread。"
+      - "唯讀檢查的命令輸出只存在 Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1，未另存檔。"
   - evidence_id: "NM-10"
     claim: "nmtest0 上新版工具的結束狀態與清理符合設計：完成 0、SIGHUP 129、SIGINT 130、SIGTERM 143、已有 netem 3 且不改動他人的 netem；不存在的介面 3、sticky 參數缺漏 2。"
     evidence_type: "FILE_ARTIFACT"
     exact_observation: "Owner 以 sudo 執行並把 echo exit=$? 存檔。v2-2a（10:15:27Z，quick.json --cycles 2）：exit=0，phase t=0／5.002／8.001／10.002／15.001／18.001 s，schedule_end t=20.004 s、completed、removed=true、deleted。v2-2b 以 timeout --preserve-status 7 送訊號：INT exit=130（interrupted）、TERM exit=143（signal_SIGTERM）、HUP exit=129（signal_SIGHUP），三者 t≈6.97 s、removed=true、deleted。v2-2c（10:16:43Z）：先手動加 netem loss 1%，工具 exit=3、schedule_refused reason=netem_present，之後 tc qdisc show 仍為 qdisc netem 800f: root … loss 1%。Agent 以一般權限執行：--dev nmtest-none exit=3、reason=no_device；sticky-missing.json（rate 只出現在一個階段）在載入時 exit=2，未建立紀錄檔。"
     directness: "PRIMARY"
     confidence: "高"
-    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-v2/v2-2*"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-v2/v2-2*；sticky-missing.json 被拒時的 stderr 只在 Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1"
     limitations:
       - "nmtest0 未設定位址也未啟用，沒有流量經過；2a、2b 結束後的 tc qdisc show 輸出為空（dummy 介面沒有 root netem）。"
       - "state_unknown（tc 逾時或其他失敗）與 add 失敗時不清理的路徑沒有在主機上觸發，只有替身 tc 的測試。"
@@ -195,6 +195,7 @@ recovered_or_observed_claims:
 provenance_gaps:
   - "NM-04 到 NM-06 各 sudo 步驟的結束狀態碼與中間的 tc qdisc show 輸出只在現場終端機，未存檔；NM-10 到 NM-12 已存檔。"
   - "NM-01、NM-02、NM-07、NM-08 的命令輸出只存在 source_thread。"
+  - "NM-09 的唯讀檢查輸出與結束時刪除 ~/netem-test 的確認輸出只存在 Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1。"
   - "Repo 外證據目錄為本機路徑，可攜共享位置 UNKNOWN。"
   - "逐封包的 tx／rtt 事件目前沒有 utc 欄位；本次以 ping -D 取代，策略比較時需要先補上。"
 
