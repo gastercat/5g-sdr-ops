@@ -15,7 +15,7 @@
   <div class="pinned-header"><header class="site-header"><div>
     <h1>5G SDR Interactive Lab</h1>
     <nav class="page-tabs" aria-label="頁面"><a href="./index.html">← 返回架構</a><a href="./evidence.html">證據與範圍</a><a href="./lab03-ota.html">Lab03 OTA 實測</a><a href="./ai-dualpath.html" aria-current="page">AI 雙路徑</a><button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">深色主題</button></nav>
-  </div></header><p class="proposal-note">2026-11-16 單日量測，Owner 驗收待定。路徑 B 全部是模擬；不是 performance、reliability 或 URLLC validation。</p></div>
+  </div></header><p class="proposal-note">2026-11-16 單日量測，另含 2026-11-26 路徑 A 劣化注入的驗證；Owner 驗收待定。路徑 B 全部是模擬；不是 performance、reliability 或 URLLC validation。</p></div>
   <main id="main-content" tabindex="-1">
     <section>
       <p class="ota-eyebrow">路徑 A：LTE OTA（實測） · 路徑 B：類低軌衛星（傳送端模擬） · 2026-11-16</p>
@@ -114,6 +114,22 @@
       </div>
     </section>
 
+    <section aria-labelledby="netem-title">
+      <h2 id="netem-title">路徑 A 劣化注入驗證（<code>INJECTED_IP</code>）</h2>
+      <p><span class="ota-tag is-injected">注入</span>調增益找不到穩定的劣化，所以改用劣化注入程序（<code>exploration/ai-dualpath/degradation-procedure.md</code>）的做法 A：在 Linux2 的 <code>tun_srsue</code> 上掛 Linux <code>tc netem</code>，由 <code>netem_schedule.py</code> 依排程切換「正常 5 秒 → 輕度 3 秒 → 重度 2 秒」，跑兩個循環，同時從 UE 端每 0.2 秒 ping 一次 EPC。2026-11-26 跑了兩次：下午用第一版工具，晚上用修正後的新版。</p>
+      <p><strong>這一段只確認注入照排程生效，不是策略比較。</strong>劣化發生在 IP 層、LTE 之外，不是 OTA 或無線通道的劣化；這兩次也沒有跑任何雙路徑策略。</p>
+      <div class="ota-tabs" id="netem-tabs" role="group" aria-label="選擇哪一次執行"></div>
+      <div class="ota-facts" id="netem-facts"></div>
+      <div class="ota-panel">
+        <h3>每個 ping 的 RTT 與排程階段</h3>
+        <div class="ota-legend"><span><i class="ota-swatch is-box is-a" style="border-radius:50%"></i>收到回覆</span><span><b class="demo-x">✕</b>遺失</span><span><i class="ota-swatch is-box is-band-mild"></i>輕度：loss 5%、delay 15±10 ms</span><span><i class="ota-swatch is-box is-band-severe"></i>重度：loss 40%、delay 40±20 ms</span><span>虛線：排程結束、netem 移除</span></div>
+        <div class="ota-chart"><canvas id="chart-netem" class="is-netem" role="img" aria-label="時間軸散佈圖：兩個 10 秒循環中，正常階段沒有遺失、RTT 約 20 到 35 ms；輕度與重度階段 RTT 升高並出現遺失；排程結束後恢復"></canvas></div>
+        <p class="ota-caption">遺失只出現在輕度與重度階段，RTT 也只在這兩段升高；排程結束、netem 移除後立刻恢復。正常階段的 RTT 每個封包少約 1 ms，從約 37 ms 降到約 18 ms 再跳回去；未注入的對照 ping 也是同樣的鋸齒形，所以不是注入造成的，原因沒有驗證。</p>
+      </div>
+      <div class="ota-table-wrap"><table class="ota-table" id="netem-table"></table></div>
+      <p class="ota-note">每個 ping 的送出時間由 <code>ping -D</code> 的回覆時間反推（遺失的封包依 0.2 秒間隔推估），再對到工具記錄的切換時間；沒有用封包擷取驗證。輕度只有 30 個、重度只有 20 個樣本，兩次的遺失率落在設定值（5%、40%）的兩側，不能用來評估 netem 的準確度。netem 只作用在 <code>tun_srsue</code> 的送出方向，丟的是去程的 echo request。固定 20% 的那次，ping 遺失數和 netem 自己的丟棄計數相同，代表那段時間的遺失全部來自注入。</p>
+    </section>
+
     <section aria-labelledby="link-title">
       <h2 id="link-title">離線模型沒有重現的兩個鏈路特性</h2>
       <ul class="dp-list">
@@ -129,11 +145,12 @@
         <li>無線端是 LTE（srsRAN 4G），不是 5G NR。</li>
         <li>路徑 B 的類低軌衛星特性全部是傳送端模擬，參數是本組假設值，不是衛星鏈路或軌道模型。</li>
         <li>沒有「在真實劣化的路徑 A 上驗證自適應策略」這件事。各策略依序執行，面對的路徑 A 不是同一段時間。</li>
+        <li>2026-11-26 的 netem 注入是 IP 層的 <code>INJECTED_IP</code>，不是 OTA 或無線通道劣化，也還沒有在注入的劣化下比較策略。</li>
       </ul>
-      <p class="ota-note">來源：Task Evidence Record <code>docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml</code>（AD-01～AD-11）與 Repo 外證據目錄 <code>2026-11-16-AI-Dualpath-OTA/</code> 的 <code>02-policies-summary.md</code>、<code>08-gain-enb59-ue53/policies-summary.md</code>、<code>14-report-replay/d30.txt</code>、<code>gain-steps-events.txt</code>。策略程式在 <code>exploration/ai-dualpath/</code>。</p>
+      <p class="ota-note">來源：Task Evidence Record <code>docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml</code>（AD-01～AD-11）與 Repo 外證據目錄 <code>2026-11-16-AI-Dualpath-OTA/</code> 的 <code>02-policies-summary.md</code>、<code>08-gain-enb59-ue53/policies-summary.md</code>、<code>14-report-replay/d30.txt</code>、<code>gain-steps-events.txt</code>。劣化注入的來源是 <code>docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml</code>（NM-05、NM-06、NM-12、NM-13）與 Repo 外 <code>2026-11-26-AI-Dualpath-netem/</code> 的 ping 與事件紀錄。策略程式與 <code>netem_schedule.py</code> 在 <code>exploration/ai-dualpath/</code>。</p>
     </section>
     <a class="return-link" href="./index.html">← 返回架構</a>
   </main>
-  <footer class="site-footer"><p>教學視覺化 · AI 雙路徑 2026-11-16 單日量測。路徑 A 為 LTE OTA 實測，路徑 B 為傳送端模擬；分流與複製在應用層 UDP，不是 PDCP 層。不授權任何 Runtime 或 RF 操作。</p></footer>
+  <footer class="site-footer"><p>教學視覺化 · AI 雙路徑 2026-11-16 單日量測與 2026-11-26 劣化注入驗證。路徑 A 為 LTE OTA 實測（注入段落為 <code>INJECTED_IP</code>），路徑 B 為傳送端模擬；分流與複製在應用層 UDP，不是 PDCP 層。不授權任何 Runtime 或 RF 操作。</p></footer>
 </body>
 </html>
