@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-26T09:38:12Z",
+  "updated_at": "2026-11-26T10:00:34Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "110f3e34f1339bb97ac0b3d0deccb15ecf968f3e2465a2eff6bd27dfe90327a0",
-      "size": 50993,
-      "normalized_sha256": "110f3e34f1339bb97ac0b3d0deccb15ecf968f3e2465a2eff6bd27dfe90327a0"
+      "sha256": "4f3f311e940b8272daa6e2ef7544e9aed321a3d1b13f5facb1b648565c3d51f4",
+      "size": 51026,
+      "normalized_sha256": "4f3f311e940b8272daa6e2ef7544e9aed321a3d1b13f5facb1b648565c3d51f4"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -928,9 +928,9 @@
     },
     "exploration/ai-dualpath/degradation-procedure.md": {
       "role": "index",
-      "sha256": "d8581e3f6f69729ebfa2ef86fe63502f2d200bb1e47b2e34772afaf9c4239054",
-      "size": 13896,
-      "normalized_sha256": "d8581e3f6f69729ebfa2ef86fe63502f2d200bb1e47b2e34772afaf9c4239054"
+      "sha256": "60746cef0e6936b787bc46715fa65b880ac87f1139b8a4232223c9b7df5615e7",
+      "size": 14752,
+      "normalized_sha256": "60746cef0e6936b787bc46715fa65b880ac87f1139b8a4232223c9b7df5615e7"
     },
     "exploration/ai-dualpath/evaluate.py": {
       "role": "index",
@@ -946,9 +946,9 @@
     },
     "exploration/ai-dualpath/netem_schedule.py": {
       "role": "index",
-      "sha256": "421420b2eb0c4a2a2c4704e5640b5a14861ab752fe53fa9165a8538bfaff06bf",
-      "size": 13568,
-      "normalized_sha256": "421420b2eb0c4a2a2c4704e5640b5a14861ab752fe53fa9165a8538bfaff06bf"
+      "sha256": "a935daa852dc16cdfad7889b12c484857389288aa9d1b01b5bffaec06c76135f",
+      "size": 15877,
+      "normalized_sha256": "a935daa852dc16cdfad7889b12c484857389288aa9d1b01b5bffaec06c76135f"
     },
     "exploration/ai-dualpath/policies.py": {
       "role": "index",
@@ -976,9 +976,9 @@
     },
     "exploration/ai-dualpath/test_netem_schedule.py": {
       "role": "observe",
-      "sha256": "53381ed84b9d39dde0e78ba4c82ac001dcc5cf77aa6ebebc3228cb242188f110",
-      "size": 14902,
-      "normalized_sha256": "53381ed84b9d39dde0e78ba4c82ac001dcc5cf77aa6ebebc3228cb242188f110"
+      "sha256": "6e5a56259a18e582cea9c6c11b3c529356d374a2ed692c89ad5933749ca27468",
+      "size": 18050,
+      "normalized_sha256": "6e5a56259a18e582cea9c6c11b3c529356d374a2ed692c89ad5933749ca27468"
     },
     "exploration/ai-dualpath/trace_env.py": {
       "role": "index",
