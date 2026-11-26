@@ -55,7 +55,8 @@ evidence:
     directness: "PRIMARY"
     confidence: "高"
     source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-test/SHA256SUMS"
-    limitations: []
+    limitations:
+      - "「與本分支相同」只對 commit e0a6ed0 成立。其後 38812d0 修改了工具（讀不到 qdisc 狀態時不再算已移除、rate／corrupt／reorder 須每階段寫出），SHA-256 變為 a935daa8…；新版本只以替身 tc 測試，未在實驗主機上執行，本 TER 的 NM-04 到 NM-07 不涵蓋它。"
   - evidence_id: "NM-04"
     claim: "dummy 介面 nmtest0 上，SIGTERM 與 SIGINT 中斷都會移除 netem，已有 netem 時工具拒絕執行且不做變更。"
     evidence_type: "FILE_ARTIFACT"
