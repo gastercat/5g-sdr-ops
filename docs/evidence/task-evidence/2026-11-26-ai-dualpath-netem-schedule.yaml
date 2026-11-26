@@ -1,0 +1,204 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "AI-DUALPATH-2026-11-26-NETEM-SCHEDULE-RUNS"
+  source_thread: "Claude Code session aa494b03-8965-4b84-87f9-d7486257fbd7（NM-01～NM-08）；NM-09～NM-13 見各項的 source_location"
+  date_or_range: "2026-11-26 08:28Z–09:20Z（16:28–17:20 Asia/Taipei）；新版工具驗證 10:13Z–10:23Z（18:13–18:23）"
+  executor: "Claude agent：兩台主機的遠端唯讀檢查、把工具複製到 Linux2 並於結束後刪除、讀取與分析紀錄、撰寫需要 sudo 的指令。Owner 與組員（現場）：執行所有 sudo 指令與 ping；EPC／eNB／UE 由現場啟動並維持執行。Agent 未啟動、停止或調整任何 Runtime 程序，未使用 sudo。"
+  historical_or_current: "當日觀察；結束時 Runtime 仍由現場維持執行，不代表之後的狀態"
+
+authorization:
+  scope:
+    - "Owner 核准 PLAN.md（netem 時變排程腳本）的六項待決事項依建議進行，並要求 Agent 確認兩台主機的 NTP 狀態；Agent 依此在兩台主機執行唯讀的 timedatectl（NM-01）。"
+    - "Owner 提議在實驗主機上實測，並說明需要 sudo 的指令交由 Owner 執行。Agent 提出四個步驟（0 唯讀檢查、1 複製工具到 Linux2 的 ~/netem-test/、2 以暫時的 dummy 介面 nmtest0 測試、3 在 tun_srsue 上測試），Owner 以選項核准 0 到 3 全部。"
+    - "第 0 步發現 EPC／eNB／UE 已在執行，Agent 停止並詢問；Owner 確認是為這次實測啟動、屏蔽與增益已確認、沒有其他人使用，同意繼續。"
+    - "Owner 其後同意刪除 Linux2 上的 ~/netem-test/、撰寫本 TER 並開 PR。"
+    - "新版工具驗證（NM-09～NM-13，Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1）：Owner 以選項核准「dummy + tun_srsue」範圍（0 唯讀檢查、1 複製、2 nmtest0、3 tun_srsue）。第 0 步發現 EPC／eNB／UE 自下午持續執行，Agent 於第 3 步前詢問；Owner 回覆屏蔽與天線維持下午狀態、沒有其他人使用、可在路徑 A 送 ping。結果補進本 TER 亦由 Owner 選定。"
+  allowed_mutations:
+    - "Linux2：建立 ~/netem-test/ 並放入工具、兩份排程與 SHA256SUMS，結束後刪除。"
+    - "Linux2（Owner 以 sudo 執行）：暫時的 dummy 介面 nmtest0，以及 nmtest0 與 tun_srsue 上的 netem root qdisc；結束後刪除。"
+    - "Repo 外本機證據目錄 2026-11-26-AI-Dualpath-netem/。"
+    - "Repo：feat/netem-schedule 分支上的工具、測試、CI、程序文件、本 TER 與 TER 索引。"
+  forbidden:
+    - "Agent 不使用 sudo、不輸入或接收密碼；不修改 srsRAN 設定檔、增益、路由、防火牆或套件；不啟動或停止 Runtime；不安裝 linux-modules-extra。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "feat/netem-schedule"
+  start_head: "61aa3310a66f1b9a2a4acc0e734e6ea9bb5cfc57"
+  end_head: "本 TER 所在的 commit"
+
+evidence:
+  - evidence_id: "NM-01"
+    claim: "兩台主機的系統時鐘已由 NTP 同步，可用 UTC 對齊兩邊的紀錄。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "08:28Z timedatectl：Linux1、Linux2 皆 NTP=yes、NTPSynchronized=yes，systemd-timesyncd 使用 ntp.ubuntu.com（FallbackNTPServers，SystemNTPServers 為空），時區 Asia/Taipei。同一時間點以 SSH 讀取的 date +%s.%N 與控制端 Mac 相差 +14 ms（Linux1）與 +42 ms（Linux2），包含 SSH 來回時間。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點。"
+    source_location: "source_thread（命令輸出未另存檔）"
+    limitations:
+      - "對時依賴主機能連上網際網路；每次執行前仍需重新確認。"
+      - "與 Mac 的時間差只是粗略比較，不是 NTP offset。"
+  - evidence_id: "NM-02"
+    claim: "第 0 步唯讀檢查：兩台主機可使用 sch_netem，且 Runtime 已在執行。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Linux2：kernel 6.8.0-149-generic，iproute2-6.1.0，Python 3.12.3，sch_netem.ko.zst 存在但未載入；tun_srsue UP；srsue PID 4192（命令列 /home/user/pre-lab03-rf/config/ue.conf --rf.tx_gain=70）。Linux1：kernel 6.8.0-147-generic，iproute2-6.1.0，Python 3.12.3，sch_netem.ko.zst 存在但未載入；srs_spgw_sgi UP；srsepc PID 3414（07:05:56Z 啟動）、srsenb PID 3485（07:07:37Z 啟動，--rf.tx_gain=70）。兩台皆無 ~/netem-test。路徑 A 位址：tun_srsue 172.16.0.3/24，srs_spgw_sgi 172.16.0.1/24。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點。"
+    source_location: "source_thread"
+    limitations:
+      - "屏蔽、天線與增益由 Owner 回報已確認，Agent 未觀察。"
+  - evidence_id: "NM-03"
+    claim: "複製到 Linux2 的工具與 Repo 版本相同。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "netem_schedule.py SHA-256 421420b2eb0c4a2a2c4704e5640b5a14861ab752fe53fa9165a8538bfaff06bf，與本分支 exploration/ai-dualpath/netem_schedule.py 相同；quick.json（5／3／2 秒，loss 0%／5%+15±10 ms／40%+40±20 ms）fd373794…；loss-fixed.json（單段 loss 20%，30 秒）53f954a3…。在 Linux2 以 sha256sum -c 核對皆成功，帶回本機後再核對一次亦成功。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-test/SHA256SUMS"
+    limitations:
+      - "「與本分支相同」只對 commit e0a6ed0 成立。自 38812d0 起工具陸續修改（讀取失敗處理、參數檢查、結束狀態、清理範圍等），之後的版本 SHA-256 皆與上述 421420b2… 不同，NM-04 到 NM-07 不涵蓋它們。c4c2302 的版本（b1e17c8f…）另見 NM-09 到 NM-13；更晚的版本未在實驗主機上執行。"
+  - evidence_id: "NM-04"
+    claim: "dummy 介面 nmtest0 上，SIGTERM 與 SIGINT 中斷都會移除 netem，已有 netem 時工具拒絕執行且不做變更。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "事件紀錄（quick.json，--cycles 2）：step2a-run（08:56:08Z）、step2b-run（08:58:52Z）、step2b-term（09:00:14Z）三份皆在 t≈6.97 s 以 signal_SIGTERM 結束、removed=true、note=deleted；step2c-int（09:00:55Z）在 t≈6.97 s 以 interrupted 結束、removed=true、note=deleted；mild 階段切換時間 t=5.001–5.002 s（計劃 5.0 s）。step2d-refuse（09:06:06Z）：schedule_refused、reason=netem_present，紀錄中沒有 schedule_start。結束後 nmtest0 已不存在；sch_netem 已載入、引用數 0。"
+    directness: "PRIMARY"
+    confidence: "高（事件紀錄）；結束狀態碼未保存。"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-test/step2*.jsonl"
+    limitations:
+      - "原定 2a 為完整跑完兩個循環；實際紀錄為第 7 秒的 SIGTERM，並多出 step2b-run.jsonl。Owner 回報這是組員貼上指令時的操作問題。完整跑完的情況改由 NM-05、NM-06 涵蓋。"
+      - "各步驟的結束狀態碼（echo exit=…）與每次之後的 tc qdisc show 輸出只顯示在現場終端機，未存檔。"
+      - "nmtest0 未設定位址也未啟用，沒有流量經過，只驗證 tc 操作與清理。"
+  - evidence_id: "NM-05"
+    claim: "tun_srsue 上固定 20% 遺失時，ping 遺失與 netem 丟棄數一致，排程完整跑完並移除。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "對照 step3a（09:12:58Z 起，未注入）：Linux2 172.16.0.3 → 172.16.0.1，50 個 ping、間隔 0.2 s，50／50，RTT p50 26.8 ms、max 112.0 ms（第一個封包）。step3b（09:13:24Z–09:13:54Z，loss-fixed.json，--cycles 1）：排程開始 2 s 後送 100 個 ping，81／100（遺失 19%），RTT p50 29.8 ms、max 36.9 ms；ping 結束時的 tc -s qdisc：qdisc netem 8009: root … loss 20%，Sent 81 pkt（dropped 19）。schedule_end reason=completed、t=30.004 s、removed=true、note=deleted。"
+    directness: "PRIMARY"
+    confidence: "高；限單一試次。"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-test/step3a-*、step3b-*"
+    limitations:
+      - "netem 只作用在 tun_srsue 的送出方向，丟的是去程 echo request；回程未注入。"
+      - "dropped 19 與 ping 遺失 19 相同，表示這段期間觀察到的遺失全部來自注入；不代表 LTE 在其他時段不會遺失。"
+  - evidence_id: "NM-06"
+    claim: "tun_srsue 上時變排程完整跑完兩個循環，遺失集中在劣化階段，切換時間誤差沒有累積。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "step3c（09:14:08Z–09:14:28Z，quick.json，--cycles 2）：phase 事件的 t 依序為 0.0、5.001、8.001、10.001、15.001、18.001 s（計劃 0、5、8、10、15、18 s），schedule_end t=20.004 s、reason=completed、removed=true、note=deleted。同時送出 105 個 ping、間隔 0.2 s，94／105。以 ping -D 時間戳與事件 UTC 對齊（ping 起點比排程起點晚 0.038 s）：normal 50／50（遺失 0%，RTT p50 28.0 ms）；mild 29／30（3.3%，p50 43.8 ms）；severe 10／20（50%，p50 63.0 ms）；排程結束後 5／5。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；各階段樣本少。"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-test/step3c-*；analysis/phase_loss.py、analysis/step3c-phase-loss.txt"
+    limitations:
+      - "遺失封包的送出時間以 t0 + (n-1)×0.2 s 推估，t0 取已收到回覆的中位數；未以封包擷取驗證。"
+      - "severe 只有 20 個樣本、mild 30 個，遺失率與設定值（40%、5%）的差距在小樣本下不具意義。"
+      - "結果標示 INJECTED_IP，不是 OTA 或無線通道劣化；本次沒有執行雙路徑策略比較。"
+  - evidence_id: "NM-07"
+    claim: "結束時 tun_srsue 沒有殘留 netem，Linux2 上沒有留下工具檔案。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "09:15Z tun_srsue root qdisc 為 fq_codel 0:。紀錄以 scp 帶回本機並核對 SHA-256 後，Agent 刪除 Linux2 的 ~/netem-test/（15 個檔案），其後 ls 回報不存在，tun_srsue 仍為 fq_codel。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點。"
+    source_location: "source_thread；帶回的檔案在 2026-11-26-AI-Dualpath-netem/linux2-netem-test/"
+    limitations:
+      - "sch_netem 模組保持載入（引用數 0），未卸載。"
+  - evidence_id: "NM-08"
+    claim: "srsue 在本次執行期間重啟過一次，與本次操作無關。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "第 0 步時 srsue PID 為 4192；09:15Z 時為 PID 7712，ps lstart 為 2026-11-26 16:51:23（08:51:23Z）。srsepc、srsenb 的 PID 與啟動時間在整段期間不變。"
+    directness: "PRIMARY"
+    confidence: "高（PID 與時間）；原因為回報。"
+    source_location: "source_thread"
+    limitations:
+      - "Owner 回報重啟為組員操作，與本次 Runtime 無關；Agent 在 08:42Z（複製工具）與 08:56Z（第一份 nmtest0 紀錄）之間沒有對主機做任何變更。重啟後 UE 位址是否改變未確認；09:12Z 起的 step3 使用的是當時的 172.16.0.3。"
+
+  - evidence_id: "NM-09"
+    claim: "新版工具（c4c2302，SHA-256 b1e17c8f…）複製到 Linux2 時與分支版本相同；主機的 tc 對不存在的介面回報 Cannot find device。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "10:13Z 唯讀檢查：兩台 iproute2-6.1.0、NTPSynchronized=yes、皆無 ~/netem-test；tc qdisc show dev nmtest-none 的 stderr 為 Cannot find device \"nmtest-none\"、結束狀態 1；tun_srsue 172.16.0.3/24 與 srs_spgw_sgi 172.16.0.1/24 的 root qdisc 皆為 fq_codel；srsepc 3414、srsenb 3485、srsue 7712 仍在執行。複製 netem_schedule.py b1e17c8fea237487dacadf36ca0e485f7a215ffad89986b7ba7ee359ade26d62、quick.json fd373794…、loss-fixed.json 53f954a3…（與 NM-03 相同）及 sticky-missing.json a86e09c3…，Linux2 上 sha256sum -c 皆成功；結束時帶回的 39 個檔案在本機核對皆成功。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點。"
+    source_location: "Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1；2026-11-26-AI-Dualpath-netem/linux2-netem-v2/SHA256SUMS、SHA256SUMS-remote.txt"
+    limitations:
+      - "唯讀檢查的命令輸出只存在 Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1，未另存檔。"
+  - evidence_id: "NM-10"
+    claim: "nmtest0 上新版工具的結束狀態與清理符合設計：完成 0、SIGHUP 129、SIGINT 130、SIGTERM 143、已有 netem 3 且不改動他人的 netem；不存在的介面 3、sticky 參數缺漏 2。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "Owner 以 sudo 執行並把 echo exit=$? 存檔。v2-2a（10:15:27Z，quick.json --cycles 2）：exit=0，phase t=0／5.002／8.001／10.002／15.001／18.001 s，schedule_end t=20.004 s、completed、removed=true、deleted。v2-2b 以 timeout --preserve-status 7 送訊號：INT exit=130（interrupted）、TERM exit=143（signal_SIGTERM）、HUP exit=129（signal_SIGHUP），三者 t≈6.97 s、removed=true、deleted。v2-2c（10:16:43Z）：先手動加 netem loss 1%，工具 exit=3、schedule_refused reason=netem_present，之後 tc qdisc show 仍為 qdisc netem 800f: root … loss 1%。Agent 以一般權限執行：--dev nmtest-none exit=3、reason=no_device；sticky-missing.json（rate 只出現在一個階段）在載入時 exit=2，未建立紀錄檔。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-v2/v2-2*；sticky-missing.json 被拒時的 stderr 只在 Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1"
+    limitations:
+      - "nmtest0 未設定位址也未啟用，沒有流量經過；2a、2b 結束後的 tc qdisc show 輸出為空（dummy 介面沒有 root netem）。"
+      - "state_unknown（tc 逾時或其他失敗）與 add 失敗時不清理的路徑沒有在主機上觸發，只有替身 tc 的測試。"
+  - evidence_id: "NM-11"
+    claim: "Linux2 的 kernel 在 tc qdisc change 時沿用沒有寫出的 reorder、corrupt、rate，delay 則被重設。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "Owner 以 sudo 直接操作 tc（未經工具）：add netem delay 10ms reorder 25% corrupt 1% rate 1mbit 後顯示 delay 10ms reorder 25% corrupt 1% rate 1Mbit gap 1；change netem loss 5% 後顯示 loss 5% reorder 25% corrupt 1% rate 1Mbit。"
+    directness: "PRIMARY"
+    confidence: "高；限 kernel 6.8.0-149、iproute2-6.1.0。"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-v2/v2-2e-before.qdisc、v2-2e-after.qdisc"
+    limitations:
+      - "rate 0、corrupt 0% 等歸零寫法是否被 tc 接受、能否清除先前的值，本次未測。"
+  - evidence_id: "NM-12"
+    claim: "tun_srsue 上新版工具的固定遺失、兩個循環的時變排程與 SIGTERM 中斷都完成並移除 netem。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "對照 v2-3a（10:20:22Z）：50／50，RTT p50 27.9 ms、max 224 ms（第一個封包）。v2-3b（10:20:44Z，loss-fixed.json）：exit=0、schedule_end t=30.003 s、completed、deleted；排程開始 2 s 後送 100 個 ping，76／100，p50 29.3 ms；ping 結束時 tc -s：qdisc netem 8011: root … loss 20%，Sent 76 pkt（dropped 24）。v2-3c（10:21:26Z，quick.json --cycles 2）：exit=0、phase t=0／5.001／8.002／10.002／15.002／18.002 s、schedule_end t=20.004 s、deleted；同時送 105 個 ping，97／105。v2-3d（10:21:54Z，timeout -s TERM 7）：exit=143、t=6.974 s、signal_SIGTERM、removed=true、deleted。結束時 tun_srsue 為 fq_codel；前後 srsue 皆為 PID 7712，UE 位址 172.16.0.3。"
+    directness: "PRIMARY"
+    confidence: "高；限單一試次。"
+    source_location: "2026-11-26-AI-Dualpath-netem/linux2-netem-v2/v2-3*"
+    limitations:
+      - "netem 只作用在 tun_srsue 送出方向。dropped 24 與 ping 遺失 24 相同，表示這段期間的遺失全部來自注入。"
+      - "結果標示 INJECTED_IP，不是 OTA 或無線通道劣化；本次沒有執行雙路徑策略比較。"
+  - evidence_id: "NM-13"
+    claim: "v2-3c 的遺失只出現在劣化階段；各階段遺失率與 NM-06 不同，差異在小樣本的範圍內。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "以 analysis/phase_loss.py 對齊（ping 起點比排程起點晚 0.027 s）：normal 50／50（0%，RTT p50 27.8 ms）；mild 26／30（13.3%，p50 42.8 ms）；severe 16／20（20%，p50 60.9 ms）；排程結束後 5／5。NM-06 同一排程為 mild 3.3%、severe 50%。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；各階段樣本少。"
+    source_location: "2026-11-26-AI-Dualpath-netem/analysis/v2-step3c-phase-loss.txt"
+    limitations:
+      - "遺失封包的送出時間以推估得到，方法同 NM-06。"
+      - "mild 30、severe 20 個樣本，兩次的遺失率在設定值（5%、40%）兩側，不能據此評估 netem 的準確度。"
+
+mutations:
+  - "Linux2：Agent 建立並於結束後刪除 ~/netem-test/。"
+  - "Linux2（Owner 以 sudo 執行）：建立並刪除 dummy 介面 nmtest0；在 nmtest0 與 tun_srsue 上由 netem_schedule.py 新增、切換並移除 netem root qdisc；為 2d 手動加上並刪除一個 loss 1% 的 netem。sch_netem 模組被自動載入並保持載入。"
+  - "Repo 外新增 2026-11-26-AI-Dualpath-netem/ 證據目錄。"
+  - "Repo：新增 netem_schedule.py、schedules/example-cycle.json、test_netem_schedule.py、本 TER；更新 degradation-procedure.md、ai-dualpath/README.md、docs-ci.yml 與 TER 索引。"
+  - "EPC／eNB／UE 的啟動、srsue 的重啟與發射增益皆非 Agent 操作。"
+  - "新版驗證：Agent 建立並刪除 Linux2 的 ~/netem-test/（結束時 39 個檔案）；Owner 以 sudo 建立並刪除 nmtest0，在 nmtest0 與 tun_srsue 上由工具新增、切換並移除 netem，另手動加減兩個 netem（2c 的 loss 1%、2e 的 rate／corrupt／reorder）。Runtime 未被 Agent 操作，結束時仍在執行。"
+
+recovered_or_observed_claims:
+  - claim: "netem_schedule.py 在實驗主機的真實 tc 與 kernel 上可新增、切換並移除 netem，正常結束、SIGTERM 與 SIGINT 都會清理。"
+    status: "OBSERVED"
+    supporting_evidence: ["NM-04", "NM-05", "NM-06"]
+  - claim: "已有 netem root qdisc 時工具拒絕執行且不做變更。"
+    status: "OBSERVED"
+    supporting_evidence: ["NM-04"]
+  - claim: "在 tun_srsue 上注入的遺失會反映在路徑 A 的 ping，且只落在排程的劣化階段。"
+    status: "OBSERVED"
+    supporting_evidence: ["NM-05", "NM-06"]
+  - claim: "c4c2302 版本的工具在實驗主機上的結束狀態、清理、拒絕覆蓋（含保留他人的 netem）與 sticky 參數拒絕符合設計。"
+    status: "OBSERVED"
+    supporting_evidence: ["NM-09", "NM-10", "NM-12"]
+  - claim: "tc qdisc change 會沿用沒有寫出的 reorder、corrupt、rate。"
+    status: "OBSERVED"
+    supporting_evidence: ["NM-11"]
+  - claim: "兩台主機已 NTP 同步。"
+    status: "OBSERVED"
+    supporting_evidence: ["NM-01"]
+  - claim: "屏蔽、增益與 Runtime 由現場為本次啟動；srsue 重啟與 2a 紀錄不符為組員操作問題。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["NM-02", "NM-04", "NM-08"]
+  - claim: "在注入劣化的路徑 A 上比較七種雙路徑策略。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+
+provenance_gaps:
+  - "NM-04 到 NM-06 各 sudo 步驟的結束狀態碼與中間的 tc qdisc show 輸出只在現場終端機，未存檔；NM-10 到 NM-12 已存檔。"
+  - "NM-01、NM-02、NM-07、NM-08 的命令輸出只存在 source_thread。"
+  - "NM-09 的唯讀檢查輸出與結束時刪除 ~/netem-test 的確認輸出只存在 Claude Code session 573947a3-5e59-4afb-b2c9-c8fd00294dc1。"
+  - "Repo 外證據目錄為本機路徑，可攜共享位置 UNKNOWN。"
+  - "逐封包的 tx／rtt 事件目前沒有 utc 欄位；本次以 ping -D 取代，策略比較時需要先補上。"
+
+stop_point:
+  result: "netem_schedule.py 在 Linux2 的 nmtest0 與 tun_srsue 上各執行過；中斷清理、拒絕覆蓋、固定遺失與兩個循環的時變排程皆觀察到預期行為。主機上的工具檔案已刪除，tun_srsue 回到 fq_codel；Runtime 仍由現場維持執行。其後 c4c2302 版本（b1e17c8f…）在同一主機重新驗證，結束狀態、清理與 sticky 行為皆符合預期，主機再次清理完畢。Owner 驗收 PENDING。"
+  next_authority_required: "以本工具執行七種策略的比較、任何新的 Runtime 或 RF 執行，均需 Owner 另行授權。"

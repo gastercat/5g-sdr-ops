@@ -35,7 +35,8 @@
 | `policies.py` | 固定策略（只走 A、只走 B、2:3 分流、全部複製）、門檻規則、LinUCB、規則層 `Guarded`，以及不可實作的上界 `Oracle` |
 | `evaluate.py` | 多個 seed 下比較各策略，輸出表格；`--out` 另存 CSV 與圖 |
 | `adaptive_send.py` | 線上傳送端，沿用 `dualpath_demo.py` 的封包格式與接收端 |
-| `test_ai_dualpath.py`、`test_adaptive_send.py` | 單元測試與本機 loopback 測試 |
+| `netem_schedule.py`、`schedules/` | 依排程檔在路徑 A 的介面上切換 `tc netem`，記錄每次切換並保證結束時移除；用法見[劣化注入程序](degradation-procedure.md#做法-atc-netem) |
+| `test_ai_dualpath.py`、`test_adaptive_send.py`、`test_netem_schedule.py` | 單元測試、本機 loopback 測試，以及以替身 `tc` 執行的排程測試 |
 
 LinUCB 需要 NumPy，`--out` 的圖需要 matplotlib；其餘只用 Python 標準函式庫。
 
@@ -85,9 +86,11 @@ EPC、eNB、UE 已由獲授權的操作者啟動並 Attach 成功。`adaptive_se
 ```bash
 python3 test_ai_dualpath.py && python3 -O test_ai_dualpath.py
 python3 test_adaptive_send.py && python3 -O test_adaptive_send.py
+python3 test_netem_schedule.py && python3 -O test_netem_schedule.py
 ```
 
-兩種直譯器模式都要跑。測試只用本機 loopback，尚未加入 `docs-ci` workflow。
+兩種直譯器模式都要跑。前兩組只用本機 loopback，尚未加入 `docs-ci` workflow；
+`test_netem_schedule.py` 不需要 root、不碰任何介面，已加入 `docs-ci`。
 
 ## 限制
 
@@ -98,5 +101,6 @@ python3 test_adaptive_send.py && python3 -O test_adaptive_send.py
 - 2026-11-16 的 OTA 策略比較中路徑 A 穩定，只走 A 在 30 ms 內已達 99.87%，自適應策略未顯示效益。
   分段調低發射增益後，路徑 A 最多只出現少量劣化（5 分鐘內一次約 1.1 秒的中斷），離線重播下各策略差距不超過
   0.25 個百分點；尚無真實劣化的路徑 A 上的線上比較結果。
-  可嘗試的劣化注入做法見[程序草案](degradation-procedure.md)，尚未執行。
+  劣化注入做法見[程序草案](degradation-procedure.md)；做法 A 的 `netem_schedule.py` 已在 2026-11-26 確認注入有效
+  （`INJECTED_IP`），尚未用它執行策略比較。
 - 路徑 A 間歇使用時 RTT 較高（2026-11-16 觀察），離線環境假設各封包的 RTT 與策略無關，沒有重現。

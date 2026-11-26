@@ -1,0 +1,10 @@
+{
+  "name": "example-cycle",
+  "note": "範例數值，取自 degradation-procedure.md 做法 A，不代表任何真實鏈路",
+  "repeat": true,
+  "phases": [
+    {"label": "normal", "seconds": 40, "netem": "loss 0%"},
+    {"label": "mild", "seconds": 15, "netem": "loss 5% delay 15ms 10ms"},
+    {"label": "severe", "seconds": 5, "netem": "loss 40% delay 40ms 20ms"}
+  ]
+}
