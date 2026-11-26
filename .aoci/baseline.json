@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-26T10:11:05Z",
+  "updated_at": "2026-11-26T10:24:15Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "15b6b0ae47b369f368c0d467ce9ce2403bcd0d1917e2b846534bf91b2d0635f9",
-      "size": 51112,
-      "normalized_sha256": "15b6b0ae47b369f368c0d467ce9ce2403bcd0d1917e2b846534bf91b2d0635f9"
+      "sha256": "7bd8c32e1e125ede5de99e5df8e74b35f28f40ef8ec9468cc07b98ad5f2c418a",
+      "size": 51117,
+      "normalized_sha256": "7bd8c32e1e125ede5de99e5df8e74b35f28f40ef8ec9468cc07b98ad5f2c418a"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -377,15 +377,15 @@
     },
     "docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml": {
       "role": "index",
-      "sha256": "45044b5e9ed73d9fdc96902fd35cdd0002caf87d02f5211f64484771a70658fd",
-      "size": 13139,
-      "normalized_sha256": "45044b5e9ed73d9fdc96902fd35cdd0002caf87d02f5211f64484771a70658fd"
+      "sha256": "d2f3559794aa327d49d947eae7d6f6dcead0024b75bb4f5fef9a7e8dbacd04fd",
+      "size": 20241,
+      "normalized_sha256": "d2f3559794aa327d49d947eae7d6f6dcead0024b75bb4f5fef9a7e8dbacd04fd"
     },
     "docs/evidence/task-evidence/README.md": {
       "role": "index",
-      "sha256": "8e669f969c036a5b1418c9552d6e6a03bd3c3e1022f048583729044dc42805d4",
-      "size": 8610,
-      "normalized_sha256": "8e669f969c036a5b1418c9552d6e6a03bd3c3e1022f048583729044dc42805d4"
+      "sha256": "a953c572230463b384cb847de0fdde6d2a3e3b588fc5dd862b7dd3118996e021",
+      "size": 8725,
+      "normalized_sha256": "a953c572230463b384cb847de0fdde6d2a3e3b588fc5dd862b7dd3118996e021"
     },
     "docs/evidence/task-evidence/TASK_EVIDENCE_RECORD_TEMPLATE.yaml": {
       "role": "index",
@@ -910,9 +910,9 @@
     },
     "exploration/ai-dualpath/README.md": {
       "role": "index",
-      "sha256": "083b3540050bfbd0b8cd335f507b25232c40f3c48bb60fa1709808f6dc94e746",
-      "size": 6578,
-      "normalized_sha256": "083b3540050bfbd0b8cd335f507b25232c40f3c48bb60fa1709808f6dc94e746"
+      "sha256": "d7d40adf60a3d56641060efde9646a876083dafe4bbb7bd77a3391abb3adb859",
+      "size": 6678,
+      "normalized_sha256": "d7d40adf60a3d56641060efde9646a876083dafe4bbb7bd77a3391abb3adb859"
     },
     "exploration/ai-dualpath/adaptive_send.py": {
       "role": "index",
@@ -928,9 +928,9 @@
     },
     "exploration/ai-dualpath/degradation-procedure.md": {
       "role": "index",
-      "sha256": "7bfd5db4d292876b0021191940bd59ed5a484987da73d90f06c811df2d118b9d",
-      "size": 15203,
-      "normalized_sha256": "7bfd5db4d292876b0021191940bd59ed5a484987da73d90f06c811df2d118b9d"
+      "sha256": "534eb04ac72af156c747d52f29e3b0a52a3681fa1854a5cf17e84ab35559a5e1",
+      "size": 15564,
+      "normalized_sha256": "534eb04ac72af156c747d52f29e3b0a52a3681fa1854a5cf17e84ab35559a5e1"
     },
     "exploration/ai-dualpath/evaluate.py": {
       "role": "index",
