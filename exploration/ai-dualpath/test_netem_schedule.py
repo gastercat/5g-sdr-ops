@@ -434,7 +434,9 @@ class Run(Fake):
 
     def test_timed_out_add_is_cleaned_up(self):
         os.environ["FAKE_TC_HANG"] = "add"        # kernel applied the add, tc killed on timeout
-        code, events, err = self.run_main("--cycles", "1", tc_timeout=0.5)
+        # The timeout applies to every stand-in call (each starts a Python interpreter), so it must
+        # leave room for a slow CI start-up; only the hanging add is meant to reach it.
+        code, events, err = self.run_main("--cycles", "1", tc_timeout=3.0)
         self.assertEqual(code, N.EXIT_TC)
         self.assertEqual([c[1] for c in self.mutating()], ["add", "del"])
         self.assertTrue(events[-1]["removed"])

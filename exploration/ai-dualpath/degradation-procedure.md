@@ -120,7 +120,9 @@ sudo tc qdisc add dev tun_srsue root netem loss gemodel 1% 10% 70% 0.1%
 
 `loss`、`delay`、`duplicate` 的相關係數（例如 `loss 40% 25%` 的 25%、`delay 40ms 20ms 25%` 的 25%）放在另一個
 同樣只在寫出時才送出的屬性，預期也會沿用上一階段的值（`NEEDS_CONFIRMATION`，NM-11 沒有測試相關係數）。
-工具一律拒絕帶相關係數的排程；需要突發性遺失時改用 `loss gemodel` 或 `loss state`，這兩種寫法每段都會重設。
+工具一律拒絕帶相關係數的排程；需要突發性遺失時可改用 `loss gemodel` 或 `loss state`。依 iproute2 與 kernel 行為的
+理解，這兩種寫法的參數每次寫出都會重送，下一階段沒寫時遺失模型會回到一般的隨機遺失；但這點同樣是
+`NEEDS_CONFIRMATION`（NM-11 沒有測試 `gemodel`／`state`），第一次使用前需在主機上以 `tc qdisc show` 確認。
 
 先檢查排程（不需要 `sudo`，不碰介面）：
 

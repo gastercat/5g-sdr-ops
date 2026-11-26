@@ -39,8 +39,9 @@ VALUE = re.compile(r"^[0-9]+(\.[0-9]+)?(%|ms|us|kbit|mbit)?$")
 DEV = re.compile(r"^[A-Za-z0-9_.:][A-Za-z0-9_.:-]{0,14}$")
 # `tc qdisc change` resends these netem attributes only when the phase names them, and the kernel
 # keeps the previous value when an attribute is absent, so they can leak into later phases
-# (observed on Linux2, TER NM-11). The loss, delay and duplicate values themselves are in the
-# always-sent base options and reset; the loss model resets to random when no gemodel/state is given.
+# (observed on Linux2, TER NM-11, which also saw the delay value reset). The loss, delay and
+# duplicate values themselves are in the always-sent base options and reset. The loss model is
+# expected to fall back to random when no gemodel/state is given (NEEDS_CONFIRMATION: not tested).
 STICKY = ("rate", "corrupt", "reorder")
 # The loss, delay and duplicate correlations travel in a separate attribute that is likewise sent
 # only when written, so they are expected to leak the same way (not yet tested on the host). They
@@ -314,11 +315,13 @@ class Runner:
     def cleanup(self, may_own):
         """Remove the netem root qdisc if this run may have added it; return (removed, note).
 
-        may_own is true only after a successful add, or while an add was in flight when a signal
-        arrived (the kernel may have applied it before the bookkeeping). In those cases the
-        preflight saw no netem root, so a netem root found here is ours. After a failed add, or
-        before any add, nothing is touched. A state that cannot be read is never counted as
-        removed: without a confirmed netem root nothing is deleted, and the caller exits 1.
+        may_own is true after a successful add, and also when an add did not come back with a
+        known result: still in flight when a signal arrived, or killed on timeout (RC_TIMEOUT).
+        The kernel may have applied such an add, and the preflight saw no netem root, so a netem
+        root found here is ours. Only an add that tc itself rejected, or no add at all, leaves the
+        interface untouched; do not treat a timeout as a rejection. A state that cannot be read
+        is never counted as removed: without a confirmed netem root nothing is deleted, and the
+        caller exits 1.
         """
         if not may_own:
             return True, "nothing_added"
