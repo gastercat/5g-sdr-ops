@@ -4,10 +4,11 @@
 [Lab03 啟動與停止步驟](../../labs/lab03-urllc/runbook.md) ·
 [2026-11-16 TER](../../docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml)
 
-狀態：`EXPLORATION / PROCEDURE_DRAFT / NOT_EXECUTED / HUMAN REVIEW REQUIRED`
+狀態：`EXPLORATION / PROCEDURE_DRAFT / METHOD_A_TOOL_RUN_ONCE / HUMAN REVIEW REQUIRED`
 
 本文件整理讓路徑 A（LTE OTA）出現可控劣化的幾種做法，供 Owner 審閱與挑選。
-它**不授權**任何 Runtime、RF 或網路操作，也不是已執行事項的證據：下列指令都沒有在實驗主機上執行過。
+它**不授權**任何 Runtime、RF 或網路操作，也不是已執行事項的證據。除了做法 A 的 `netem_schedule.py`
+（2026-11-26 執行過一次，見做法 A），下列指令都沒有在實驗主機上執行過。
 每一次執行仍需當次的 Owner 授權，並符合
 [Remote Agent Policy](../../docs/engineering/CODEX_REMOTE_AGENT_POLICY.md) 與
 [Configuration Governance](../../docs/engineering/CONFIGURATION_GOVERNANCE.md)。
@@ -51,6 +52,9 @@ Agent 不輸入密碼、不執行 `sudo`；需要 `sudo` 的步驟由操作者�
 - 先在未注入的狀態下錄一段路徑 A 的逐封包紀錄，作為同一天的對照。
 - 每段紀錄寫下：UTC 起訖時間、兩個程序的完整命令列、使用的做法與參數、注入排程的起始時間。
 - 各策略是依序執行的。要比較策略，每一輪都必須從排程的同一個相位開始，否則各策略面對的劣化不同。
+- 以 UTC 對齊兩台主機的紀錄前，先在兩台確認 `timedatectl show -p NTPSynchronized` 為 `yes`。
+  2026-11-26 的唯讀檢查（`OBSERVED`）：Linux1、Linux2 都由 `systemd-timesyncd` 向 `ntp.ubuntu.com` 對時且已同步；
+  這依賴主機能連上網際網路，只是當日狀態，每次執行前仍要重新確認。未同步時，對齊改用單一主機的時間。
 - 結束後依各節的「還原」步驟處理，並依 Lab03 步驟確認沒有殘留程序與介面。
 
 參數名稱已對照 `srsRAN_4G` commit `6bcbd9e5bf8686aa7085202cd847c5ddd64a9c16` 的 `srsenb/enb.conf.example`、
@@ -62,8 +66,8 @@ Agent 不輸入密碼、不執行 `sudo`；需要 `sudo` 的步驟由操作者�
 路徑 A 的探測封包由 Linux2 的 `tun_srsue` 送出，回音由 Linux1 的 `srs_spgw_sgi` 送回。netem 只作用在介面的
 送出方向：掛在 `tun_srsue` 影響去程，掛在 `srs_spgw_sgi` 影響回程。只掛一側就足以讓來回探測出現遺失。
 
-未確認事項（`NEEDS_CONFIRMATION`）：兩台主機是否已載入或可載入 `sch_netem` 模組；Ubuntu 上它通常在
-`linux-modules-extra` 套件內，安裝套件屬於主機變更，需另行授權。
+`sch_netem` 模組：2026-11-26 兩台主機（kernel 6.8.0-147／149）都有；Linux2 在第一次使用時自動載入，
+不需要另外安裝 `linux-modules-extra`。kernel 更新後需重新確認；安裝套件屬於主機變更，需另行授權。
 
 執行前先記錄現況（不需要 `sudo`）：
 
@@ -84,7 +88,37 @@ sudo tc qdisc add dev tun_srsue root netem loss gemodel 1% 10% 70% 0.1%
 ```
 
 隨時間變化的排程。固定的劣化無法區分自適應策略與「只走路徑 B」，所以比較策略時應使用這一種。
-下例每 60 秒循環一次：40 秒正常、15 秒輕度劣化、5 秒重度劣化；中斷或結束時自動移除 qdisc。
+
+比較策略時使用 [`netem_schedule.py`](netem_schedule.py)。排程放在 JSON 檔（範例
+[`schedules/example-cycle.json`](schedules/example-cycle.json)：每 60 秒循環一次，40 秒正常、15 秒輕度劣化、
+5 秒重度劣化），每次執行都從相位 0 開始，每次切換寫一行帶 UTC 的事件，並記錄排程檔的 SHA-256。
+正常結束、Ctrl-C、`SIGTERM`、`SIGHUP` 或任何錯誤都會移除 qdisc 並再讀一次確認；無法確認時以狀態 1 結束，
+並在 stderr 印出還原指令。介面不存在或 root qdisc 已經是 netem 時，它不做任何變更就停止。
+它不呼叫 `sudo`；`sudo` 由操作者自己加。2026-11-26 已在 Linux2 的 dummy 介面與 `tun_srsue` 上各執行過一次，
+確認切換、中斷清理與拒絕覆蓋的行為，見
+[2026-11-26 TER](../../docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml)；
+尚未用它執行策略比較。
+
+先檢查排程（不需要 `sudo`，不碰介面）：
+
+```bash
+python3 netem_schedule.py schedules/example-cycle.json --dev tun_srsue --cycles 3 --dry-run
+```
+
+每個策略一輪，每輪都重新啟動排程。操作者在 Linux2 執行排程，接著立刻在控制端啟動傳送端：
+
+```bash
+sudo python3 netem_schedule.py schedules/example-cycle.json --dev tun_srsue --cycles 3 \
+  --log run-<policy>-<n>.events.jsonl
+python3 adaptive_send.py --policy <policy> ... --json > run-<policy>-<n>.jsonl
+```
+
+`--cycles` 與 `--duration` 必須擇一，避免無限執行；`--log` 指定的檔案已存在時會拒絕覆寫。
+傳送長度應等於整數個循環，例如 3 個 60 秒循環配 9000 個封包、間隔 20 ms。
+目前兩支傳送端只有 `send_start` 與 `summary` 帶 `utc`，逐封包的 `tx`／`rtt` 事件沒有時間；
+要把每個封包對到當時的階段，需要另外補上（列為下一步，尚未實作）。
+
+下面是原本手寫的等效指令，保留作為對照；它不會記錄每次切換，也不會檢查既有的 qdisc。
 
 ```bash
 sudo bash -c '

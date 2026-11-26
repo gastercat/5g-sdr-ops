@@ -105,6 +105,12 @@ jobs:
           python3 -B exploration/lab03-dualpath-tools/test_live_viz.py
           python3 -B -O exploration/lab03-dualpath-tools/test_live_viz.py
           node exploration/lab03-dualpath-tools/test_lab03_ota_run.mjs
+      - name: Test AI dual-path netem schedule
+        working-directory: exploration/ai-dualpath
+        run: |
+          # Stand-in tc only: no root, no interface is touched.
+          python3 -B test_netem_schedule.py
+          python3 -B -O test_netem_schedule.py
       - name: Check documentation and PR whitespace
         run: python3 .github/ci/checks.py docs-quality
 

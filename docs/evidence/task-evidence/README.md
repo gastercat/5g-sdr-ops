@@ -118,3 +118,6 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
   組內稱 Lab04 的 Tailcat Security Lens 選項 A：控制端 Mac 上的本地 DERP、loopback 明文與外層加密的
   側錄對照、`--allow` 存取控制，以及以暫時 nftables 規則強制只走 relay、明文 relay 下可見公鑰但不可見內容的
   T8 補做；不涉及 RF，也不建立 Owner 驗收。
+- [`2026-11-26-ai-dualpath-netem-schedule.yaml`](2026-11-26-ai-dualpath-netem-schedule.yaml)：
+  `netem_schedule.py` 在 Linux2 的第一次執行：dummy 介面上的中斷清理與拒絕覆蓋，以及 `tun_srsue` 上的
+  固定遺失與時變排程（`INJECTED_IP`）；沒有執行策略比較，也不建立 Owner 驗收。
