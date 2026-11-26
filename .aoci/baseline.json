@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-26T10:35:51Z",
+  "updated_at": "2026-11-26T10:42:30Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -377,9 +377,9 @@
     },
     "docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml": {
       "role": "index",
-      "sha256": "e71e69ec14f1e24070600ff9fd1029d48be46b73e164105e0eb1d223c8728245",
-      "size": 20689,
-      "normalized_sha256": "e71e69ec14f1e24070600ff9fd1029d48be46b73e164105e0eb1d223c8728245"
+      "sha256": "d69c229dc7453562ed8935ae6c0654def228f43d09d5c5934c496f898d7f7767",
+      "size": 20684,
+      "normalized_sha256": "d69c229dc7453562ed8935ae6c0654def228f43d09d5c5934c496f898d7f7767"
     },
     "docs/evidence/task-evidence/README.md": {
       "role": "index",
@@ -928,9 +928,9 @@
     },
     "exploration/ai-dualpath/degradation-procedure.md": {
       "role": "index",
-      "sha256": "5ec87da49fbef3bf1fdf96cccba32b06042b7a2e670b6adf573a05dc8574d5bd",
-      "size": 16432,
-      "normalized_sha256": "5ec87da49fbef3bf1fdf96cccba32b06042b7a2e670b6adf573a05dc8574d5bd"
+      "sha256": "b34e0fcb24145c2541ae27ef8bd739136b52e0c995555fb17828df6a0a45c710",
+      "size": 16707,
+      "normalized_sha256": "b34e0fcb24145c2541ae27ef8bd739136b52e0c995555fb17828df6a0a45c710"
     },
     "exploration/ai-dualpath/evaluate.py": {
       "role": "index",
@@ -946,9 +946,9 @@
     },
     "exploration/ai-dualpath/netem_schedule.py": {
       "role": "index",
-      "sha256": "32427e5922090bc8c8d50db2c6cf06ab69abf1557df66afa436875e6884ff4f6",
-      "size": 20263,
-      "normalized_sha256": "32427e5922090bc8c8d50db2c6cf06ab69abf1557df66afa436875e6884ff4f6"
+      "sha256": "a549b6b7cc2fc113624218ff76f910db556def2076c00743905b8db3a1a413a9",
+      "size": 20487,
+      "normalized_sha256": "a549b6b7cc2fc113624218ff76f910db556def2076c00743905b8db3a1a413a9"
     },
     "exploration/ai-dualpath/policies.py": {
       "role": "index",
@@ -976,9 +976,9 @@
     },
     "exploration/ai-dualpath/test_netem_schedule.py": {
       "role": "observe",
-      "sha256": "bf3e317b5b3a9863f6860da716c4770852feb0bad77fc90d75df68d83fb9cba3",
-      "size": 23718,
-      "normalized_sha256": "bf3e317b5b3a9863f6860da716c4770852feb0bad77fc90d75df68d83fb9cba3"
+      "sha256": "7af87e8e70205c57fb1965416b522ab858a90e81a5102b0ea18fd8665723cad2",
+      "size": 23906,
+      "normalized_sha256": "7af87e8e70205c57fb1965416b522ab858a90e81a5102b0ea18fd8665723cad2"
     },
     "exploration/ai-dualpath/trace_env.py": {
       "role": "index",
