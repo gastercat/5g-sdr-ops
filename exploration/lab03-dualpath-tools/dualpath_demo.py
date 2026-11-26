@@ -157,7 +157,7 @@ def run_send(a):
                 socks[tag].send(HDR.pack(MAGIC, pid, ord(tag), time.monotonic()) + pad)
                 sent[tag].append(pid)
                 if a.stream:
-                    print(json.dumps({"event": "tx", "id": pid, "path": tag}), flush=True)
+                    print(json.dumps({"event": "tx", "id": pid, "path": tag, "utc": time.time()}), flush=True)
             except OSError as e:
                 errors.append("send %s id=%d: %s" % (tag, pid, e))
         deadline = time.monotonic() + a.interval

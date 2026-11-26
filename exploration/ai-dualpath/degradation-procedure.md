@@ -130,18 +130,29 @@ sudo tc qdisc add dev tun_srsue root netem loss gemodel 1% 10% 70% 0.1%
 python3 netem_schedule.py schedules/example-cycle.json --dev tun_srsue --cycles 3 --dry-run
 ```
 
-每個策略一輪，每輪都重新啟動排程。操作者在 Linux2 執行排程，接著立刻在控制端啟動傳送端：
+策略比較時，排程只由操作者在 Linux2 啟動**一次**，涵蓋全部執行；控制端的
+[`netem_comparison.py`](netem_comparison.py) 經 SSH 讀取排程的事件紀錄，讓每一輪傳送都從某個循環開頭後約 1 秒開始，
+跑 `--cycles-per-run` 個完整循環，再空 `--gap-cycles` 個循環給下一輪準備。每個策略因此遇到相同順序的階段，
+操作者也只需要執行一次 `sudo`。傳送端與 netem 在同一台主機，兩邊的 `utc` 來自同一個時鐘。
 
 ```bash
-sudo python3 netem_schedule.py schedules/example-cycle.json --dev tun_srsue --cycles 3 \
-  --log run-<policy>-<n>.events.jsonl
-python3 adaptive_send.py --policy <policy> ... --json > run-<policy>-<n>.jsonl
+# 操作者（Linux2）：一次長排程，循環數依 plan 的輸出決定，結束時按 Ctrl-C
+sudo python3 netem_schedule.py schedules/comparison-burst.json --dev tun_srsue --cycles <N> \
+  --log <dir>/netem-events.jsonl
+# 控制端：先看時間表，再執行
+python3 netem_comparison.py plan --events-file <dir>/netem-events.jsonl --out <out>
+python3 netem_comparison.py run  --events-file <dir>/netem-events.jsonl --out <out> --rounds 3
+python3 align_phases.py --events <out>/netem-events.jsonl <out>/r*.sender.jsonl --csv phases.csv --plot phases.png
 ```
 
+[`schedules/comparison-burst.json`](schedules/comparison-burst.json) 的重度階段使用 Gilbert-Elliott 突發遺失
+（`loss gemodel 5% 10% 100% 0%`，平均約 33%，一次連續約 10 個封包）。從 `gemodel` 切回 `loss 0%` 時遺失模型是否回到
+一般隨機模式尚未在主機上確認（`NEEDS_CONFIRMATION`），使用前先在 dummy 介面上以 `tc qdisc show` 確認。
+
 `--cycles` 與 `--duration` 必須擇一，避免無限執行；`--log` 指定的檔案已存在時會拒絕覆寫。
-傳送長度應等於整數個循環，例如 3 個 60 秒循環配 9000 個封包、間隔 20 ms。
-目前兩支傳送端只有 `send_start` 與 `summary` 帶 `utc`，逐封包的 `tx`／`rtt` 事件沒有時間；
-要把每個封包對到當時的階段，需要另外補上（列為下一步，尚未實作）。
+兩支傳送端的逐封包 `tx` 事件帶 `utc`（牆上時鐘）；[`align_phases.py`](align_phases.py) 依每個封包第一份副本的送出時間
+判斷當時的階段，輸出各策略逐階段的期限內送達比例、副本數與路徑 A 的副本遺失。`netem_comparison.py` 已在本機以替身
+`tc` 與 loopback 預演過，尚未在實驗主機上執行。
 
 下面是原本手寫的等效指令，保留作為對照；它不會記錄每次切換，也不會檢查既有的 qdisc。
 

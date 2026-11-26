@@ -36,7 +36,9 @@
 | `evaluate.py` | 多個 seed 下比較各策略，輸出表格；`--out` 另存 CSV 與圖 |
 | `adaptive_send.py` | 線上傳送端，沿用 `dualpath_demo.py` 的封包格式與接收端 |
 | `netem_schedule.py`、`schedules/` | 依排程檔在路徑 A 的介面上切換 `tc netem`，記錄每次切換並保證結束時移除；用法見[劣化注入程序](degradation-procedure.md#做法-atc-netem) |
-| `test_ai_dualpath.py`、`test_adaptive_send.py`、`test_netem_schedule.py` | 單元測試、本機 loopback 測試，以及以替身 `tc` 執行的排程測試 |
+| `netem_comparison.py` | 控制端：在一次長 netem 排程中依序執行七種策略，每輪對準循環開頭；用法見[劣化注入程序](degradation-procedure.md#做法-atc-netem) |
+| `align_phases.py` | 依每個封包的送出時間對到 netem 階段，逐階段比較各策略 |
+| `test_ai_dualpath.py`、`test_adaptive_send.py`、`test_netem_schedule.py`、`test_align_phases.py`、`test_netem_comparison.py` | 單元測試、本機 loopback 測試，以及以替身 `tc` 或合成紀錄執行的測試 |
 
 LinUCB 需要 NumPy，`--out` 的圖需要 matplotlib；其餘只用 Python 標準函式庫。
 
@@ -87,10 +89,12 @@ EPC、eNB、UE 已由獲授權的操作者啟動並 Attach 成功。`adaptive_se
 python3 test_ai_dualpath.py && python3 -O test_ai_dualpath.py
 python3 test_adaptive_send.py && python3 -O test_adaptive_send.py
 python3 test_netem_schedule.py && python3 -O test_netem_schedule.py
+python3 test_align_phases.py && python3 -O test_align_phases.py
+python3 test_netem_comparison.py && python3 -O test_netem_comparison.py
 ```
 
 兩種直譯器模式都要跑。前兩組只用本機 loopback，尚未加入 `docs-ci` workflow；
-`test_netem_schedule.py` 不需要 root、不碰任何介面，已加入 `docs-ci`。
+`test_netem_schedule.py`、`test_align_phases.py`、`test_netem_comparison.py` 不需要 root、不碰任何介面，已加入 `docs-ci`。
 
 ## 限制
 

@@ -62,6 +62,10 @@ class Loopback(unittest.TestCase):
         self.assertEqual(kinds[0], "send_start")
         self.assertEqual(kinds.count("decision"), 40)
         self.assertEqual(kinds.count("tx"), 80)
+        tx = [e for e in events if e["event"] == "tx"]
+        start = events[0]["utc"]
+        self.assertTrue(all(start <= e["utc"] < start + 10 for e in tx))   # wall clock for netem alignment
+        self.assertEqual([e["utc"] for e in tx], sorted(e["utc"] for e in tx))
         self.assertEqual(kinds.count("rtt"), 80)
 
     def test_emulated_leo_holds_back_path_b(self):
