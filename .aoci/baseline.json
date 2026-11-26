@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-26T10:46:58Z",
+  "updated_at": "2026-11-26T11:07:28Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "c31548508c040d2b49ad7726bf27fac0fc3378e6e4b22656117aeb4cc28d753d",
-      "size": 51118,
-      "normalized_sha256": "c31548508c040d2b49ad7726bf27fac0fc3378e6e4b22656117aeb4cc28d753d"
+      "sha256": "ff9e0f457b7149391bbab7a07500711b2eaf6107b5d954a2f1ee4ca63d449832",
+      "size": 52035,
+      "normalized_sha256": "ff9e0f457b7149391bbab7a07500711b2eaf6107b5d954a2f1ee4ca63d449832"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -904,9 +904,9 @@
     },
     "exploration/README.md": {
       "role": "index",
-      "sha256": "d68cef5639e409beda71d0c30fa23c76686c2890a2d36ba1f86e93905f80527b",
-      "size": 5064,
-      "normalized_sha256": "d68cef5639e409beda71d0c30fa23c76686c2890a2d36ba1f86e93905f80527b"
+      "sha256": "94da7fae07cfb2daf27745f6af70a1cac4573ad311f3ec38007ca2cd59ca7adc",
+      "size": 5543,
+      "normalized_sha256": "94da7fae07cfb2daf27745f6af70a1cac4573ad311f3ec38007ca2cd59ca7adc"
     },
     "exploration/ai-dualpath/README.md": {
       "role": "index",
@@ -943,6 +943,12 @@
       "sha256": "508f4aa155bf78aacb94f1725ea48c4846e7ef37b5234234fec0a4e013e04425",
       "size": 2453,
       "normalized_sha256": "508f4aa155bf78aacb94f1725ea48c4846e7ef37b5234234fec0a4e013e04425"
+    },
+    "exploration/ai-dualpath/literature-notes.md": {
+      "role": "index",
+      "sha256": "2f4e4e6e6cae11aea25b6a1d8082c90b8fb3295284a884f231c2951629c1fa01",
+      "size": 8680,
+      "normalized_sha256": "2f4e4e6e6cae11aea25b6a1d8082c90b8fb3295284a884f231c2951629c1fa01"
     },
     "exploration/ai-dualpath/netem_schedule.py": {
       "role": "index",
@@ -985,6 +991,12 @@
       "sha256": "e952660a24b3862352f31084afd5800eff8fef337bf373014c11b48ab597b1b1",
       "size": 6399,
       "normalized_sha256": "e952660a24b3862352f31084afd5800eff8fef337bf373014c11b48ab597b1b1"
+    },
+    "exploration/gnss-sdr/Plan.md": {
+      "role": "index",
+      "sha256": "b973cd30aa7b0396dee52cab84a2fc4376e1859a7520e1386e93c0972e6b6953",
+      "size": 8983,
+      "normalized_sha256": "b973cd30aa7b0396dee52cab84a2fc4376e1859a7520e1386e93c0972e6b6953"
     },
     "exploration/lab03-dualpath-tools/README.md": {
       "role": "index",
