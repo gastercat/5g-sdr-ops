@@ -65,7 +65,7 @@
 | 項目 | 狀態 | 說明 |
 | --- | --- | --- |
 | GNSS-SDR 與相依套件 | `GAP` | 需要 GNU Radio（含 Boost、FFTW、VOLK）、Armadillo、Abseil、matio、PugiXML、Protocol Buffers 與一個 SSL 函式庫；USRP 經由 UHD 使用（[需求說明](https://gnss-sdr.org/requirements/)） |
-| 實驗主機的 UHD | `NEEDS_CONFIRMATION` | Repo 沒有記錄兩台主機 UHD 的版本與安裝方式。Lab01 使用 ZeroMQ，手冊註明不需要 UHD；Lab03 已用 B210，表示主機上有某個版本的 UHD |
+| 實驗主機的 UHD | `NEEDS_CONFIRMATION` | [Lab03 README](../../labs/lab03-urllc/README.md) 記錄兩台主機為 UHD 4.6，但安裝來源與 prefix 未記錄。Lab01 使用 ZeroMQ，手冊註明不需要 UHD |
 | 與 srsRAN 環境的相容性 | `NEEDS_CONFIRMATION` | 以套件管理器安裝 GNSS-SDR 可能帶入第二套 UHD，影響已驗證的 srsRAN 環境。安裝位置與方式需在階段 1 決定 |
 | 電腦效能 | 低風險 | 官方說明簡單設定下一般現代筆電即可即時處理；跟不上時可改處理錄製檔 |
 
