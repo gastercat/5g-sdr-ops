@@ -345,7 +345,7 @@ class Run(Fake):
         code, events, err = self.run_main("--cycles", "1")
         self.assertEqual(code, N.EXIT_CLEANUP)
         self.assertFalse(events[-1]["removed"])
-        self.assertIn("tc qdisc del dev tun_srsue root", err)
+        self.assertIn("sudo tc qdisc del dev tun_srsue root", err)   # pasteable from the operator's shell
 
     def test_device_gone_during_run_counts_as_removed(self):
         def vanish(n):
@@ -363,7 +363,7 @@ class Run(Fake):
         self.assertFalse(events[-1]["removed"])
         self.assertEqual(events[-1]["note"], "state_unknown")
         self.assertNotIn("del", [c[1] for c in self.mutating()])   # no del without a confirmed netem root
-        self.assertIn("tc qdisc del dev tun_srsue root", err)
+        self.assertIn("sudo tc qdisc del dev tun_srsue root", err)   # pasteable from the operator's shell
 
     def test_unreadable_state_after_del_is_not_removed(self):
         os.environ["FAKE_TC_FAIL"] = "show:3+"     # the confirming read after del fails

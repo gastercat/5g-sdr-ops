@@ -203,7 +203,8 @@ class Runner:
         return "netem" if netem else "other"
 
     def restore_hint(self):
-        return "tc qdisc del dev %s root && tc qdisc show dev %s" % (self.dev, self.dev)
+        # The tool runs under sudo but the operator's own shell does not; reading needs no root.
+        return "sudo tc qdisc del dev %s root && tc qdisc show dev %s" % (self.dev, self.dev)
 
     def run(self, sched, sha, steps, end):
         start = self.clock()
