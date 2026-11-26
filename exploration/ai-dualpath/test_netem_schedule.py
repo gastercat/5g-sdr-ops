@@ -44,6 +44,8 @@ if state == "gone":
 if verb == "show":
     print("qdisc netem 8001: root refcnt 2 limit 1000 loss 5%" if state == "netem" else
           "qdisc noqueue 0: root refcnt 2")
+    if os.environ.get("FAKE_TC_RACE") and counts["show"] == 1:
+        open(state_file, "w").write("netem")    # another operator adds netem right after preflight
 elif verb == "add":
     if state == "netem":
         sys.stderr.write("Error: Exclusivity flag on, cannot modify.\n")
@@ -84,9 +86,10 @@ class Fake(unittest.TestCase):
         self.calls_file = os.path.join(d, "calls.jsonl")
         self.state_file = os.path.join(d, "state")
         self.env = {"FAKE_TC_LOG": self.calls_file, "FAKE_TC_STATE": self.state_file}
-        old = {k: os.environ.get(k) for k in list(self.env) + ["FAKE_TC_FAIL"]}
+        old = {k: os.environ.get(k) for k in list(self.env) + ["FAKE_TC_FAIL", "FAKE_TC_RACE"]}
         os.environ.update(self.env)
         os.environ.pop("FAKE_TC_FAIL", None)
+        os.environ.pop("FAKE_TC_RACE", None)
         self.addCleanup(lambda: [os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
                                  for k, v in old.items()])
 
@@ -136,11 +139,15 @@ class Validation(unittest.TestCase):
         self.assertEqual(len(sha), 64)
 
     def test_rejects_bad_seconds(self):
-        for sec in (0, -1, "5", True, None, float("inf")):
+        for sec in (0, -1, "5", True, None, float("inf"), 0.0001, N.MIN_PHASE_S - 0.01):
             with self.subTest(sec=sec):
                 with self.assertRaises(N.ScheduleError):
                     N.load_schedule(json.dumps(self.base(phases=[{"label": "a", "seconds": sec,
                                                                   "netem": "loss 1%"}])).encode())
+
+    def test_accepts_minimum_phase(self):
+        sched, _ = self.load(self.base(phases=[{"label": "a", "seconds": N.MIN_PHASE_S, "netem": "loss 1%"}]))
+        self.assertEqual(sched["cycle_s"], N.MIN_PHASE_S)
 
     def test_rejects_duplicate_label(self):
         p = {"label": "a", "seconds": 1, "netem": "loss 1%"}
@@ -353,6 +360,58 @@ class Run(Fake):
         self.assertEqual(code, N.EXIT_REFUSED)
         self.assertEqual(self.mutating(), [])
         self.assertEqual(events[-1]["reason"], "state_unknown")
+
+    def patch_call(self, hook):
+        """Run hook(args, real_result) around every tc call; it may raise to simulate a signal."""
+        real_call = N.Runner.call
+
+        def call(runner, *args):
+            return hook(args, real_call(runner, *args))
+        N.Runner.call = call
+        self.addCleanup(setattr, N.Runner, "call", real_call)
+
+    def test_failed_add_leaves_concurrent_netem_alone(self):
+        os.environ["FAKE_TC_RACE"] = "1"           # someone else's netem appears after preflight
+        code, events, err = self.run_main("--cycles", "1")
+        self.assertEqual(code, N.EXIT_TC)
+        self.assertEqual([c[1] for c in self.mutating()], ["add"])     # never deletes their qdisc
+        self.assertEqual(events[-1]["note"], "nothing_added")
+        with open(self.state_file) as f:
+            self.assertEqual(f.read(), "netem")
+
+    def test_signal_right_after_add_still_deletes(self):
+        def hook(args, result):                    # add applied, signal before the bookkeeping
+            if args[1] == "add":
+                raise N.Stop(signal.SIGTERM)
+            return result
+        self.patch_call(hook)
+        code, events, _ = self.run_main("--cycles", "1")
+        self.assertEqual(code, 128 + signal.SIGTERM)
+        self.assertEqual([c[1] for c in self.mutating()], ["add", "del"])
+        self.assertEqual(events[-1]["note"], "deleted")
+
+    def test_ctrl_c_during_preflight_changes_nothing(self):
+        def hook(args, result):
+            raise KeyboardInterrupt
+        self.patch_call(hook)
+        code, events, err = self.run_main("--cycles", "1")
+        self.assertEqual(code, 128 + signal.SIGINT)
+        self.assertEqual(self.mutating(), [])
+        self.assertEqual(events, [])
+
+    def test_unwritable_schedule_end_keeps_cleanup_status(self):
+        class Out(io.StringIO):
+            def write(self, s):
+                if '"schedule_end"' in s:
+                    raise BrokenPipeError("stdout closed")
+                return super().write(s)
+        clock, out, err = Clock(), Out(), io.StringIO()
+        code = N.main([EXAMPLE, "--dev", "tun_srsue", "--tc", self.tc, "--cycles", "1"],
+                      tc_prefix=[sys.executable], clock=clock, sleep=clock.sleep,
+                      wall=lambda: 1795000000.0 + clock.now, out=out, err=err)
+        self.assertEqual(code, N.EXIT_OK)
+        self.assertEqual(self.mutating()[-1][1], "del")
+        self.assertIn("schedule_end", err.getvalue())
 
     def test_dry_run_never_calls_tc(self):
         code, events, _ = self.run_main("--cycles", "1", "--dry-run")

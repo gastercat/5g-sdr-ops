@@ -19,12 +19,19 @@ Safety:
 - the root qdisc is deleted on normal end, Ctrl-C, SIGTERM, SIGHUP and any error, and
   `tc qdisc show` is read again to confirm; if removal cannot be confirmed the exit status
   is 1 and the manual restore command is printed on stderr;
+- a failed add leaves the interface alone, so a netem someone else added after the preflight
+  is never deleted;
 - this tool never calls sudo; whoever runs it supplies the privileges.
+
+Exit status: 0 completed, 1 removal unconfirmed, 2 usage, 3 refused without change, 4 tc error,
+128+signal number when interrupted (130 SIGINT, 143 SIGTERM, 129 SIGHUP) with the qdisc removed.
 
 Results produced under this schedule are INJECTED_IP degradation, not OTA or radio impairment.
 """
 import argparse, hashlib, json, math, re, signal, subprocess, sys, time
 
+MIN_PHASE_S = 0.5             # shorter phases would mostly be tc call time, and a typo could
+                              # otherwise expand into millions of steps
 MAX_CYCLE_S = 3600.0          # one pass through all phases
 MAX_RUN_S = 6 * 3600.0        # a whole run, whichever of --cycles / --duration is used
 KEYWORDS = {"loss", "delay", "gemodel", "state", "duplicate", "reorder", "corrupt", "rate"}
@@ -107,8 +114,8 @@ def load_schedule(raw):
             raise ScheduleError("label 重複：%r" % label)
         seen.add(label)
         sec = p.get("seconds")
-        if isinstance(sec, bool) or not isinstance(sec, (int, float)) or not math.isfinite(sec) or sec <= 0:
-            raise ScheduleError("phases[%d].seconds 必須是大於 0 的有限數值" % i)
+        if isinstance(sec, bool) or not isinstance(sec, (int, float)) or not math.isfinite(sec) or sec < MIN_PHASE_S:
+            raise ScheduleError("phases[%d].seconds 必須是至少 %.1f 的有限數值" % (i, MIN_PHASE_S))
         tokens = netem_tokens(p.get("netem"))
         total += float(sec)
         out.append({"label": label, "seconds": float(sec), "netem": " ".join(tokens), "tokens": tokens})
@@ -176,83 +183,108 @@ class Runner:
         start = self.clock()
         t = lambda: round(self.clock() - start, 3)
         base = {"dev": self.dev, "schedule": sched["name"], "sha256": sha}
-        state = self.qdisc_state()
-        if state == "gone":
-            self.err.write("找不到介面 %s，未做任何變更。\n" % self.dev)
-            self.emit(dict(event="schedule_refused", reason="no_device", utc=self.wall(), **base))
+        try:                                    # nothing is changed before the first add
+            refused = self.preflight(base)
+        except KeyboardInterrupt:
+            self.err.write("執行前被中斷，未做任何變更。\n")
+            return 128 + signal.SIGINT
+        except Exception as e:  # noqa: BLE001  e.g. the log cannot be written
+            self.err.write("執行前發生例外，未做任何變更：%r\n" % e)
             return EXIT_REFUSED
-        if state == "unknown":
-            self.err.write("無法讀取 %s 的 qdisc（tc 失敗或逾時），未做任何變更。\n" % self.dev)
-            self.emit(dict(event="schedule_refused", reason="state_unknown", utc=self.wall(), **base))
-            return EXIT_REFUSED
-        if state == "netem":
-            self.err.write("%s 的 root qdisc 已經是 netem，不覆蓋，未做任何變更。\n" % self.dev)
-            self.emit(dict(event="schedule_refused", reason="netem_present", utc=self.wall(), **base))
+        if refused:
             return EXIT_REFUSED
 
-        added = attempted = False
-        reason, code = "error", EXIT_TC
-        old = {s: signal.signal(s, self._stop) for s in (signal.SIGTERM, signal.SIGHUP)}
+        # owned: an add succeeded. adding: an add was issued and has not returned, so a signal may
+        # have cut it short after the kernel applied it. Cleanup acts only in these two cases; a
+        # failed add leaves whatever is on the interface (possibly someone else's netem) alone.
+        added = adding = False
+        reason, code, error = "error", EXIT_TC, None
+        old = {}
         try:
-            for offset, cycle, idx in steps:
-                wait = start + offset - self.clock()
-                if wait > 0:
-                    self.sleep(wait)
-                p = sched["phases"][idx]
-                verb = "change" if added else "add"
-                attempted = True
-                rc, _, stderr = self.call("qdisc", verb, "dev", self.dev, "root", "netem", *p["tokens"])
-                if rc != 0:
-                    self.err.write("tc qdisc %s 失敗（%d）：%s\n" % (verb, rc, stderr.strip()))
-                    break
-                if not added:
-                    added = True
-                    start = self.clock()            # phase 0 is in force from here; later phases follow it
-                    self.emit(dict(event="schedule_start", utc=self.wall(), t=t(), cycle_s=sched["cycle_s"],
-                                   planned_end_s=round(end, 3), **base))
-                self.emit({"event": "phase", "utc": self.wall(), "t": t(), "planned_t": round(offset, 3), "cycle": cycle,
-                           "index": idx, "label": p["label"], "netem": p["netem"]})
-            else:
-                wait = start + end - self.clock()
-                if wait > 0:
-                    self.sleep(wait)
-                reason, code = "completed", EXIT_OK
-        except KeyboardInterrupt:
-            reason, code = "interrupted", 128 + signal.SIGINT
-        except Stop as s:
-            reason, code = "signal_%s" % signal.Signals(s.signum).name, 128 + s.signum
-        except Exception as e:  # noqa: BLE001  any failure still has to remove the qdisc
-            self.err.write("執行中發生例外：%r\n" % e)
-            reason, code = "error", EXIT_TC
+            try:
+                for s in (signal.SIGTERM, signal.SIGHUP):
+                    old[s] = signal.signal(s, self._stop)
+                for offset, cycle, idx in steps:
+                    wait = start + offset - self.clock()
+                    if wait > 0:
+                        self.sleep(wait)
+                    p = sched["phases"][idx]
+                    verb = "change" if added else "add"
+                    adding = not added
+                    rc, _, stderr = self.call("qdisc", verb, "dev", self.dev, "root", "netem", *p["tokens"])
+                    adding = False
+                    if rc != 0:
+                        self.err.write("tc qdisc %s 失敗（%d）：%s\n" % (verb, rc, stderr.strip()))
+                        break
+                    if not added:
+                        added = True
+                        start = self.clock()        # phase 0 is in force from here; later phases follow it
+                        self.emit(dict(event="schedule_start", utc=self.wall(), t=t(), cycle_s=sched["cycle_s"],
+                                       planned_end_s=round(end, 3), **base))
+                    self.emit({"event": "phase", "utc": self.wall(), "t": t(), "planned_t": round(offset, 3),
+                               "cycle": cycle, "index": idx, "label": p["label"], "netem": p["netem"]})
+                else:
+                    wait = start + end - self.clock()
+                    if wait > 0:
+                        self.sleep(wait)
+                    reason, code = "completed", EXIT_OK
+            except KeyboardInterrupt:
+                reason, code = "interrupted", 128 + signal.SIGINT
+            except Stop as s:
+                reason, code = "signal_%s" % signal.Signals(s.signum).name, 128 + s.signum
+            except Exception as e:  # noqa: BLE001  any failure still has to remove the qdisc
+                reason, code, error = "error", EXIT_TC, e
+        except (KeyboardInterrupt, Stop):       # a second signal while the first was being handled
+            pass                                # keep the first reason; cleanup below still runs
         finally:
-            for s in old:                       # cleanup must not be cut short by a second signal
+            for s in old:                       # cleanup must not be cut short by a further signal
                 signal.signal(s, signal.SIG_IGN)
             prev_int = signal.signal(signal.SIGINT, signal.SIG_IGN)
             try:
-                removed, note = self.cleanup(attempted)
+                removed, note = self.cleanup(added or adding)
             finally:
                 signal.signal(signal.SIGINT, prev_int)
                 for s, h in old.items():
                     signal.signal(s, h)
-        self.emit({"event": "schedule_end", "utc": self.wall(), "t": t(), "reason": reason,
-                   "removed": removed, "note": note})
+        if error is not None:
+            self.err.write("執行中發生例外：%r\n" % error)
+        try:
+            self.emit({"event": "schedule_end", "utc": self.wall(), "t": t(), "reason": reason,
+                       "removed": removed, "note": note})
+        except Exception as e:  # noqa: BLE001  the exit status below must still describe the cleanup
+            self.err.write("無法寫入 schedule_end：%r\n" % e)
         if not removed:
             self.err.write("無法確認 netem 已移除，請手動執行：\n  %s\n" % self.restore_hint())
             return EXIT_CLEANUP
         return code
 
+    def preflight(self, base):
+        """Return True (after logging why) when the run must stop without touching the interface."""
+        state = self.qdisc_state()
+        if state == "other":
+            return False
+        msg, reason = {
+            "gone": ("找不到介面 %s，未做任何變更。", "no_device"),
+            "unknown": ("無法讀取 %s 的 qdisc（tc 失敗或逾時），未做任何變更。", "state_unknown"),
+            "netem": ("%s 的 root qdisc 已經是 netem，不覆蓋，未做任何變更。", "netem_present"),
+        }[state]
+        self.err.write(msg % self.dev + "\n")
+        self.emit(dict(event="schedule_refused", reason=reason, utc=self.wall(), **base))
+        return True
+
     def _stop(self, signum, _frame):
         raise Stop(signum)
 
-    def cleanup(self, attempted):
+    def cleanup(self, may_own):
         """Remove the netem root qdisc if this run may have added it; return (removed, note).
 
-        The preflight saw no netem root, so a netem root found here is ours, even when a signal
-        arrived between a successful add and its bookkeeping. Anything else is left untouched.
-        A state that cannot be read is never counted as removed: without a confirmed netem root
-        nothing is deleted, and the caller exits 1 with the restore command.
+        may_own is true only after a successful add, or while an add was in flight when a signal
+        arrived (the kernel may have applied it before the bookkeeping). In those cases the
+        preflight saw no netem root, so a netem root found here is ours. After a failed add, or
+        before any add, nothing is touched. A state that cannot be read is never counted as
+        removed: without a confirmed netem root nothing is deleted, and the caller exits 1.
         """
-        if not attempted:
+        if not may_own:
             return True, "nothing_added"
         state = self.qdisc_state()
         if state == "gone":
@@ -329,4 +361,7 @@ def main(argv=None, tc_prefix=None, **runner_kw):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:      # Ctrl-C before the run started: nothing was changed
+        sys.exit(128 + signal.SIGINT)
