@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-20T21:11:36Z",
+  "updated_at": "2026-11-26T09:38:12Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -95,9 +95,9 @@
     },
     ".github/workflows/docs-ci.yml": {
       "role": "index",
-      "sha256": "53e617d4298c0368550edb6e7f2478347f357dc56f38f3da3f630b7d22542ac6",
-      "size": 5826,
-      "normalized_sha256": "53e617d4298c0368550edb6e7f2478347f357dc56f38f3da3f630b7d22542ac6"
+      "sha256": "ca5fb97c56d37ce251dd26c9b4a7579b4d9771022ba4bb04b7d650651ebe1147",
+      "size": 6094,
+      "normalized_sha256": "ca5fb97c56d37ce251dd26c9b4a7579b4d9771022ba4bb04b7d650651ebe1147"
     },
     ".github/workflows/interactive-lab-pages.yml": {
       "role": "index",
@@ -107,9 +107,9 @@
     },
     ".gitignore": {
       "role": "index",
-      "sha256": "e4238706563200aafc17d8e51216ef22859f0629c9f381a956f74570fe57ab41",
-      "size": 167,
-      "normalized_sha256": "e4238706563200aafc17d8e51216ef22859f0629c9f381a956f74570fe57ab41"
+      "sha256": "6f00119cbb628497c626e7a904241a06de94c9925bd3a37ad767aee0236f7d37",
+      "size": 241,
+      "normalized_sha256": "6f00119cbb628497c626e7a904241a06de94c9925bd3a37ad767aee0236f7d37"
     },
     ".markdownlint-cli2.jsonc": {
       "role": "index",
@@ -149,9 +149,9 @@
     },
     "TODO.md": {
       "role": "index",
-      "sha256": "74626602a917ef31e31816c57521e33fe5fc92897fa05afcb7ca917b867ac44b",
-      "size": 4851,
-      "normalized_sha256": "74626602a917ef31e31816c57521e33fe5fc92897fa05afcb7ca917b867ac44b"
+      "sha256": "71ac8fb0219fbaa7fad5e2107506e6e8f59811aae8ce0121987b243c91d4401d",
+      "size": 4964,
+      "normalized_sha256": "71ac8fb0219fbaa7fad5e2107506e6e8f59811aae8ce0121987b243c91d4401d"
     },
     "agent-prompts/codex-task-template.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "90b992591460e6053e8e4c02dc4460787a9016327a61ab530b8cd1eb9a7dbbe2",
-      "size": 48354,
-      "normalized_sha256": "90b992591460e6053e8e4c02dc4460787a9016327a61ab530b8cd1eb9a7dbbe2"
+      "sha256": "110f3e34f1339bb97ac0b3d0deccb15ecf968f3e2465a2eff6bd27dfe90327a0",
+      "size": 50993,
+      "normalized_sha256": "110f3e34f1339bb97ac0b3d0deccb15ecf968f3e2465a2eff6bd27dfe90327a0"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -191,9 +191,15 @@
     },
     "delivery/README.md": {
       "role": "index",
-      "sha256": "a5d6209c951c7ca302a89b3d06bc4a5cf9b5928405eced53eb391350a4086315",
-      "size": 4776,
-      "normalized_sha256": "a5d6209c951c7ca302a89b3d06bc4a5cf9b5928405eced53eb391350a4086315"
+      "sha256": "af3ce100af7c699b6d133ef7897272a37f6204c27ff6fa97196ae7b13f17bbbf",
+      "size": 4960,
+      "normalized_sha256": "af3ce100af7c699b6d133ef7897272a37f6204c27ff6fa97196ae7b13f17bbbf"
+    },
+    "delivery/lab01-completion-criteria-proposal.md": {
+      "role": "index",
+      "sha256": "531d6662170c0c7ac4dec397012dc0962037099ff240d3fd9bdd9a66dad183e6",
+      "size": 10074,
+      "normalized_sha256": "531d6662170c0c7ac4dec397012dc0962037099ff240d3fd9bdd9a66dad183e6"
     },
     "delivery/lab04-tailcat-security-lens-proposal.md": {
       "role": "index",
@@ -369,11 +375,17 @@
       "size": 18678,
       "normalized_sha256": "3608c7713a1c8b4f1a141c21b4cbe15853e3a011e1f948d2082af11cc5090d68"
     },
+    "docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml": {
+      "role": "index",
+      "sha256": "61cd0be7c386b9ef58202640e769da555137f1f77c49ec3919b825556f67ca31",
+      "size": 12797,
+      "normalized_sha256": "61cd0be7c386b9ef58202640e769da555137f1f77c49ec3919b825556f67ca31"
+    },
     "docs/evidence/task-evidence/README.md": {
       "role": "index",
-      "sha256": "47e70f9872c7ae372b0531b67e703100cd91753ceea2dc8ddcb813127a82ea56",
-      "size": 8279,
-      "normalized_sha256": "47e70f9872c7ae372b0531b67e703100cd91753ceea2dc8ddcb813127a82ea56"
+      "sha256": "8e669f969c036a5b1418c9552d6e6a03bd3c3e1022f048583729044dc42805d4",
+      "size": 8610,
+      "normalized_sha256": "8e669f969c036a5b1418c9552d6e6a03bd3c3e1022f048583729044dc42805d4"
     },
     "docs/evidence/task-evidence/TASK_EVIDENCE_RECORD_TEMPLATE.yaml": {
       "role": "index",
@@ -898,9 +910,9 @@
     },
     "exploration/ai-dualpath/README.md": {
       "role": "index",
-      "sha256": "89662aecfea21ba2ac5039649d7368b70fe86861c39b60c782407f5e90dcd7ee",
-      "size": 6134,
-      "normalized_sha256": "89662aecfea21ba2ac5039649d7368b70fe86861c39b60c782407f5e90dcd7ee"
+      "sha256": "083b3540050bfbd0b8cd335f507b25232c40f3c48bb60fa1709808f6dc94e746",
+      "size": 6578,
+      "normalized_sha256": "083b3540050bfbd0b8cd335f507b25232c40f3c48bb60fa1709808f6dc94e746"
     },
     "exploration/ai-dualpath/adaptive_send.py": {
       "role": "index",
@@ -916,9 +928,9 @@
     },
     "exploration/ai-dualpath/degradation-procedure.md": {
       "role": "index",
-      "sha256": "48890d813b0d78e9a6d17180d1a79cdacd94c85b9381bb641abc6af641423ddf",
-      "size": 11472,
-      "normalized_sha256": "48890d813b0d78e9a6d17180d1a79cdacd94c85b9381bb641abc6af641423ddf"
+      "sha256": "d8581e3f6f69729ebfa2ef86fe63502f2d200bb1e47b2e34772afaf9c4239054",
+      "size": 13896,
+      "normalized_sha256": "d8581e3f6f69729ebfa2ef86fe63502f2d200bb1e47b2e34772afaf9c4239054"
     },
     "exploration/ai-dualpath/evaluate.py": {
       "role": "index",
@@ -932,11 +944,23 @@
       "size": 2453,
       "normalized_sha256": "508f4aa155bf78aacb94f1725ea48c4846e7ef37b5234234fec0a4e013e04425"
     },
+    "exploration/ai-dualpath/netem_schedule.py": {
+      "role": "index",
+      "sha256": "421420b2eb0c4a2a2c4704e5640b5a14861ab752fe53fa9165a8538bfaff06bf",
+      "size": 13568,
+      "normalized_sha256": "421420b2eb0c4a2a2c4704e5640b5a14861ab752fe53fa9165a8538bfaff06bf"
+    },
     "exploration/ai-dualpath/policies.py": {
       "role": "index",
       "sha256": "8e97142c34c5800b21d8007c0fb2231ca02f10720721fdf5e76eff96e4f7dfde",
       "size": 7541,
       "normalized_sha256": "8e97142c34c5800b21d8007c0fb2231ca02f10720721fdf5e76eff96e4f7dfde"
+    },
+    "exploration/ai-dualpath/schedules/example-cycle.json": {
+      "role": "index",
+      "sha256": "ad3dafb5920bd512e2486da3545243400ef3016fcd00a741f7c918f0e4e5992f",
+      "size": 375,
+      "normalized_sha256": "ad3dafb5920bd512e2486da3545243400ef3016fcd00a741f7c918f0e4e5992f"
     },
     "exploration/ai-dualpath/test_adaptive_send.py": {
       "role": "observe",
@@ -949,6 +973,12 @@
       "sha256": "13b59a5522f11811119b73814954a5d8084fecd803a64d1a9ba077a90192a868",
       "size": 8758,
       "normalized_sha256": "13b59a5522f11811119b73814954a5d8084fecd803a64d1a9ba077a90192a868"
+    },
+    "exploration/ai-dualpath/test_netem_schedule.py": {
+      "role": "observe",
+      "sha256": "53381ed84b9d39dde0e78ba4c82ac001dcc5cf77aa6ebebc3228cb242188f110",
+      "size": 14902,
+      "normalized_sha256": "53381ed84b9d39dde0e78ba4c82ac001dcc5cf77aa6ebebc3228cb242188f110"
     },
     "exploration/ai-dualpath/trace_env.py": {
       "role": "index",
