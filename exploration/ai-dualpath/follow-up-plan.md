@@ -3,6 +3,9 @@
 狀態：`PROPOSAL / NOT AUTHORIZED`。本文件只列出方案，不授權任何 Runtime、RF 或 `sudo` 操作；
 是否執行、何時執行由 Owner 決定。12/18 發表前以海報與 Demo 為優先。
 
+**Owner 決定（2026-11-27）：** 發表前做 P0 與 P2（先試週期性中斷），P1、P3 留到發表後。
+P0 已完成，見 [P0 重新分析 TER](../../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml)。
+
 依據：[2026-11-27 TER](../../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml)
 （NC-07～NC-10）與 Repo 外 `2026-11-28-AI-Dualpath-netem-comparison/run/phases.csv`。
 
@@ -75,8 +78,7 @@
 - **授權與紀錄：** 每個遠端、Runtime、RF 動作都需 Owner 當次核准，`sudo` 由 Owner 執行；結束時刪除主機上的工具與紀錄檔；
   結果另立 TER，不寫回本文件。
 
-## 4. 需要 Owner 決定的事
+## 4. 仍需 Owner 決定的事
 
-1. 是否先做 P0。它不需要 Runtime，可以釐清這次結果能說到什麼程度。
-2. P1 的排程數值與輪數，以及是否加入下行注入。
-3. P1～P3 是否在 12/18 發表前執行；若在發表後，列為後續工作即可。
+1. P2 的執行日期，以及週期性中斷的 `t_on_ms`／`t_off_ms` 起點。
+2. P1 的排程數值與輪數，以及是否加入下行注入（發表後）。

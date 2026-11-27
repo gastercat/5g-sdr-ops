@@ -146,8 +146,8 @@
           <tr><td>LinUCB＋規則層</td><td>99.15（99.02–99.28）</td><td>55.35（48.39–64.21）</td><td>38.86（8.17–65.37）</td><td>1.07／1.35／1.46</td></tr>
         </tbody>
       </table></div>
-      <p class="ota-caption">重度階段只走 A 完全不在期限內，其他策略都靠路徑 B 撐住，約 23～39%。正常與輕度階段，三種自適應策略的送達比例接近全部複製，但副本數只有 1.02～1.92，全部複製固定是 2；LinUCB 在輕度階段比全部複製低約 5 個百分點，副本數 1.28。同一天、未注入時只走 A 的對照是 99.27%（3000 個封包，遺失 0）。</p>
-      <p class="ota-note">重度階段每輪只有 3 × 5 秒（約 750 個封包），三輪之間差到 7～65%，策略在這一欄的差異不具意義。三輪在同一天、同一組 Runtime 上依序執行，沒有統計檢定；各策略面對相同的排程，但不是同一段時間。路徑 B 每輪使用不同的模擬種子。netem 只作用在 <code>tun_srsue</code> 的送出方向（UE 上行）。結果是 IP 層注入（<code>INJECTED_IP</code>），不是 OTA 或無線通道劣化，也不代表真實衛星鏈路。</p>
+      <p class="ota-caption">重度階段只走 A 完全不在期限內，其他策略都靠路徑 B 撐住，約 23～39%。輕度階段，門檻規則＋規則層和全部複製沒有顯著差異，但副本數也接近 2（1.92）；LinUCB 用 1.28 份副本，送達比例低約 5.5 個百分點（95% 信賴區間 3.7～7.4）。正常階段只走 A 已經和全部複製相當，三種自適應策略反而略低 0.6～1.8 個百分點。同一天、未注入時只走 A 的對照是 99.27%（3000 個封包，遺失 0）。</p>
+      <p class="ota-note">信賴區間來自配對的 block bootstrap：同一輪七種策略共用路徑 B 的模擬種子，以 1 秒為區塊重抽 4000 次。重度階段每輪只有 3 × 5 秒（約 750 個封包），三輪之間差到 7～65%，主要是三個不同的路徑 B 狀態；同一輪內各策略相差不到 2 個百分點，信賴區間都含 0，這一欄不能用來排名策略。三輪在同一天、同一組 Runtime 上依序執行，沒有統計檢定；各策略面對相同的排程，但不是同一段時間。路徑 B 每輪使用不同的模擬種子。netem 只作用在 <code>tun_srsue</code> 的送出方向（UE 上行）。結果是 IP 層注入（<code>INJECTED_IP</code>），不是 OTA 或無線通道劣化，也不代表真實衛星鏈路。</p>
     </section>
 
     <section aria-labelledby="link-title">
@@ -167,7 +167,7 @@
         <li>沒有「在真實劣化的路徑 A 上驗證自適應策略」這件事。各策略依序執行，面對的路徑 A 不是同一段時間。</li>
         <li>2026-11-26 與 11-27 的 netem 注入是 IP 層的 <code>INJECTED_IP</code>，不是 OTA 或無線通道劣化；11-27 的策略比較只說明在這個注入排程下的表現。</li>
       </ul>
-      <p class="ota-note">來源：Task Evidence Record <code>docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml</code>（AD-01～AD-11）與 Repo 外證據目錄 <code>2026-11-16-AI-Dualpath-OTA/</code> 的 <code>02-policies-summary.md</code>、<code>08-gain-enb59-ue53/policies-summary.md</code>、<code>14-report-replay/d30.txt</code>、<code>gain-steps-events.txt</code>。劣化注入的來源是 <code>docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml</code>（NM-05、NM-06、NM-12、NM-13）與 Repo 外 <code>2026-11-26-AI-Dualpath-netem/</code> 的 ping 與事件紀錄；注入劣化下的策略比較來源是 <code>docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml</code>（NC-07、NC-09、NC-10）與 Repo 外 <code>2026-11-28-AI-Dualpath-netem-comparison/run/phases.csv</code>。策略程式與 <code>netem_schedule.py</code> 在 <code>exploration/ai-dualpath/</code>。</p>
+      <p class="ota-note">來源：Task Evidence Record <code>docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml</code>（AD-01～AD-11）與 Repo 外證據目錄 <code>2026-11-16-AI-Dualpath-OTA/</code> 的 <code>02-policies-summary.md</code>、<code>08-gain-enb59-ue53/policies-summary.md</code>、<code>14-report-replay/d30.txt</code>、<code>gain-steps-events.txt</code>。劣化注入的來源是 <code>docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml</code>（NM-05、NM-06、NM-12、NM-13）與 Repo 外 <code>2026-11-26-AI-Dualpath-netem/</code> 的 ping 與事件紀錄；注入劣化下的策略比較來源是 <code>docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml</code>（NC-07、NC-09、NC-10）與 <code>2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml</code>（P0-01～P0-03）與 Repo 外 <code>2026-11-28-AI-Dualpath-netem-comparison/run/phases.csv</code>。策略程式與 <code>netem_schedule.py</code> 在 <code>exploration/ai-dualpath/</code>。</p>
     </section>
     <a class="return-link" href="./index.html">← 返回架構</a>
   </main>

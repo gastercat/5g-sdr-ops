@@ -109,7 +109,8 @@ python3 test_netem_comparison.py && python3 -O test_netem_comparison.py
   劣化注入做法見[程序草案](degradation-procedure.md)；做法 A 的 `netem_schedule.py` 已在 2026-11-26 確認注入有效
   （`INJECTED_IP`）。
 - 2026-11-27 在同一個 netem 長排程下比較七種策略（各 3 輪，路徑 A `INJECTED_IP`、路徑 B `SIMULATED`）：
-  正常與輕度階段，自適應策略以 1.02～1.92 的副本數達到接近全部複製的期限內比例；重度階段每輪只有約 750 個封包，
-  三輪差異 7～65%，策略之間無法區分。這是 IP 層注入，不是 OTA 或無線劣化，也只代表這一個排程；
+  輕度階段門檻規則與全部複製無顯著差異（副本數 1.92），LinUCB 以約 1.3 的副本數換來低 4～5.5 個百分點；
+  正常階段只走 A 已與全部複製相當，自適應策略略低 0.6～1.8 個百分點；重度階段策略之間無法區分
+  （配對 bootstrap，見 [P0 重新分析 TER](../../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml)）。這是 IP 層注入，不是 OTA 或無線劣化，也只代表這一個排程；
   見 [2026-11-27 TER](../../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml)。
 - 路徑 A 間歇使用時 RTT 較高（2026-11-16 觀察），離線環境假設各封包的 RTT 與策略無關，沒有重現。

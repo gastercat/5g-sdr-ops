@@ -125,3 +125,5 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
 - [`2026-11-27-ai-dualpath-netem-policy-comparison.yaml`](2026-11-27-ai-dualpath-netem-policy-comparison.yaml)：
   七種雙路徑策略在同一個 netem 長排程下各跑三輪（路徑 A `INJECTED_IP`、路徑 B `SIMULATED`），結果依階段拆分；
   包含 gemodel 重設的預檢與執行前 Linux2 USB 管理網卡掉線的紀錄；不是 OTA 結果，也不建立 Owner 驗收。
+- [`2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml`](2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml)：
+  以配對 block bootstrap 離線重新分析同一批比較資料，修正「自適應策略接近全部複製」的說法；不是新的量測。

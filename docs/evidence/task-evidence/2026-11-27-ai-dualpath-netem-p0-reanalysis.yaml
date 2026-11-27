@@ -1,0 +1,79 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "AI-DUALPATH-2026-11-27-NETEM-P0-REANALYSIS"
+  source_thread: "Claude Code session 960b9a56-d5bc-4d3b-93da-d2a2068ccd98"
+  date_or_range: "2026-11-27（Asia/Taipei），離線分析"
+  executor: "Claude agent：在控制端（Mac）以既有紀錄執行分析腳本；沒有連線任何實驗主機。"
+  historical_or_current: "對 2026-11-27 比較資料的重新分析；不是新的量測"
+
+authorization:
+  scope:
+    - "Owner 與團隊討論後選定 follow-up-plan.md 的 P0（離線重新分析）與 P2，P1、P3 留到發表後。"
+    - "Owner 看過 P0 結果後，要求開 PR 修正 E15、頁面與 README 的說法。"
+  allowed_mutations:
+    - "Repo 外證據目錄 2026-11-28-AI-Dualpath-netem-comparison/analysis/ 新增分析腳本與結果。"
+    - "Repo：本 TER、TER 索引，以及 E15、ai-dualpath.html、ai-dualpath README 的說法修正。"
+  forbidden:
+    - "不連線實驗主機、不執行 Runtime；不改寫 2026-11-27 比較 TER 的原始數字。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "docs/netem-follow-up-plan"
+  start_head: "6c174ca"
+  end_head: "本 TER 所在的 commit"
+
+evidence:
+  - evidence_id: "P0-01"
+    claim: "同一輪七種策略共用路徑 B 的模擬種子，因此可以封包為單位配對比較。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "netem_comparison.py 的 run 迴圈以 sender_args(a, pol, rnd, count) 產生傳送端參數，--leo-seed 等於輪次；每輪從循環開頭後 1 s 開始。配對單位為（輪次, 封包 id），區塊為 50 個封包（1 s），只用七種策略都有封包的區塊：normal 369、mild 144、severe 54 個區塊。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "exploration/ai-dualpath/netem_comparison.py；Repo 外 analysis/paired_bootstrap.py（SHA-256 0492a5ae709f97dda8252050f81bc5a0fa8450b61509d691ce1d6614e3b3cd3b）"
+    limitations:
+      - "路徑 B 的狀態是否只取決於種子與封包順序，沒有另外驗證；配對假設依工具設計成立。"
+  - evidence_id: "P0-02"
+    claim: "配對 block bootstrap（B=4000）下，各階段與全部複製的差距如下。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "期限 30 ms，三輪合計，與全部複製的差（百分點）[95% CI]：正常 only_a -0.13 [-0.34, +0.04]、threshold+guard -1.77 [-3.04, -0.72]、linucb -1.12 [-1.72, -0.60]、linucb+guard -0.56 [-0.88, -0.27]；輕度 threshold+guard -0.84 [-2.62, +0.94]（副本 1.92）、linucb -5.47 [-7.38, -3.65]（1.28）、linucb+guard -3.82 [-5.49, -2.17]（1.35）、only_a -32.67；重度 only_b +0.58 [-0.66, +1.88]、threshold+guard +0.55 [-1.64, +2.76]、linucb +0.92 [-0.95, +2.77]、linucb+guard +1.95 [-0.31, +4.18]、only_a -36.93。點估計與 run/phases.csv 相同。"
+    directness: "PRIMARY"
+    confidence: "中高；只有三輪。"
+    source_location: "Repo 外 2026-11-28-AI-Dualpath-netem-comparison/analysis/p0-paired-bootstrap.md（SHA-256 8e63aa5c0bf7f14b41ec13df2d5623fba4cb07ced89980b2dce2ecb28250417e）"
+    limitations:
+      - "區塊視為獨立，沒有考慮三輪之外的變異來源；bootstrap 的隨機種子固定為 20261127。"
+      - "路徑 A 為 INJECTED_IP（只在上行），路徑 B 為 SIMULATED。"
+  - evidence_id: "P0-03"
+    claim: "重度階段的跨輪差異來自路徑 B 種子，同一輪內策略相近。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "重度階段逐輪與全部複製的差：only_b r1 +0.80、r2 -0.08、r3 +0.95；linucb+guard r1 +2.54、r2 +3.21、r3 +0.02；全部複製本身 r1 40.5%、r2 62.2%、r3 8.1%。重度階段 delay 40±20 ms 已超過 30 ms 期限，only_a 三輪皆 0%。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "Repo 外 analysis/p0-paired-bootstrap.md；run/phases.csv"
+    limitations: []
+
+mutations:
+  - "Repo 外新增 analysis/paired_bootstrap.py、p0-paired-bootstrap.md、SHA256SUMS。"
+  - "Repo：新增本 TER，更新 TER 索引，修正 E15、ai-dualpath.html 與 ai-dualpath README 的說法。"
+
+recovered_or_observed_claims:
+  - claim: "輕度階段門檻規則與全部複製無顯著差異但副本數 1.92；LinUCB 以約 1.3 的副本數換來低 4～5.5 個百分點。"
+    status: "OBSERVED"
+    supporting_evidence: ["P0-02"]
+  - claim: "正常階段只走 A 與全部複製無顯著差異，三種自適應策略顯著略低 0.6～1.8 個百分點。"
+    status: "OBSERVED"
+    supporting_evidence: ["P0-02"]
+  - claim: "重度階段各策略（只走 A、2:3 分流除外）無法區分。"
+    status: "OBSERVED"
+    supporting_evidence: ["P0-02", "P0-03"]
+  - claim: "2026-11-27 比較 TER 的「會調整的策略在正常與輕度階段以 1.02–1.92 的副本數達到接近 dup 的期限內送達率」對 LinUCB 在輕度階段說得過滿；以本 TER 的說法為準。"
+    status: "OBSERVED"
+    supporting_evidence: ["P0-02"]
+
+provenance_gaps:
+  - "分析腳本與結果在 Repo 外本機路徑，可攜共享位置 UNKNOWN。"
+
+stop_point:
+  result: "P0 完成；E15、頁面、README 改用配對分析的說法。2026-11-27 比較 TER 的原始數字不變。Owner 驗收 PENDING。"
+  next_authority_required: "P2（srsRAN channel emulator 週期性中斷）的任何 Runtime 或 RF 動作需 Owner 逐項授權。"
