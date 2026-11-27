@@ -1,0 +1,181 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "AI-DUALPATH-2026-11-27-NETEM-POLICY-COMPARISON"
+  source_thread: "Claude Code session 960b9a56-d5bc-4d3b-93da-d2a2068ccd98"
+  date_or_range: "2026-11-27 05:50Z–08:10Z（13:50–16:10 Asia/Taipei）；比較本身 06:41Z–08:05Z（14:41–16:05）"
+  executor: "Claude agent：兩台主機的遠端唯讀檢查、把工具複製到 Linux2 並於結束後刪除、讀取 Linux2 的核心紀錄與 /tmp/ue.log、從控制端（Mac）執行 netem_comparison.py 與 align_phases.py、撰寫需要 sudo 的指令。Owner 與組員（現場）：執行所有 sudo 指令、啟動與停止 EPC／eNB／UE、重插 USB 網卡、執行觀察用 ping。Agent 未啟動、停止或調整任何 Runtime 程序，未使用 sudo。"
+  historical_or_current: "當日觀察；結束時 Runtime 是否停止由現場決定，不代表之後的狀態"
+
+authorization:
+  scope:
+    - "原定 2026-11-28 執行（RUNBOOK：Repo 外 2026-11-28-AI-Dualpath-netem-comparison/RUNBOOK.md）；Owner 於 2026-11-27 臨時決定提前到當天，並在同一 session 開始。"
+    - "Owner 逐步核准：第 0 步唯讀檢查；第 1 步複製工具到 Linux2 的 ~/netem-run/；第 2 步 dummy 介面預檢（Owner sudo）與讀取結果檔；第 3 步含 3-0 唯讀確認與未注入對照；讀取 Linux2 核心紀錄、USB 拓樸、ue.conf；讀取 /tmp/ue.log；觀察期間定時執行 3-0 唯讀檢查；第 4 步長排程（Owner sudo）與 plan；run；收尾（取回紀錄、刪除 ~/netem-run/、確認無殘留）。"
+    - "Owner 回報屏蔽已確認、eNB 與 UE 發射增益 70；Runtime 由現場為本次啟動。"
+    - "Owner 其後要求撰寫本 TER 並開 PR。"
+  allowed_mutations:
+    - "Linux2：建立 ~/netem-run/ 並放入 netem_schedule.py、兩份排程與 SHA256SUMS，結束後刪除。"
+    - "Linux2（Owner 以 sudo 執行）：暫時的 dummy 介面 nmtest0，以及 nmtest0 與 tun_srsue 上的 netem root qdisc；結束後刪除。"
+    - "傳送端與 echo 經 SSH 標準輸入執行，不在主機上留檔。"
+    - "Repo 外本機證據目錄 2026-11-28-AI-Dualpath-netem-comparison/（目錄名稱沿用原定日期）。"
+    - "Repo：本 TER 與 TER 索引。"
+  forbidden:
+    - "Agent 不使用 sudo、不輸入或接收密碼；不修改 srsRAN 設定檔、增益、路由、防火牆或套件；不啟動或停止 Runtime；不操作 USB 裝置。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "feat/netem-comparison-ter"
+  start_head: "effdb58b60d4e41e027747077d37661bffa87ef9"
+  end_head: "本 TER 所在的 commit"
+  tool_commit: "3d9f83a（PR #68）；執行時本機 main 為 effdb58，exploration/ai-dualpath/ 自 3d9f83a 後未變"
+
+evidence:
+  - evidence_id: "NC-01"
+    claim: "第 0 步唯讀檢查：兩台主機 NTP 已同步，Runtime 尚未啟動，主機上沒有 ~/netem-run。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "05:50Z：Linux1 NTPSynchronized=yes、kernel 6.8.0-147-generic、iproute2-6.1.0；Linux2 NTPSynchronized=yes、kernel 6.8.0-149-generic、iproute2-6.1.0。兩台皆無 ~/netem-run；Linux2 無 tun_srsue、無 srsue；Linux1 無 srs_spgw_sgi、無 srsepc／srsenb。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點。"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/step0-readonly.txt"
+    limitations:
+      - "檔案是 Agent 依命令輸出整理的摘要，完整輸出只在 source_thread。"
+  - evidence_id: "NC-02"
+    claim: "複製到 Linux2 的工具與排程和 3d9f83a 版本相同。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "netem_schedule.py 1948ced24f5a16c88a2515e228a7139f4cd6dfaffb95b91bfe80bab186de2d41、schedules/comparison-burst.json 53ef30e77730c3122fedeaa4dd7329ebfcba9ab72ef1b919a8e2fd5d6182e4c0、schedules/example-cycle.json ad3dafb5920bd512e2486da3545243400ef3016fcd00a741f7c918f0e4e5992f；05:51Z 在 Linux2 以 sha256sum -c 核對皆成功；Linux2 Python 3.12.3。執行前本機 pytest（exploration/ai-dualpath）74 passed。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/SHA256SUMS、step1-copy.txt"
+    limitations:
+      - "netem_comparison.py 與傳送端在控制端執行、經 SSH 標準輸入送到主機，沒有在主機上另外核對雜湊；版本以控制端 Repo 的 commit 為準。"
+  - evidence_id: "NC-03"
+    claim: "dummy 介面預檢：gemodel 在 tc qdisc change … loss 0% 後被清除；比較用排程在 SIGTERM 下 exit=143 並移除 netem。因此沿用 comparison-burst.json，沒有改用 example-cycle.json。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "2a before：qdisc netem 8001: root refcnt 2 limit 1000 delay 40ms  20ms loss gemodel p 5% r 10% 1-h 100% 1-k 0%；after（change netem loss 0%）：qdisc netem 8001: root refcnt 2 limit 1000（無 gemodel、無 delay）。2b（05:53Z，--cycles 1，timeout -s TERM 7）：exit=143，schedule_end t=6.979 s、reason=signal_SIGTERM、removed=true、note=deleted；之後 nmtest0 的 qdisc 輸出為空；schedule_start 中的 sha256 為 53ef30e7…。"
+    directness: "PRIMARY"
+    confidence: "高；限 kernel 6.8.0-149、iproute2-6.1.0。"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/precheck/（c-2a-before.qdisc、c-2a-after.qdisc、c-2b.exit、c-2b.qdisc、c-2b.jsonl、DECISION.txt）"
+    limitations:
+      - "只觀察到 tc 顯示不再有 gemodel；沒有以流量驗證遺失模型的內部狀態已重設。"
+  - evidence_id: "NC-04"
+    claim: "srsue 啟動後，Linux2 的 USB 管理網卡在 USB 層掉線並落入儲存模式，管理連線中斷；Owner 重插後恢復。"
+    evidence_type: "LOG"
+    exact_observation: "Linux2 journalctl -k（06:19Z 讀取）：05:54:56Z usb 1-1 disconnect、05:54:57Z usb 2-1 列舉為 USRP B200（Ettus 2500:0020，SuperSpeed）。06:02:19Z usb 1-3 disconnect，cdc_ether 解除註冊 enxec9a0c14d470（Naxiang SZNX LAN 100M，35b5:3500）；重新列舉出現 error -71、can't set config #1 error -110，之後以 35b5:3510（usb-storage）出現。06:11–06:14Z 反覆 disconnect／列舉失敗，含 xhci_hcd 0000:00:14.0 Timeout while waiting for setup device command、attempt power cycle、unable to enumerate USB device。06:15:03Z 以 35b5:3500 列舉、cdc_ether 註冊並更名為 enxec9a0c14d470。lsusb -t：網卡在 Bus 001（USB2，port 3），B210 在 Bus 002（USB3，port 1），兩者同屬 xHCI 0000:00:14.0。06:05Z Agent 的 3-0 SSH 先逾時、重試為 No route to host。之後介面名稱與 192.168.250.12/24 不變。"
+    directness: "PRIMARY"
+    confidence: "高（時間與事件）；原因未確定。"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/incident-linux2-usb-nic.md、step3-0-stop.txt"
+    limitations:
+      - "核心紀錄原文只在 source_thread；Repo 外證據目錄保存的是 Agent 整理的時間線。"
+      - "B210 供電影響網卡只是推測；06:11:11Z UE 停止後網卡仍再次掉線，轉接器或連接埠本身不穩的可能性同樣存在。"
+      - "Owner 回報重插轉接器；是否換了連接埠未記錄。"
+  - evidence_id: "NC-05"
+    claim: "最後一次故障期間的 srsue（06:07:10Z–06:10:51Z）無線鏈路正常；現場看到的「斷連」是 RRC 閒置，ping 不到 UE 是閒置時沒有 paging。"
+    evidence_type: "LOG"
+    exact_observation: "/tmp/ue.log（06:2xZ 讀取）：啟動參數 ue.conf --rf.tx_gain=70；06:07:13Z Attach 成功，IP 172.16.0.3；RSRP 約 -70～-75 dBm、PDCCH SNR 17–20 dB、CQI 8–9；Radio Link Failure 0、重建 0、overflow 0、late 0；underflow 1（06:10:51Z 結束時）。06:07:43Z、06:09:10Z 兩次 Go Idle → RRC_IDLE，前一刻皆有 SRB1 正常交換；06:08:31Z 上行資料觸發 Service Request 成功；paging 0 次。"
+    directness: "PRIMARY"
+    confidence: "中高；只涵蓋最後一次 srsue。"
+    source_location: "source_thread；整理於 incident-linux2-usb-nic.md"
+    limitations:
+      - "05:54Z 那次 srsue 的紀錄已被覆寫，06:02Z 網卡掉線當下的 UE 狀態無從查證。"
+      - "閒置原因推定為 eNB 閒置釋放，未讀 eNB 紀錄確認；Owner ping 的確切時間未記錄，無法確認 ping 失敗都落在閒置期間。"
+  - evidence_id: "NC-06"
+    claim: "重插後的觀察期內管理連線、tun_srsue 與 Runtime 程序穩定。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "06:23:28Z–06:39:38Z 共 9 次 3-0 唯讀檢查皆成功：tun_srsue 172.16.0.4/24、root qdisc fq_codel、srsue PID 7726（ue.conf --rf.tx_gain=70）；srs_spgw_sgi 172.16.0.1/24、srsepc PID 5406、srsenb PID 5581（--rf.tx_gain=70）。期間 Owner 在 Linux2 由 tun_srsue ping 172.16.0.1（間隔 1 s）：467／467，seq 1–467 無缺，RTT p50 29.9 ms、max 110 ms（第一個封包）。"
+    directness: "PRIMARY"
+    confidence: "高；限約 16 分鐘的觀察。"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/observe-3-0.log、linux2-netem-run/observe-ping.txt"
+    limitations:
+      - "網卡燈號與 srsue 終端機正常為 Owner 回報（REPORTED）。"
+      - "16 分鐘無事件不能證明 USB 問題已排除；原因見 NC-04。"
+  - evidence_id: "NC-07"
+    claim: "未注入對照：路徑 A 在沒有 netem 時遺失 0%，30 ms 期限內 99.267%。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "06:32:32Z–06:33:50Z，netem_comparison.py control（only_a，3000 個封包，間隔 20 ms，172.16.0.4 → 172.16.0.1），開始前 Owner 已停止觀察 ping，tun_srsue 為 fq_codel。3000／3000，loss 0.0%，duplicates 0，期限內 99.267%；RTT min 9.10、p50 16.79、mean 17.52、p95 27.00、p99 29.86、max 38.01 ms；jitter 4.88 ms。"
+    directness: "PRIMARY"
+    confidence: "高；單一試次。"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/run/control-only_a.sender.jsonl、control-only_a.echo.jsonl、step3-control.txt"
+    limitations:
+      - "只有 only_a；其他策略沒有未注入對照。"
+  - evidence_id: "NC-08"
+    claim: "tun_srsue 上的長排程依設計切換階段，Owner 中斷後移除 netem。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "netem-events.jsonl（SHA-256 8adadf1dd1b3eaf5c19fd5be8f66f20d3188a9a7c364d57a699280144d7de055）：schedule_start 06:40:09Z、dev tun_srsue、comparison-burst、cycle_s 60、planned_end_s 5400、sha256 53ef30e7…。每循環 normal 40 s（loss 0%）、mild 15 s（loss 5% delay 15ms 10ms）、severe 5 s（loss gemodel 5% 10% 100% 0% delay 40ms 20ms）；共 268 個 phase 事件，實際與計劃切換時間差最大 3 ms。schedule_end 08:09:21Z、t=5351.483 s、reason=interrupted、removed=true、note=deleted。之後 tun_srsue 為 fq_codel，沒有 netem_schedule 程序。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/linux2-netem-run/netem-events.jsonl（與 run/netem-events.jsonl 相同）、remote.sha256"
+    limitations:
+      - "netem 只作用在 tun_srsue 送出方向（UE 上行）；回程未注入。"
+      - "Ctrl-C 後的結束狀態碼只在現場終端機，未存檔；以事件紀錄的 interrupted 與之後的 fq_codel 為準。"
+  - evidence_id: "NC-09"
+    claim: "七種策略各跑三輪，21 輪全部完成，沒有 STOP 或傳送端錯誤。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "netem_comparison.py run --rounds 3（06:41:13Z 啟動，exit=0，08:05:18Z 結束）：每輪 3 個循環、9000 個封包、從循環開頭後 1 s 開始，輪與輪之間隔 4 分鐘；排程需要 86 個循環（設定 90）；主機時鐘差 +0.176 s。21 份 summary 的 errors 皆為空。每輪期限內（全程）：only_a 72.7／73.3／73.2%；only_b 32.7／40.1／37.2%；split_2_3 42.3／47.2／45.4%；dup 84.2／88.8／80.2%；threshold+guard 80.6／88.9／79.7%；linucb 82.7／85.5／78.9%；linucb+guard 83.1／87.6／79.0%（r1／r2／r3）。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/step5-plan.txt、step5-run.txt、run/r*.sender.jsonl、run/r*.echo.jsonl"
+    limitations:
+      - "路徑 B 由傳送端以 --leo-b 模擬（SIMULATED），每輪使用不同的 LEO 種子；不是實際衛星或有線鏈路的特性。"
+      - "輪與輪之間 UE 可能進入 RRC 閒置，每輪第一個封包可能多出 RRC 建立時間；七種策略條件相同，未個別量測。"
+  - evidence_id: "NC-10"
+    claim: "依階段拆分後，重度階段只走路徑 A 完全不在期限內；會調整的策略在正常與輕度階段的副本數明顯少於 dup。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "align_phases.py（期限 30 ms，三輪平均，括號為最小–最大，· 後為平均副本數）：only_a normal 99.57（99.52–99.67）·1.00、mild 26.51（24.83–27.63）·1.00、severe 0.00·1.00；only_b 33.78／44.18／37.49（severe 9.09–62.08）；split_2_3 52.25／32.91／22.65；dup 99.71·2.00／59.17（51.74–68.51）·2.00／36.94（8.14–62.17）·2.00；threshold+guard 97.94·1.07／58.33·1.92／37.49·2.00；linucb 98.59·1.02／53.70·1.28／37.86·1.20；linucb+guard 99.15·1.07／55.35·1.35／38.86·1.46。"
+    directness: "PRIMARY"
+    confidence: "高（計算）；重度階段每輪差異大。"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/run/phases.csv（SHA-256 8d9f577a41cd9f3c698556bf2c1a2b484155fb3e7adf0a4aee5e18e7e2e6a31a）、run/phases.png、run/phases-summary.md"
+    limitations:
+      - "每輪重度階段只有 3 × 5 s（約 750 個封包），範圍 7–65%，策略之間在重度階段的差異不具意義。"
+      - "三輪為同一天、同一組 Runtime；沒有統計檢定。"
+      - "結果標示 INJECTED_IP（路徑 A）與 SIMULATED（路徑 B），不是 OTA 或無線通道劣化，也不代表真實衛星鏈路。"
+  - evidence_id: "NC-11"
+    claim: "結束時主機上沒有殘留工具或紀錄檔。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "08:09Z 後：tun_srsue root qdisc fq_codel；netem-events.jsonl、observe-ping.txt、c-2b.jsonl 以 scp 取回，與 Linux2 上的 sha256sum 比對皆 OK；Agent 刪除 Linux2 的 ~/netem-run/，之後兩台 ls -d ~/netem-run 皆回報不存在，/tmp 中沒有 netem、adaptive、echo 相關檔案。"
+    directness: "PRIMARY"
+    confidence: "高；限該時點。"
+    source_location: "2026-11-28-AI-Dualpath-netem-comparison/step6-7-closeout.txt、linux2-netem-run/remote.sha256"
+    limitations:
+      - "sch_netem 模組保持載入，未卸載。Runtime 是否停止由現場決定，未記錄。"
+
+mutations:
+  - "Linux2：Agent 建立並於結束後刪除 ~/netem-run/（含 Owner sudo 產生、擁有者為 root 的紀錄檔）。"
+  - "Linux2（Owner 以 sudo 執行）：建立並刪除 nmtest0；在 nmtest0 上手動加入、切換、刪除 gemodel netem，並以工具執行一次被中斷的排程；在 tun_srsue 上以工具執行長排程，Owner 中斷後移除。"
+  - "Linux2（Owner 現場）：USB 網卡重插；srsue 停止並重新啟動（PID 7726）。"
+  - "Repo 外新增 2026-11-28-AI-Dualpath-netem-comparison/ 下的紀錄、run/、precheck/、linux2-netem-run/；RUNBOOK.md 工具版本一行於 11/27 改為記錄已合併的 commit。"
+  - "Repo：新增本 TER，更新 TER 索引。"
+  - "EPC／eNB／UE 的啟動與停止、發射增益皆非 Agent 操作。"
+
+recovered_or_observed_claims:
+  - claim: "七種策略在同一個 netem 長排程下各跑三輪並完成比較。"
+    status: "OBSERVED"
+    supporting_evidence: ["NC-08", "NC-09", "NC-10"]
+  - claim: "會調整的策略（threshold+guard、linucb、linucb+guard）在正常與輕度階段，以 1.02–1.92 的副本數達到接近 dup（2.00）的期限內送達率；重度階段各策略在每輪差異範圍內無法區分。"
+    status: "OBSERVED"
+    supporting_evidence: ["NC-10"]
+  - claim: "gemodel 在 tc qdisc change … loss 0% 後被清除。"
+    status: "OBSERVED"
+    supporting_evidence: ["NC-03"]
+  - claim: "Linux2 的 USB 管理網卡在 srsue 執行期間掉線且不會自行恢復。"
+    status: "OBSERVED"
+    supporting_evidence: ["NC-04"]
+  - claim: "網卡掉線由 B210 供電或 USB 負載造成。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+  - claim: "屏蔽已確認、增益 70、Runtime 為本次啟動；觀察期網卡燈號與 srsue 正常。"
+    status: "REPORTED_ONLY"
+    supporting_evidence: ["NC-06"]
+  - claim: "策略在 OTA 或真實無線劣化下的表現。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+
+provenance_gaps:
+  - "Linux2 核心紀錄、/tmp/ue.log 與第 0 步命令的原文只在 source_thread；Repo 外證據目錄保存 Agent 整理的摘要。"
+  - "Ctrl-C 後 netem_schedule.py 的結束狀態碼未存檔。"
+  - "Repo 外證據目錄為本機路徑，可攜共享位置 UNKNOWN。"
+  - "證據目錄名稱為 2026-11-28，實際執行日為 2026-11-27。"
+
+stop_point:
+  result: "七種策略 × 三輪的 netem 比較已完成（INJECTED_IP／SIMULATED），結果依階段拆分；Linux2 工具檔案已刪除，tun_srsue 回到 fq_codel。執行前發生一次 Linux2 USB 管理網卡掉線，現場重插後完成全程。Owner 驗收 PENDING。"
+  next_authority_required: "把結果寫入 ai-dualpath.html、README 限制段落或海報／Demo 前，需 Owner 審閱措辭；任何新的 Runtime、RF 或重跑均需 Owner 另行授權。USB 網卡問題的硬體處置由現場決定。"

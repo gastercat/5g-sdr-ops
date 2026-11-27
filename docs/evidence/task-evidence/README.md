@@ -122,3 +122,6 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
   `netem_schedule.py` 在 Linux2 的第一次執行：dummy 介面上的中斷清理與拒絕覆蓋，以及 `tun_srsue` 上的
   固定遺失與時變排程（`INJECTED_IP`），以及同日新版工具的重新驗證（結束狀態、清理與 `tc qdisc change` 沿用參數的行為）；
   沒有執行策略比較，也不建立 Owner 驗收。
+- [`2026-11-27-ai-dualpath-netem-policy-comparison.yaml`](2026-11-27-ai-dualpath-netem-policy-comparison.yaml)：
+  七種雙路徑策略在同一個 netem 長排程下各跑三輪（路徑 A `INJECTED_IP`、路徑 B `SIMULATED`），結果依階段拆分；
+  包含 gemodel 重設的預檢與執行前 Linux2 USB 管理網卡掉線的紀錄；不是 OTA 結果，也不建立 Owner 驗收。

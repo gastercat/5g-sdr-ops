@@ -15,7 +15,7 @@
   <div class="pinned-header"><header class="site-header"><div>
     <h1>5G SDR Interactive Lab</h1>
     <nav class="page-tabs" aria-label="頁面"><a href="./index.html">← 返回架構</a><a href="./evidence.html">證據與範圍</a><a href="./lab03-ota.html">Lab03 OTA 實測</a><a href="./ai-dualpath.html" aria-current="page">AI 雙路徑</a><button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">深色主題</button></nav>
-  </div></header><p class="proposal-note">2026-11-16 單日量測，另含 2026-11-26 路徑 A 劣化注入的驗證；Owner 驗收待定。路徑 B 全部是模擬；不是 performance、reliability 或 URLLC validation。</p></div>
+  </div></header><p class="proposal-note">2026-11-16 單日量測，另含 2026-11-26 路徑 A 劣化注入的驗證與 2026-11-27 注入劣化下的策略比較；Owner 驗收待定。路徑 B 全部是模擬；不是 performance、reliability 或 URLLC validation。</p></div>
   <main id="main-content" tabindex="-1">
     <section>
       <p class="ota-eyebrow">路徑 A：LTE OTA（實測） · 路徑 B：類低軌衛星（傳送端模擬） · 2026-11-16</p>
@@ -130,6 +130,26 @@
       <p class="ota-note">每個 ping 的送出時間由 <code>ping -D</code> 的回覆時間反推（遺失的封包依 0.2 秒間隔推估），再對到工具記錄的切換時間；沒有用封包擷取驗證。輕度只有 30 個、重度只有 20 個樣本，兩次的遺失率落在設定值（5%、40%）的兩側，不能用來評估 netem 的準確度。netem 只作用在 <code>tun_srsue</code> 的送出方向，丟的是去程的 echo request。固定 20% 的那次，ping 遺失數和 netem 自己的丟棄計數相同，代表那段時間的遺失全部來自注入。</p>
     </section>
 
+    <section aria-labelledby="netem-cmp-title">
+      <h2 id="netem-cmp-title">注入劣化下的七種策略比較（2026-11-27）</h2>
+      <p><span class="ota-tag is-injected">注入</span>在 <code>tun_srsue</code> 上只啟動一次長排程，每 60 秒一個循環：正常 40 秒（不注入）→ 輕度 15 秒（loss 5%、delay 15±10 ms）→ 重度 5 秒（Gilbert-Elliott 突發遺失，平均約 33%，delay 40±20 ms）。每個策略每輪送 9000 個封包、剛好 3 個循環，且都從循環開頭開始，所以七種策略面對同樣的階段順序。七種策略各跑 3 輪，共 21 輪，全部完成。路徑 B 和前面一樣是傳送端模擬。</p>
+      <div class="ota-table-wrap"><table class="ota-table">
+        <caption>30 ms 期限內送達比例（%），三輪平均，括號為三輪的最小–最大；副本數依序為正常／輕度／重度</caption>
+        <thead><tr><th>策略</th><th>正常</th><th>輕度</th><th>重度</th><th>副本數</th></tr></thead>
+        <tbody>
+          <tr><td>只走 A</td><td>99.57（99.52–99.67）</td><td>26.51（24.83–27.63）</td><td>0.00（0.00–0.00）</td><td>1.00／1.00／1.00</td></tr>
+          <tr><td>只走 B</td><td>33.78（28.09–42.14）</td><td>44.18（33.57–56.96）</td><td>37.49（9.09–62.08）</td><td>1.00／1.00／1.00</td></tr>
+          <tr><td>2:3 分流</td><td>52.25（48.86–57.11）</td><td>32.91（27.94–40.10）</td><td>22.65（3.61–39.97）</td><td>1.00／1.00／1.00</td></tr>
+          <tr><td>全部複製</td><td>99.71（99.68–99.73）</td><td>59.17（51.74–68.51）</td><td>36.94（8.14–62.17）</td><td>2.00／2.00／2.00</td></tr>
+          <tr><td>門檻規則＋規則層</td><td>97.94（94.84–99.48）</td><td>58.33（50.80–68.57）</td><td>37.49（7.21–64.57）</td><td>1.07／1.92／2.00</td></tr>
+          <tr><td>LinUCB</td><td>98.59（97.80–98.98）</td><td>53.70（49.09–59.56）</td><td>37.86（6.95–63.85）</td><td>1.02／1.28／1.20</td></tr>
+          <tr><td>LinUCB＋規則層</td><td>99.15（99.02–99.28）</td><td>55.35（48.39–64.21）</td><td>38.86（8.17–65.37）</td><td>1.07／1.35／1.46</td></tr>
+        </tbody>
+      </table></div>
+      <p class="ota-caption">重度階段只走 A 完全不在期限內，其他策略都靠路徑 B 撐住，約 23～39%。正常與輕度階段，三種自適應策略的送達比例接近全部複製，但副本數只有 1.02～1.92，全部複製固定是 2；LinUCB 在輕度階段比全部複製低約 5 個百分點，副本數 1.28。同一天、未注入時只走 A 的對照是 99.27%（3000 個封包，遺失 0）。</p>
+      <p class="ota-note">重度階段每輪只有 3 × 5 秒（約 750 個封包），三輪之間差到 7～65%，策略在這一欄的差異不具意義。三輪在同一天、同一組 Runtime 上依序執行，沒有統計檢定；各策略面對相同的排程，但不是同一段時間。路徑 B 每輪使用不同的模擬種子。netem 只作用在 <code>tun_srsue</code> 的送出方向（UE 上行）。結果是 IP 層注入（<code>INJECTED_IP</code>），不是 OTA 或無線通道劣化，也不代表真實衛星鏈路。</p>
+    </section>
+
     <section aria-labelledby="link-title">
       <h2 id="link-title">離線模型沒有重現的兩個鏈路特性</h2>
       <ul class="dp-list">
@@ -145,12 +165,12 @@
         <li>無線端是 LTE（srsRAN 4G），不是 5G NR。</li>
         <li>路徑 B 的類低軌衛星特性全部是傳送端模擬，參數是本組假設值，不是衛星鏈路或軌道模型。</li>
         <li>沒有「在真實劣化的路徑 A 上驗證自適應策略」這件事。各策略依序執行，面對的路徑 A 不是同一段時間。</li>
-        <li>2026-11-26 的 netem 注入是 IP 層的 <code>INJECTED_IP</code>，不是 OTA 或無線通道劣化，也還沒有在注入的劣化下比較策略。</li>
+        <li>2026-11-26 與 11-27 的 netem 注入是 IP 層的 <code>INJECTED_IP</code>，不是 OTA 或無線通道劣化；11-27 的策略比較只說明在這個注入排程下的表現。</li>
       </ul>
-      <p class="ota-note">來源：Task Evidence Record <code>docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml</code>（AD-01～AD-11）與 Repo 外證據目錄 <code>2026-11-16-AI-Dualpath-OTA/</code> 的 <code>02-policies-summary.md</code>、<code>08-gain-enb59-ue53/policies-summary.md</code>、<code>14-report-replay/d30.txt</code>、<code>gain-steps-events.txt</code>。劣化注入的來源是 <code>docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml</code>（NM-05、NM-06、NM-12、NM-13）與 Repo 外 <code>2026-11-26-AI-Dualpath-netem/</code> 的 ping 與事件紀錄。策略程式與 <code>netem_schedule.py</code> 在 <code>exploration/ai-dualpath/</code>。</p>
+      <p class="ota-note">來源：Task Evidence Record <code>docs/evidence/task-evidence/2026-11-16-ai-dualpath-ota-policy-comparison.yaml</code>（AD-01～AD-11）與 Repo 外證據目錄 <code>2026-11-16-AI-Dualpath-OTA/</code> 的 <code>02-policies-summary.md</code>、<code>08-gain-enb59-ue53/policies-summary.md</code>、<code>14-report-replay/d30.txt</code>、<code>gain-steps-events.txt</code>。劣化注入的來源是 <code>docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml</code>（NM-05、NM-06、NM-12、NM-13）與 Repo 外 <code>2026-11-26-AI-Dualpath-netem/</code> 的 ping 與事件紀錄；注入劣化下的策略比較來源是 <code>docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml</code>（NC-07、NC-09、NC-10）與 Repo 外 <code>2026-11-28-AI-Dualpath-netem-comparison/run/phases.csv</code>。策略程式與 <code>netem_schedule.py</code> 在 <code>exploration/ai-dualpath/</code>。</p>
     </section>
     <a class="return-link" href="./index.html">← 返回架構</a>
   </main>
-  <footer class="site-footer"><p>教學視覺化 · AI 雙路徑 2026-11-16 單日量測與 2026-11-26 劣化注入驗證。路徑 A 為 LTE OTA 實測（注入段落為 <code>INJECTED_IP</code>），路徑 B 為傳送端模擬；分流與複製在應用層 UDP，不是 PDCP 層。不授權任何 Runtime 或 RF 操作。</p></footer>
+  <footer class="site-footer"><p>教學視覺化 · AI 雙路徑 2026-11-16 單日量測、2026-11-26 劣化注入驗證與 2026-11-27 注入劣化下的策略比較。路徑 A 為 LTE OTA 實測（注入段落為 <code>INJECTED_IP</code>），路徑 B 為傳送端模擬；分流與複製在應用層 UDP，不是 PDCP 層。不授權任何 Runtime 或 RF 操作。</p></footer>
 </body>
 </html>
