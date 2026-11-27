@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-27T08:35:37Z",
+  "updated_at": "2026-11-27T08:44:46Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "1455f55d9d11a0d1fbd649d1b09ee170bf1a5337f2f6e8ef1d35344e756e7029",
-      "size": 55556,
-      "normalized_sha256": "1455f55d9d11a0d1fbd649d1b09ee170bf1a5337f2f6e8ef1d35344e756e7029"
+      "sha256": "01c83474b380aad5f328ccb7867ce64d74c76d772326c2d78cfec0cceeef9a9a",
+      "size": 56066,
+      "normalized_sha256": "01c83474b380aad5f328ccb7867ce64d74c76d772326c2d78cfec0cceeef9a9a"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -928,9 +928,9 @@
     },
     "exploration/ai-dualpath/README.md": {
       "role": "index",
-      "sha256": "13ec1b8c2d83b2f582273d38ef163b66ed08a0082d1e1a5344b42f36c3e76207",
-      "size": 7729,
-      "normalized_sha256": "13ec1b8c2d83b2f582273d38ef163b66ed08a0082d1e1a5344b42f36c3e76207"
+      "sha256": "a8688e7246cace2b842ee475fca0823500d20bacc3b60a360a152ade8b7e51c9",
+      "size": 7836,
+      "normalized_sha256": "a8688e7246cace2b842ee475fca0823500d20bacc3b60a360a152ade8b7e51c9"
     },
     "exploration/ai-dualpath/adaptive_send.py": {
       "role": "index",
@@ -961,6 +961,12 @@
       "sha256": "d66d0ecf3c81115711f387604ff2f38176274a673560b24586fb880917736cbc",
       "size": 6201,
       "normalized_sha256": "d66d0ecf3c81115711f387604ff2f38176274a673560b24586fb880917736cbc"
+    },
+    "exploration/ai-dualpath/follow-up-plan.md": {
+      "role": "index",
+      "sha256": "bef2b0daab4b90f10ab50f9f5f55d0dc88988308b3376e5a07c6d8ea4475280f",
+      "size": 5501,
+      "normalized_sha256": "bef2b0daab4b90f10ab50f9f5f55d0dc88988308b3376e5a07c6d8ea4475280f"
     },
     "exploration/ai-dualpath/leo_profile.py": {
       "role": "index",
