@@ -127,3 +127,6 @@ record claim status。Authority 與 canonicalization 必須在 TEH 外依 projec
   包含 gemodel 重設的預檢與執行前 Linux2 USB 管理網卡掉線的紀錄；不是 OTA 結果，也不建立 Owner 驗收。
 - [`2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml`](2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml)：
   以配對 block bootstrap 離線重新分析同一批比較資料，修正「自適應策略接近全部複製」的說法；不是新的量測。
+- [`2026-11-27-ai-dualpath-p2-channel-rlf.yaml`](2026-11-27-ai-dualpath-p2-channel-rlf.yaml)：
+  P2 以 srsue channel emulator 的週期性中斷探測：50 ms 下行中斷即觸發 RLF、移除後需重啟 Runtime 才恢復，
+  沒有執行策略比較；UE 原始紀錄未保存。

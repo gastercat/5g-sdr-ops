@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-27T09:05:08Z",
+  "updated_at": "2026-11-27T09:49:10Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "4ac503eb88384184f9d059642987ad6bb6e18356752695e36d3ba9c273e02228",
-      "size": 56674,
-      "normalized_sha256": "4ac503eb88384184f9d059642987ad6bb6e18356752695e36d3ba9c273e02228"
+      "sha256": "82e5f62119487507d36a6827d43c820d53d864b0b7a35b8b3e42ca76c954200d",
+      "size": 57175,
+      "normalized_sha256": "82e5f62119487507d36a6827d43c820d53d864b0b7a35b8b3e42ca76c954200d"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -399,11 +399,17 @@
       "size": 17671,
       "normalized_sha256": "b7fd267f58ebe7d6afc39e82b0eb5d32c6ff7b846ea7d87af6ed70a3a7fe529f"
     },
+    "docs/evidence/task-evidence/2026-11-27-ai-dualpath-p2-channel-rlf.yaml": {
+      "role": "index",
+      "sha256": "6f3122c3a99549e7b9263e7be9a0f942fc6de401aa6da1fc97d69576eabd39b5",
+      "size": 9029,
+      "normalized_sha256": "6f3122c3a99549e7b9263e7be9a0f942fc6de401aa6da1fc97d69576eabd39b5"
+    },
     "docs/evidence/task-evidence/README.md": {
       "role": "index",
-      "sha256": "e5d9ade2eadf1e8dc3acd9f2928b459b3755031ac3c4c4f81fa46556eddc3df2",
-      "size": 9374,
-      "normalized_sha256": "e5d9ade2eadf1e8dc3acd9f2928b459b3755031ac3c4c4f81fa46556eddc3df2"
+      "sha256": "45f85819c383cb5afeb31733e0d3b383d6a4701c567cdcf59eb0eaf4f209c84b",
+      "size": 9660,
+      "normalized_sha256": "45f85819c383cb5afeb31733e0d3b383d6a4701c567cdcf59eb0eaf4f209c84b"
     },
     "docs/evidence/task-evidence/TASK_EVIDENCE_RECORD_TEMPLATE.yaml": {
       "role": "index",
@@ -970,9 +976,9 @@
     },
     "exploration/ai-dualpath/follow-up-plan.md": {
       "role": "index",
-      "sha256": "b1b9672623bc5c936c8445b354158df91e0ba9da2a05d2a07e5d3ebb0d0a53d5",
-      "size": 5657,
-      "normalized_sha256": "b1b9672623bc5c936c8445b354158df91e0ba9da2a05d2a07e5d3ebb0d0a53d5"
+      "sha256": "1fced6e1f47aaba8fca78077c12fbf70d7f37bcd9c3658ed280d1925f5afdeb2",
+      "size": 6221,
+      "normalized_sha256": "1fced6e1f47aaba8fca78077c12fbf70d7f37bcd9c3658ed280d1925f5afdeb2"
     },
     "exploration/ai-dualpath/leo_profile.py": {
       "role": "index",
