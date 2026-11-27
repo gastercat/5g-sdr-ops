@@ -60,7 +60,7 @@ Security 穿插在各段裡，不另開一段 Runtime。各段的篇幅比例是
 | E12 | 以 `tc netem` 在路徑 A 注入劣化的做法已確認有效 | `OBSERVED`（`INJECTED_IP`） | [netem TER](../docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml) | netem 下的策略比較結果，見下方說明 |
 | E13 | 教授同意以 Tailcat 架構作為 Security Lens，不另開獨立 Lab04 | `ACCEPTED / REPORTED_BY_OWNER` | [DR-016](../docs/decision-register.md#dr-016tailcat-security-lens-作為-security-cross-cutting-的實作方向) | Repo 內有教授的書面意見 |
 | E14 | 2026-11-19 執行一次，T0、T2～T8 通過，T1 完成，T8 同日補做 | `OBSERVED` | [Lab04 TER](../docs/evidence/task-evidence/2026-11-19-lab04-tailcat-security-lens.yaml) | Lab01～03 的 Security mapping 已完成 |
-| E15 | 2026-11-27 在同一個 netem 長排程下七種策略各 3 輪：正常與輕度階段，自適應策略以 1.02～1.92 的副本數達到接近全部複製的期限內比例；重度階段只走 A 為 0%，其他策略約 23～39%，每輪差異大 | `OBSERVED`（路徑 A `INJECTED_IP`、路徑 B `SIMULATED`） | [netem 比較 TER](../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml) | OTA 或無線劣化下的結果、重度劣化時某個策略較好、真實衛星鏈路 |
+| E15 | 2026-11-27 在同一個 netem 長排程下七種策略各 3 輪：輕度階段門檻規則與全部複製無顯著差異但副本數 1.92，LinUCB 以約 1.3 的副本數換來低 4～5.5 個百分點；正常階段只走 A 已與全部複製相當；重度階段各策略無法區分 | `OBSERVED`（路徑 A `INJECTED_IP`、路徑 B `SIMULATED`；配對 bootstrap 95% CI） | [netem 比較 TER](../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml)、[P0 重新分析 TER](../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml) | OTA 或無線劣化下的結果、LinUCB 接近全部複製、重度劣化時某個策略較好、真實衛星鏈路 |
 
 E12 之後的 netem 策略比較已在 2026-11-27 執行並留下 TER（E15，[PR 71](https://github.com/gastercat/5g-sdr-ops/pull/71)）。
 發表時依 E15 的「可以說」：結果只代表這一個 IP 層注入排程，不是 OTA 或無線劣化；重度階段只有三輪、每輪約 750 個封包，
@@ -90,7 +90,7 @@ E12 之後的 netem 策略比較已在 2026-11-27 執行並留下 TER（E15，[P
 | 可能的問題 | 回答方向 | 依據 |
 | --- | --- | --- |
 | Lab01 算完成了嗎？ | 能建立 Attach，R5 尚未通過，完成標準在教授 Review 中 | E2、E3 |
-| 為什麼 AI 策略沒有比較好？ | 路徑 A 本身穩定時沒有可以改善的空間；netem 注入劣化後，自適應策略以較少的副本接近全部複製，但沒有勝過門檻規則 | E9、E10、E15 |
+| 為什麼 AI 策略沒有比較好？ | 路徑 A 穩定時只走 A 就夠；netem 注入輕度劣化時，LinUCB 是用較少副本換略低的送達率（約 1.3 份、低 4～5.5 個百分點），門檻規則則接近全部複製也接近 2 份副本，兩者是取捨而不是勝負 | E9、E10、E15 |
 | Duplication 到底有沒有用？ | 11/12 沒有劣化，效益未展示；11/27 netem 注入下，輕度階段全部複製約 59%、只走 A 約 27%，重度階段 37% 對 0%，代價是 2 倍副本 | E8、E15 |
 | 這是 URLLC 嗎？ | 不是 3GPP 等級的 URLLC 驗證，是應用層的雙路徑實驗 | E7、E8 |
 | 類 LEO 鏈路是真的衛星嗎？ | 不是，是傳送端以應用層模擬的時變特性，參數為假設值 | E9 |

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-27T08:35:37Z",
+  "updated_at": "2026-11-27T08:52:26Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "1455f55d9d11a0d1fbd649d1b09ee170bf1a5337f2f6e8ef1d35344e756e7029",
-      "size": 55556,
-      "normalized_sha256": "1455f55d9d11a0d1fbd649d1b09ee170bf1a5337f2f6e8ef1d35344e756e7029"
+      "sha256": "67071340b6e9d930c8a0856891eec0b7cf31343d2b880c4d0c1f54cc2e850adb",
+      "size": 56618,
+      "normalized_sha256": "67071340b6e9d930c8a0856891eec0b7cf31343d2b880c4d0c1f54cc2e850adb"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "delivery/2026-12-18-final-presentation-outline.md": {
       "role": "index",
-      "sha256": "4d72144914ebd6404a235a9fff40c0f88128783d44b7e66c3094b8e61c77dbfb",
-      "size": 10115,
-      "normalized_sha256": "4d72144914ebd6404a235a9fff40c0f88128783d44b7e66c3094b8e61c77dbfb"
+      "sha256": "560d8992620933d3976adfce70d9843969f18cb110000b8aadb53f9e5d17f125",
+      "size": 10394,
+      "normalized_sha256": "560d8992620933d3976adfce70d9843969f18cb110000b8aadb53f9e5d17f125"
     },
     "delivery/README.md": {
       "role": "index",
@@ -387,6 +387,12 @@
       "size": 20684,
       "normalized_sha256": "d69c229dc7453562ed8935ae6c0654def228f43d09d5c5934c496f898d7f7767"
     },
+    "docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml": {
+      "role": "index",
+      "sha256": "5fc57c7927973d16e4a1da4b8c7f754453b091a7e2d9c6a4e968f5e6a979e5e6",
+      "size": 5399,
+      "normalized_sha256": "5fc57c7927973d16e4a1da4b8c7f754453b091a7e2d9c6a4e968f5e6a979e5e6"
+    },
     "docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml": {
       "role": "index",
       "sha256": "b7fd267f58ebe7d6afc39e82b0eb5d32c6ff7b846ea7d87af6ed70a3a7fe529f",
@@ -395,9 +401,9 @@
     },
     "docs/evidence/task-evidence/README.md": {
       "role": "index",
-      "sha256": "ae76c03231546b16cba4d5f9510d38d54f646638769f9a1b4f8a85925f43775c",
-      "size": 9119,
-      "normalized_sha256": "ae76c03231546b16cba4d5f9510d38d54f646638769f9a1b4f8a85925f43775c"
+      "sha256": "e5d9ade2eadf1e8dc3acd9f2928b459b3755031ac3c4c4f81fa46556eddc3df2",
+      "size": 9374,
+      "normalized_sha256": "e5d9ade2eadf1e8dc3acd9f2928b459b3755031ac3c4c4f81fa46556eddc3df2"
     },
     "docs/evidence/task-evidence/TASK_EVIDENCE_RECORD_TEMPLATE.yaml": {
       "role": "index",
@@ -700,9 +706,9 @@
     },
     "exploration/5g-sdr-interactive-lab/ai-dualpath.html": {
       "role": "index",
-      "sha256": "4b81afba5fcf0626d99b9dfab2da589bda86ddf055e2ad3b99964fd2ec251246",
-      "size": 22151,
-      "normalized_sha256": "4b81afba5fcf0626d99b9dfab2da589bda86ddf055e2ad3b99964fd2ec251246"
+      "sha256": "629b1206327fbae67606096fbfe2c31b3aca86e1a0e32ff3e8c39658299351b3",
+      "size": 22581,
+      "normalized_sha256": "629b1206327fbae67606096fbfe2c31b3aca86e1a0e32ff3e8c39658299351b3"
     },
     "exploration/5g-sdr-interactive-lab/assets/favicon.svg": {
       "role": "observe",
@@ -928,9 +934,9 @@
     },
     "exploration/ai-dualpath/README.md": {
       "role": "index",
-      "sha256": "13ec1b8c2d83b2f582273d38ef163b66ed08a0082d1e1a5344b42f36c3e76207",
-      "size": 7729,
-      "normalized_sha256": "13ec1b8c2d83b2f582273d38ef163b66ed08a0082d1e1a5344b42f36c3e76207"
+      "sha256": "d14f77d1308a3cb94c7e91ea76916821e0575fec72f79ec5d187fed3e5f7c695",
+      "size": 8040,
+      "normalized_sha256": "d14f77d1308a3cb94c7e91ea76916821e0575fec72f79ec5d187fed3e5f7c695"
     },
     "exploration/ai-dualpath/adaptive_send.py": {
       "role": "index",
@@ -961,6 +967,12 @@
       "sha256": "d66d0ecf3c81115711f387604ff2f38176274a673560b24586fb880917736cbc",
       "size": 6201,
       "normalized_sha256": "d66d0ecf3c81115711f387604ff2f38176274a673560b24586fb880917736cbc"
+    },
+    "exploration/ai-dualpath/follow-up-plan.md": {
+      "role": "index",
+      "sha256": "b1b9672623bc5c936c8445b354158df91e0ba9da2a05d2a07e5d3ebb0d0a53d5",
+      "size": 5657,
+      "normalized_sha256": "b1b9672623bc5c936c8445b354158df91e0ba9da2a05d2a07e5d3ebb0d0a53d5"
     },
     "exploration/ai-dualpath/leo_profile.py": {
       "role": "index",
