@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-26T12:34:42Z",
+  "updated_at": "2026-11-27T08:19:00Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "e1f454552196ab5706c76c0316acc104aa1749e8f64a4cae8d54dc1b45174c22",
-      "size": 54858,
-      "normalized_sha256": "e1f454552196ab5706c76c0316acc104aa1749e8f64a4cae8d54dc1b45174c22"
+      "sha256": "b3f6271e5148147ba2371cd52a40f123f1c0ded0664d932feec47dfd367d097b",
+      "size": 55497,
+      "normalized_sha256": "b3f6271e5148147ba2371cd52a40f123f1c0ded0664d932feec47dfd367d097b"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -387,11 +387,17 @@
       "size": 20684,
       "normalized_sha256": "d69c229dc7453562ed8935ae6c0654def228f43d09d5c5934c496f898d7f7767"
     },
+    "docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml": {
+      "role": "index",
+      "sha256": "b7fd267f58ebe7d6afc39e82b0eb5d32c6ff7b846ea7d87af6ed70a3a7fe529f",
+      "size": 17671,
+      "normalized_sha256": "b7fd267f58ebe7d6afc39e82b0eb5d32c6ff7b846ea7d87af6ed70a3a7fe529f"
+    },
     "docs/evidence/task-evidence/README.md": {
       "role": "index",
-      "sha256": "a953c572230463b384cb847de0fdde6d2a3e3b588fc5dd862b7dd3118996e021",
-      "size": 8725,
-      "normalized_sha256": "a953c572230463b384cb847de0fdde6d2a3e3b588fc5dd862b7dd3118996e021"
+      "sha256": "ae76c03231546b16cba4d5f9510d38d54f646638769f9a1b4f8a85925f43775c",
+      "size": 9119,
+      "normalized_sha256": "ae76c03231546b16cba4d5f9510d38d54f646638769f9a1b4f8a85925f43775c"
     },
     "docs/evidence/task-evidence/TASK_EVIDENCE_RECORD_TEMPLATE.yaml": {
       "role": "index",
@@ -694,9 +700,9 @@
     },
     "exploration/5g-sdr-interactive-lab/ai-dualpath.html": {
       "role": "index",
-      "sha256": "0799b9d541599a6667fadc54f9922f0d130b91773bc6dbe02106a3220ead6d87",
-      "size": 18572,
-      "normalized_sha256": "0799b9d541599a6667fadc54f9922f0d130b91773bc6dbe02106a3220ead6d87"
+      "sha256": "4b81afba5fcf0626d99b9dfab2da589bda86ddf055e2ad3b99964fd2ec251246",
+      "size": 22151,
+      "normalized_sha256": "4b81afba5fcf0626d99b9dfab2da589bda86ddf055e2ad3b99964fd2ec251246"
     },
     "exploration/5g-sdr-interactive-lab/assets/favicon.svg": {
       "role": "observe",
@@ -922,9 +928,9 @@
     },
     "exploration/ai-dualpath/README.md": {
       "role": "index",
-      "sha256": "3230850f0e203c0b501a9baa14fd10d63c5af0ecc90b4b27abf1a0d3f0a90a02",
-      "size": 7227,
-      "normalized_sha256": "3230850f0e203c0b501a9baa14fd10d63c5af0ecc90b4b27abf1a0d3f0a90a02"
+      "sha256": "13ec1b8c2d83b2f582273d38ef163b66ed08a0082d1e1a5344b42f36c3e76207",
+      "size": 7729,
+      "normalized_sha256": "13ec1b8c2d83b2f582273d38ef163b66ed08a0082d1e1a5344b42f36c3e76207"
     },
     "exploration/ai-dualpath/adaptive_send.py": {
       "role": "index",
@@ -946,9 +952,9 @@
     },
     "exploration/ai-dualpath/degradation-procedure.md": {
       "role": "index",
-      "sha256": "c775407f76cca479d65976717ee39a58f6491bf1fc94ff837a25d6145a65fc00",
-      "size": 17906,
-      "normalized_sha256": "c775407f76cca479d65976717ee39a58f6491bf1fc94ff837a25d6145a65fc00"
+      "sha256": "58d95095ea73d9c7c5a5328bf8e5fb5baf58e2bad680cbe5a8a286ab3c7937c2",
+      "size": 18454,
+      "normalized_sha256": "58d95095ea73d9c7c5a5328bf8e5fb5baf58e2bad680cbe5a8a286ab3c7937c2"
     },
     "exploration/ai-dualpath/evaluate.py": {
       "role": "index",
