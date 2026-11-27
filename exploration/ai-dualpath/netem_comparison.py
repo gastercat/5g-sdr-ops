@@ -11,6 +11,11 @@ on either host; all output lands in --out on this machine.
   netem_comparison.py control --out DIR                     # path A before netem is applied
   netem_comparison.py plan    --events-file PATH --out DIR  # print the slot times, start nothing
   netem_comparison.py run     --events-file PATH --out DIR --rounds 3
+  netem_comparison.py series  --out DIR --rounds 3 --count 3000   # no netem schedule: back to back
+
+series runs the same rounds and seeds without a netem schedule, one run after another, for path A
+degradation that is fixed for the whole session (for example srsue's channel emulator, which is
+INJECTED_BASEBAND). control --name labels single-path probes.
 
 PATH is the --log file of netem_schedule.py on the sender host. --local runs both tools on this
 machine instead (rehearsal against a stand-in tc), with PATH a local file.
@@ -84,6 +89,10 @@ def jobs(rounds):
     return [(rnd, pol) for rnd in range(1, rounds + 1) for pol in POLICIES]
 
 
+def run_name(rnd, policy):
+    return "r%d-%s" % (rnd, policy.replace("+", "_"))
+
+
 def sleep_until(local_t):
     while True:
         left = local_t - time.time()
@@ -152,7 +161,7 @@ def dead_a(s):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    p.add_argument("what", choices=["control", "plan", "run"])
+    p.add_argument("what", choices=["control", "plan", "run", "series"])
     p.add_argument("--out", required=True)
     p.add_argument("--events-file", help="netem_schedule.py 的 --log 檔（在傳送端主機上）")
     p.add_argument("--host-send", default="5g-linux2-audit")
@@ -167,19 +176,44 @@ def main(argv=None):
     p.add_argument("--deadline", type=float, default=30.0)
     p.add_argument("--control-count", type=int, default=3000)
     p.add_argument("--echo-lead", type=float, default=ECHO_LEAD_S, help="echo 提前幾秒啟動")
+    p.add_argument("--name", default="control-only_a", help="control 的輸出檔名（例如 probe-off100）")
+    p.add_argument("--count", type=int, default=3000, help="series 每輪的封包數")
+    p.add_argument("--gap", type=float, default=3.0,
+                   help="series 每輪之間的秒數；echo 收尾另需約 15 秒，合計要短於 eNB 的閒置釋放（約 30 秒）")
     a = p.parse_args(argv)
     if a.local:
         a.host_send = a.host_echo = None
     os.makedirs(a.out, exist_ok=True)
 
     if a.what == "control":
-        name = "control-only_a"
+        if not a.name.replace("-", "").replace("_", "").isalnum():
+            p.error("--name 只能用英數字、- 與 _")
         dur = a.control_count * a.interval
-        s, echo = one_run(a, name, sender_args(a, "only_a", 0, a.control_count), dur)
+        s, echo = one_run(a, a.name, sender_args(a, "only_a", 0, a.control_count), dur)
         echo.wait()
         if s is None:
             return 1
-        show(name, s, "（未注入）")
+        show(a.name, s, "（未注入）" if a.name == "control-only_a" else "")
+        return 0
+
+    if a.what == "series":
+        todo = jobs(a.rounds)
+        print("無排程依序執行：%d 輪 × %d 個封包，每輪間隔 %.1f 秒；同一輪共用 LEO 種子" % (
+            len(todo), a.count, a.gap), flush=True)
+        for i, (rnd, pol) in enumerate(todo):
+            name = run_name(rnd, pol)
+            s, echo = one_run(a, name, sender_args(a, pol, rnd, a.count), a.count * a.interval)
+            echo.wait()
+            if s is None:
+                print("STOP：%s 沒有 summary 或 echo 沒有啟動" % name, flush=True)
+                return 1
+            show(name, s)
+            if dead_a(s):
+                print("STOP：%s 的路徑 A 完全沒有回應，UE 可能已斷線" % name, flush=True)
+                return 1
+            if i < len(todo) - 1:
+                time.sleep(a.gap)
+        print("DONE", flush=True)
         return 0
 
     if not a.events_file:
@@ -204,7 +238,7 @@ def main(argv=None):
         return 0
 
     for (rnd, pol), t in zip(todo, times):
-        name = "r%d-%s" % (rnd, pol.replace("+", "_"))
+        name = run_name(rnd, pol)
         _, _, ended = schedule_state(read_events(a.host_send, a.events_file))
         if ended:
             print("STOP：排程已經結束（%s 之前）" % name, flush=True)

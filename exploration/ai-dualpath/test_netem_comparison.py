@@ -20,6 +20,10 @@ class SlotTest(unittest.TestCase):
         times = C.slots(1000.0, 60.0, now_utc=1055.0, count=1, cycles_per_run=3, gap_cycles=1, lead=8.0)
         self.assertEqual(times, [1120.0])
 
+    def test_run_names_match_the_existing_result_files(self):
+        self.assertEqual(C.run_name(2, "threshold+guard"), "r2-threshold_guard")
+        self.assertEqual(C.run_name(1, "only_a"), "r1-only_a")
+
     def test_jobs_cover_every_policy_each_round_in_page_order(self):
         todo = C.jobs(2)
         self.assertEqual(len(todo), 14)

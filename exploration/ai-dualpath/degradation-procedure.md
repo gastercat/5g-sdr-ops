@@ -218,6 +218,11 @@ sudo ~/srsRAN_4G/build-usrp/srsue/src/srsue ~/pre-lab03-rf/config/ue.conf --rf.t
 
 還原：停止 `srsue`，以不含 `--channel.*` 的原指令重新啟動。
 
+channel emulator 的參數在 `srsue` 啟動時固定，不能像 netem 一樣在執行中切換。比較時先以
+`netem_comparison.py control --name probe-<標籤>` 做單路探測，選定劣化程度後以
+`netem_comparison.py series --rounds 3` 依序執行七種策略（同一輪共用路徑 B 的 LEO 種子，可配對分析）。
+結果標示 `INJECTED_BASEBAND`。
+
 ## 做法 C：固定 MCS 與 RLC UM
 
 目的是讓真實的解碼錯誤傳到應用層，而不是被 link adaptation 與 ARQ 吸收。兩個步驟可以分開試。
