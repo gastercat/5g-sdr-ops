@@ -1,0 +1,114 @@
+teh_version: "0.1"
+record_type: "Task Evidence Record"
+
+identity:
+  task_id: "AI-DUALPATH-2026-11-27-P2-CHANNEL-RLF"
+  source_thread: "Claude Code session 960b9a56-d5bc-4d3b-93da-d2a2068ccd98"
+  date_or_range: "2026-11-27 09:10Z–09:43Z（17:10–17:43 Asia/Taipei）"
+  executor: "Claude agent：遠端唯讀檢查、讀取 srsue 原始碼與 UE 紀錄、從控制端執行 netem_comparison.py 的單路探測。Owner 與組員（現場）：以 sudo 重啟 srsue、重啟整組 Runtime、刪除 UE 紀錄檔。Agent 未使用 sudo，未啟動或停止任何 Runtime 程序。"
+  historical_or_current: "當日觀察；結束時 Runtime 仍由現場維持執行"
+
+authorization:
+  scope:
+    - "Owner 決定 P0 與 P2 在發表前執行，P2 先試週期性中斷，並決定當天（2026-11-27）進行。"
+    - "Owner 逐步核准：第 0 步唯讀檢查（含讀取 srsue --help 與 rlf.c）；沿用上午的 EPC／eNB 並略過觀察期；未注入對照；t_off_ms=50 的探測與 tun_srsue 唯讀確認；以不含 --channel.* 的指令重啟 srsue 後的唯讀確認與短探測；讀取 /tmp/ue-p2-off50.log 與 /tmp/ue-p2-restore.log。"
+    - "觸發停止條件後，Owner 核准重啟整組 Runtime 恢復，並決定 P2 其餘部分留到發表後（不執行 series 比較）。"
+    - "Owner 回報 USB 網卡未更換（上午重插後穩定），屏蔽與增益與上午相同（TX 70）。"
+  allowed_mutations:
+    - "Linux2（Owner 以 sudo 執行）：srsue 以 --channel.dl.rlf 參數重啟，之後以原指令重啟；UE 紀錄以 --log.filename 分開保存。"
+    - "Linux1／Linux2（Owner）：依 Lab03 順序重啟 EPC、eNB、UE。"
+    - "Repo 外證據目錄 2026-11-27-AI-Dualpath-P2-channel-rlf/。Repo：本 TER、TER 索引與 follow-up-plan.md。"
+  forbidden:
+    - "不修改 srsRAN 設定檔（含 eNB 的 RLF 計時器）、增益、路由或套件；不在主機上放置工具檔案。"
+
+repo_context:
+  root: "gastercat/5g-sdr-ops"
+  branch: "docs/p2-ter"
+  start_head: "96987e7"
+  end_head: "本 TER 所在的 commit"
+  tool_commit: "執行時控制端在分支 feat/p2-series 的 e7bae48；PR #74 已於 09:09Z squash 合併為 96987e7，兩者的檔案內容相同"
+
+evidence:
+  - evidence_id: "P2-01"
+    claim: "Linux2 的 srsue 支援 channel.dl.rlf；中斷期間下行樣本被乘以 0。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "09:10Z srsue --help：--channel.dl.enable (=0)、--channel.dl.rlf.enable (=0)、--channel.dl.rlf.t_on_ms (=10000)、--channel.dl.rlf.t_off_ms (=2000)。lib/src/phy/channel/rlf.c 的 srsran_channel_rlf_execute：以樣本時間戳計算 period = t_on + t_off 內的位置，time_ms < t_on 時樣本乘以 1.0，否則乘以 0.0。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "Repo 外 2026-11-27-AI-Dualpath-P2-channel-rlf/step0-readonly.txt"
+    limitations:
+      - "t_off_ms 預設 2000 ms，每次都必須明確指定。"
+  - evidence_id: "P2-02"
+    claim: "未注入時路徑 A 正常。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "09:13:15Z–09:14:34Z，control-base（沿用上午的 srsue 7726，tun_srsue 172.16.0.4）：only_a 3000／3000，30 ms 期限內 99.433%。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "Repo 外 run/control-base.sender.jsonl、step3-control.txt"
+    limitations:
+      - "沿用上午的 Runtime，略過 15 分鐘觀察期（Owner 核准）。"
+  - evidence_id: "P2-03"
+    claim: "每 10 秒中斷 50 ms 的下行，使路徑 A 在第二次中斷後完全中斷。"
+    evidence_type: "FILE_ARTIFACT"
+    exact_observation: "srsue 13452 以 --channel.dl.enable=true --channel.dl.rlf.enable=true --channel.dl.rlf.t_on_ms=10000 --channel.dl.rlf.t_off_ms=50 重啟（tun_srsue 172.16.0.5）。09:18:38Z–09:19:57Z probe-off50：only_a 800／3000，30 ms 期限內 25.9%。以送出時間計：0–6.42 s 正常；6.44–7.18 s 三段共 23 個封包遺失；7.20–16.49 s 正常；16.51 s 起到 60.19 s 共 2177 個封包全部遺失。Owner 回報啟動後終端機出現兩次 O=0, U=1, L=0。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）"
+    source_location: "Repo 外 run/probe-off50.sender.jsonl、step4-probe-off50.txt"
+    limitations:
+      - "單一試次；只試了 50 ms，沒有更短或更長的值。"
+  - evidence_id: "P2-04"
+    claim: "原因是 eNB 給的 RLF 計時器極短：一次失步就在 200 ms 後判定無線連結失敗；第二次中斷後 UE 隨機存取失敗。"
+    evidence_type: "LOG"
+    exact_observation: "/tmp/ue-p2-off50.log：Set Constants and Timers: N310=1, N311=1, t300=2000, t301=100, t310=200, t311=10000。09:16:55Z（探測前）第一次中斷：PSS/SSS out-of-sync、SNR 降到約 -20 dB、T310 expired: Radio Link Failure、重建要求後 Selected cell no longer suitable: Going to RRC IDLE。探測中 09:18:46Z：T310 expired → RLF → RRC Connection Reestablishment 約 35 ms 完成。09:18:56Z：out-of-sync／in-sync 反覆、T310 多次啟動與停止；09:18:57Z、09:18:58Z MAC [E] RA: Maximum number of transmissions reached (10)。紀錄共 302724 行 [W]，檔案約 55 MB。"
+    directness: "PRIMARY"
+    confidence: "中高；摘錄自原始紀錄，原始檔未保存。"
+    source_location: "Repo 外 step4-probe-off50.txt（Agent 讀取時的摘錄）"
+    limitations:
+      - "原始紀錄在取回前已於主機上刪除（見 P2-06），只能以摘錄為準。"
+      - "第二次中斷後為何無法重新同步（例如時序或頻率偏移追蹤）沒有查證。"
+  - evidence_id: "P2-05"
+    claim: "移除中斷參數後 UE 仍無法 Attach，需重啟整組 Runtime 才恢復。"
+    evidence_type: "LOG"
+    exact_observation: "srsue 13746 於 09:24:48Z 以不含 --channel.* 的指令重啟。/tmp/ue-p2-restore.log：09:26:33Z NAS [W] Timer T3410 expired after attach attempt 4/5；09:26:48Z 以 GUTI（m_tmsi 6c21d440，與 off50 那次相同）送出 Attach Request，RRC 連線建立完成但沒有 Attach Accept；09:27:18Z 收到 rrcConnectionRelease；RSRP 約 -69.5 dBm；沒有 [E]。17:25、17:27 CST tun_srsue 不存在。Owner 依 Lab03 順序重啟 UE、eNB、EPC 後，09:35:26Z tun_srsue 172.16.0.2、srsepc 46068、srsenb 46083；09:35:32Z restore-check 300／300，期限內 99.667%。"
+    directness: "PRIMARY"
+    confidence: "高（觀察）；Attach 卡住的原因未確認。"
+    source_location: "Repo 外 step4-restore-stop.txt、run/restore-check.sender.jsonl"
+    limitations:
+      - "EPC 端是否殘留舊的 UE context 只是推測，沒有讀 EPC 紀錄。"
+  - evidence_id: "P2-06"
+    claim: "UE 原始紀錄在取回前被刪除。"
+    evidence_type: "COMMAND_OUTPUT"
+    exact_observation: "Owner 核准取回 /tmp/ue-p2-off50.log 並刪除 /tmp/ue.log。09:42Z sha256sum 回報檔案不存在；/tmp/ue*.log 皆不存在（ue-p2-off50.log、ue-p2-restore.log、ue.log 已由現場刪除）。原因是 Agent 在同一則訊息裡同時列出取回與刪除指令，現場依序貼上執行。srsue 14160 仍在寫入已刪除的 restore 紀錄，直到停止。"
+    directness: "PRIMARY"
+    confidence: "高"
+    source_location: "Repo 外 step4-restore-stop.txt"
+    limitations: []
+
+mutations:
+  - "Linux2（Owner，sudo）：srsue 以 rlf 參數重啟一次、以原指令重啟兩次；刪除 /tmp/ue-p2-off50.log、/tmp/ue-p2-restore.log、/tmp/ue.log。"
+  - "Linux1／Linux2（Owner，sudo）：重啟 EPC、eNB、UE。"
+  - "Repo 外新增 2026-11-27-AI-Dualpath-P2-channel-rlf/ 的紀錄與 run/。"
+  - "Repo：新增本 TER，更新 TER 索引與 follow-up-plan.md。"
+
+recovered_or_observed_claims:
+  - claim: "在這組 eNB 設定（N310=1、t310=200 ms）下，50 ms 的下行中斷就會觸發 RLF，第二次中斷後 UE 失去路徑 A 且未自行恢復。"
+    status: "OBSERVED"
+    supporting_evidence: ["P2-03", "P2-04"]
+  - claim: "移除注入後需重啟整組 Runtime 才能恢復。"
+    status: "OBSERVED"
+    supporting_evidence: ["P2-05"]
+  - claim: "週期性中斷不適合在目前設定下做策略比較；沒有執行 series 比較。"
+    status: "OBSERVED"
+    supporting_evidence: ["P2-03", "P2-05"]
+  - claim: "Attach 卡住是因為 EPC 殘留舊的 UE context。"
+    status: "NOT_FOUND_IN_THREAD"
+    supporting_evidence: []
+
+provenance_gaps:
+  - "UE 原始紀錄未保存（P2-06）；P2-04、P2-05 依據 Agent 讀取時的摘錄。"
+  - "EPC、eNB 的紀錄沒有讀取。"
+  - "Repo 外證據目錄為本機路徑，可攜共享位置 UNKNOWN。"
+
+stop_point:
+  result: "P2 在探測階段觸發停止條件（移除注入後 UE 未恢復）而中止；Runtime 經整組重啟後恢復，路徑 A 正常。Owner 決定 P2 留到發表後。Owner 驗收 PENDING。"
+  next_authority_required: "P2 重新進行（例如改用 AWGN，或檢討 eNB 的 RLF 計時器）需 Owner 另行授權；修改 eNB 設定屬於設定變更，需依設定治理流程。之後的操作清單把取回與刪除分成兩個步驟。"

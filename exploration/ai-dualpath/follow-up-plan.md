@@ -5,6 +5,7 @@
 
 **Owner 決定（2026-11-27）：** 發表前做 P0 與 P2（先試週期性中斷），P1、P3 留到發表後。
 P0 已完成，見 [P0 重新分析 TER](../../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-p0-reanalysis.yaml)。
+P2 同日嘗試週期性中斷後中止，改到發表後，見 [P2 TER](../../docs/evidence/task-evidence/2026-11-27-ai-dualpath-p2-channel-rlf.yaml)。
 
 依據：[2026-11-27 TER](../../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml)
 （NC-07～NC-10）與 Repo 外 `2026-11-28-AI-Dualpath-netem-comparison/run/phases.csv`。
@@ -63,6 +64,9 @@ P0 已完成，見 [P0 重新分析 TER](../../docs/evidence/task-evidence/2026-
 - channel emulator 的參數在 srsue 啟動時固定，無法像 netem 一樣在執行中切換，因此比較設計為「每種劣化程度各一段」，
   不是時變排程。
 - 結果比 P1 更接近無線層，但仍不是 OTA 劣化。
+- **2026-11-27 嘗試結果：** eNB 給 UE 的計時器為 `N310=1`、`t310=200 ms`，`t_off_ms=50` 的中斷就觸發 RLF；
+  第二次中斷後路徑 A 完全中斷，移除參數後 UE 也無法 Attach，需重啟整組 Runtime。週期性中斷在目前設定下不適合比較。
+  發表後若重做，可改用 AWGN（持續劣化、不中斷），或先檢討 eNB 的 RLF 計時器（屬設定變更）。
 
 ### P3：做法 C／D（`OTA_MEASURED`）
 
@@ -80,5 +84,5 @@ P0 已完成，見 [P0 重新分析 TER](../../docs/evidence/task-evidence/2026-
 
 ## 4. 仍需 Owner 決定的事
 
-1. P2 的執行日期，以及週期性中斷的 `t_on_ms`／`t_off_ms` 起點。
+1. P2 改到發表後：改用 AWGN，或先檢討 eNB 的 RLF 計時器。
 2. P1 的排程數值與輪數，以及是否加入下行注入（發表後）。
