@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-11-20T20:49:12Z",
-  "updated_at": "2026-11-27T08:19:00Z",
+  "updated_at": "2026-11-27T08:35:37Z",
   "files": {
     ".agents/skills/boundary-preserving-humanizer/SKILL.md": {
       "role": "index",
@@ -167,9 +167,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "b3f6271e5148147ba2371cd52a40f123f1c0ded0664d932feec47dfd367d097b",
-      "size": 55497,
-      "normalized_sha256": "b3f6271e5148147ba2371cd52a40f123f1c0ded0664d932feec47dfd367d097b"
+      "sha256": "1455f55d9d11a0d1fbd649d1b09ee170bf1a5337f2f6e8ef1d35344e756e7029",
+      "size": 55556,
+      "normalized_sha256": "1455f55d9d11a0d1fbd649d1b09ee170bf1a5337f2f6e8ef1d35344e756e7029"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "delivery/2026-12-18-final-presentation-outline.md": {
       "role": "index",
-      "sha256": "dff7a519b881b64f84c38f717a9195eb1a0e76d662a216fa6d82dc1201e29ee3",
-      "size": 9319,
-      "normalized_sha256": "dff7a519b881b64f84c38f717a9195eb1a0e76d662a216fa6d82dc1201e29ee3"
+      "sha256": "4d72144914ebd6404a235a9fff40c0f88128783d44b7e66c3094b8e61c77dbfb",
+      "size": 10115,
+      "normalized_sha256": "4d72144914ebd6404a235a9fff40c0f88128783d44b7e66c3094b8e61c77dbfb"
     },
     "delivery/README.md": {
       "role": "index",

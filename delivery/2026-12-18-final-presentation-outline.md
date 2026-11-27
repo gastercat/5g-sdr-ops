@@ -32,7 +32,7 @@ Security 穿插在各段裡，不另開一段 Runtime。各段的篇幅比例是
 | 2. Lab01 小基站 | 20% | 能從原始碼建置並建立 Attach，也清楚哪一步還沒通過 | E1、E2、E3 |
 | 3. Lab02 eMBMS | 15% | 用同一份封包紀錄看到 SIB13、MCCH、MTCH，應用層 multicast 收發一致 | E4、E5 |
 | 4. Lab03 OTA 與雙路徑 | 20% | 增益問題的排除過程，以及 OTA 上的 Split 與 Duplication 量測 | E6、E7、E8 |
-| 5. AI 雙路徑策略 | 20% | 規則層加 LinUCB 的控制器，OTA 比較結果與 netem 劣化實驗 | E9～E12，沿用 12/04 決賽材料 |
+| 5. AI 雙路徑策略 | 20% | 規則層加 LinUCB 的控制器，OTA 比較結果與 netem 劣化實驗 | E9～E12、E15，沿用 12/04 決賽材料 |
 | 6. Security Lens | 10% | 在不開獨立 Lab04 的前提下，Tailcat 架構的一次執行結果 | E13、E14 |
 | 7. 限制與下一步 | 5% | 尚未驗證的項目與原因 | 第 4 節 |
 
@@ -60,17 +60,18 @@ Security 穿插在各段裡，不另開一段 Runtime。各段的篇幅比例是
 | E12 | 以 `tc netem` 在路徑 A 注入劣化的做法已確認有效 | `OBSERVED`（`INJECTED_IP`） | [netem TER](../docs/evidence/task-evidence/2026-11-26-ai-dualpath-netem-schedule.yaml) | netem 下的策略比較結果，見下方說明 |
 | E13 | 教授同意以 Tailcat 架構作為 Security Lens，不另開獨立 Lab04 | `ACCEPTED / REPORTED_BY_OWNER` | [DR-016](../docs/decision-register.md#dr-016tailcat-security-lens-作為-security-cross-cutting-的實作方向) | Repo 內有教授的書面意見 |
 | E14 | 2026-11-19 執行一次，T0、T2～T8 通過，T1 完成，T8 同日補做 | `OBSERVED` | [Lab04 TER](../docs/evidence/task-evidence/2026-11-19-lab04-tailcat-security-lens.yaml) | Lab01～03 的 Security mapping 已完成 |
+| E15 | 2026-11-27 在同一個 netem 長排程下七種策略各 3 輪：正常與輕度階段，自適應策略以 1.02～1.92 的副本數達到接近全部複製的期限內比例；重度階段只走 A 為 0%，其他策略約 23～39%，每輪差異大 | `OBSERVED`（路徑 A `INJECTED_IP`、路徑 B `SIMULATED`） | [netem 比較 TER](../docs/evidence/task-evidence/2026-11-27-ai-dualpath-netem-policy-comparison.yaml) | OTA 或無線劣化下的結果、重度劣化時某個策略較好、真實衛星鏈路 |
 
-E12 之後的 netem 策略比較工具已在 [PR 68](https://github.com/gastercat/5g-sdr-ops/pull/68) 合併，
-但 Repository 還沒有以它執行比較的紀錄。比較執行並留下 TER 之前，這一格維持 `PENDING`，
-發表時只能說「劣化注入已確認有效，比較進行中」。
+E12 之後的 netem 策略比較已在 2026-11-27 執行並留下 TER（E15，[PR 71](https://github.com/gastercat/5g-sdr-ops/pull/71)）。
+發表時依 E15 的「可以說」：結果只代表這一個 IP 層注入排程，不是 OTA 或無線劣化；重度階段只有三輪、每輪約 750 個封包，
+不用來排名策略。
 
 ## 4. 限制與下一步（第 7 段素材）
 
 - Lab01：完成標準仍待教授 Review，依標準的 fresh run 尚未執行，R5 尚未定位。
 - Lab02：已有協定層證據，但沒有學生最小流程，目前不是進行中的交付。
 - Lab03：只有一次 OTA 量測，Split 與 Duplication 在應用層實作，PDCP 層的做法仍待決定。
-- AI 雙路徑：路徑 B 的類 LEO 特性是模擬，延遲是來回時間，真實劣化下的線上比較尚未完成。
+- AI 雙路徑：路徑 B 的類 LEO 特性是模擬，延遲是來回時間；netem 比較只代表一個 IP 層注入排程，OTA 或無線劣化下的線上比較尚未完成。
 - Security：Lab01～03 的整體 topic mapping 仍為 `PENDING`。
 
 ## 5. 時程
@@ -78,7 +79,7 @@ E12 之後的 netem 策略比較工具已在 [PR 68](https://github.com/gasterca
 | 期間 | 工作 | 是否需要 Runtime 授權 |
 | --- | --- | --- |
 | 11/26～11/29 | 向教授確認第 1 節的待確認事項，同時請教授 Review Lab01 完成標準提案 | 否 |
-| 11/26～12/03 | 視 Owner 授權以 `netem_comparison.py` 執行策略比較並建立 TER，準備 12/04 決賽 | 比較執行需要 |
+| 11/26～12/03 | 以 `netem_comparison.py` 執行策略比較並建立 TER（11/27 已完成，E15）；準備 12/04 決賽 | 比較已於 11/27 經 Owner 授權執行 |
 | 12/05～12/10 | 撰寫 Lab03 學生最小流程、Security cross-cutting mapping，把決賽材料拆進第 5 段 | 否 |
 | 12/08 前後 | 選做：依 Lab01 完成標準執行一次 fresh run，保留緩衝以免 R5 重現時來不及 | 需要 |
 | 12/11～12/16 | 依確認後的形式製作簡報或報告，演練一次並對照第 3 節檢查每個主張 | 否 |
@@ -89,8 +90,8 @@ E12 之後的 netem 策略比較工具已在 [PR 68](https://github.com/gasterca
 | 可能的問題 | 回答方向 | 依據 |
 | --- | --- | --- |
 | Lab01 算完成了嗎？ | 能建立 Attach，R5 尚未通過，完成標準在教授 Review 中 | E2、E3 |
-| 為什麼 AI 策略沒有比較好？ | 路徑 A 本身穩定，沒有劣化就沒有可以改善的空間，因此加入 netem 注入 | E9、E10、E12 |
-| Duplication 到底有沒有用？ | 11/12 沒有劣化，效益未展示，這正是 netem 實驗要回答的問題 | E8、E12 |
+| 為什麼 AI 策略沒有比較好？ | 路徑 A 本身穩定時沒有可以改善的空間；netem 注入劣化後，自適應策略以較少的副本接近全部複製，但沒有勝過門檻規則 | E9、E10、E15 |
+| Duplication 到底有沒有用？ | 11/12 沒有劣化，效益未展示；11/27 netem 注入下，輕度階段全部複製約 59%、只走 A 約 27%，重度階段 37% 對 0%，代價是 2 倍副本 | E8、E15 |
 | 這是 URLLC 嗎？ | 不是 3GPP 等級的 URLLC 驗證，是應用層的雙路徑實驗 | E7、E8 |
 | 類 LEO 鏈路是真的衛星嗎？ | 不是，是傳送端以應用層模擬的時變特性，參數為假設值 | E9 |
 
