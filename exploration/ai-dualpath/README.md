@@ -38,6 +38,7 @@
 | `netem_schedule.py`、`schedules/` | 依排程檔在路徑 A 的介面上切換 `tc netem`，記錄每次切換並保證結束時移除；用法見[劣化注入程序](degradation-procedure.md#做法-atc-netem) |
 | `netem_comparison.py` | 控制端：在一次長 netem 排程中依序執行七種策略，每輪對準循環開頭；用法見[劣化注入程序](degradation-procedure.md#做法-atc-netem) |
 | `align_phases.py` | 依每個封包的送出時間對到 netem 階段，逐階段比較各策略 |
+| `follow-up-plan.md` | 2026-11-27 netem 比較之後的後續實驗方案（提案，未授權執行） |
 | `test_ai_dualpath.py`、`test_adaptive_send.py`、`test_netem_schedule.py`、`test_align_phases.py`、`test_netem_comparison.py` | 單元測試、本機 loopback 測試，以及以替身 `tc` 或合成紀錄執行的測試 |
 
 LinUCB 需要 NumPy，`--out` 的圖需要 matplotlib；其餘只用 Python 標準函式庫。
